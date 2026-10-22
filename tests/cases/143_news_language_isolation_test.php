@@ -182,8 +182,8 @@ test('Новости: публичные списки, рубрики и свя�
         assert_false(in_array($ruId, $topUzIds, true));
 
         $controller = (string) file_get_contents(APP_ROOT . '/app/Controllers/Site/NewsController.php');
-        assert_contains('News::publishedCategories($lang)', $controller);
-        assert_contains('News::publishedCount($categoryId > 0 ? $categoryId : null, $lang)', $controller);
+        assert_contains('News::publishedCategories($lang, NewsCategory::AXIS_RUBRIC)', $controller);
+        assert_contains('News::publishedCount($sectionId > 0 ? $sectionId : null, $lang)', $controller);
         assert_contains('$requestedSlug !== $canonicalSlug', $controller, 'Чужой slug перенаправляется на canonical slug выбранного языка');
         assert_contains("Locale::url('news/' . \$canonicalSlug, \$lang)", $controller, 'Canonical redirect сохраняет языковой префикс');
     } finally {

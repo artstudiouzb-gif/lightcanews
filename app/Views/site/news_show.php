@@ -38,7 +38,7 @@ if (!empty($news['category_id'])) {
         $categoryRow = \App\Models\NewsCategory::localize($categoryRow, $lang);
         $newsCategory = [
             'name' => (string) $categoryRow['name'],
-            'url' => Locale::url('news') . '?category=' . rawurlencode((string) $categoryRow['slug']),
+            'url' => Locale::url(\App\Models\NewsCategory::path($categoryRow)),
         ];
     }
 }

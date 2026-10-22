@@ -143,6 +143,7 @@ return [
     'Официальные сообщения, события и аналитические материалы Агентства.' => 'Agentlikning rasmiy xabarlari, tadbirlari va tahliliy materiallari.',
     'Проекты и инициативы' => 'Loyihalar va tashabbuslar',
     'Стратегические проекты, которые Агентство реализует для устойчивого развития страны.' => 'Agentlik mamlakatning barqaror rivojlanishi uchun amalga oshirayotgan strategik loyihalar.',
+    'Страны' => 'Davlatlar',
     'Рубрики' => 'Ruknlar',
     'Страницы' => 'Sahifalar',
     'Пока нет опубликованных новостей.' => 'Hozircha e’lon qilingan yangiliklar yo‘q.',

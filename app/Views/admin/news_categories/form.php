@@ -33,6 +33,18 @@ $translationLangs = array_values(array_filter(
             <input type="text" id="slug" name="slug" value="<?= htmlspecialchars((string) $category['slug'], ENT_QUOTES) ?>">
             <span class="form-hint">Один для всех языков: это идентификатор в адресах и выборках, а не текст для чтения. Занятый адрес получит числовой суффикс.</span>
         </div>
+        <?php $axis = \App\Models\NewsCategory::axis((string) ($category['axis'] ?? '')); ?>
+        <div class="form-field">
+            <label for="axis">Ось</label>
+            <select id="axis" name="axis"<?= $newsCount > 0 ? ' disabled aria-describedby="axis-hint"' : '' ?>>
+                <?php foreach (\App\Models\NewsCategory::AXES as $axisValue => $axisLabel): ?>
+                    <option value="<?= $axisValue ?>"<?= $axisValue === $axis ? ' selected' : '' ?>><?= $axisLabel ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php if ($newsCount > 0): ?>
+                <span class="form-hint" id="axis-hint">Ось меняется только у пустой категории: у рубрики новость одна, у страны их может быть несколько, и перенести связи без потерь нельзя. Сначала снимите категорию с новостей.</span>
+            <?php endif; ?>
+        </div>
         <?= AdminUi::iconField('icon', (string) ($category['icon'] ?? ''), [
             'label' => 'Иконка рубрики',
             'hint' => 'Показывается рядом с названием в рубрикаторе на сайте. Без иконки рубрика выводится одним названием.',

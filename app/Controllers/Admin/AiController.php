@@ -112,7 +112,7 @@ final class AiController
         $this->begin();
 
         $categories = [];
-        foreach (NewsCategory::all() as $category) {
+        foreach (NewsCategory::all(null, false, NewsCategory::AXIS_RUBRIC) as $category) {
             $categories[] = [
                 'id' => (int) ($category['id'] ?? 0),
                 'slug' => (string) ($category['slug'] ?? ''),
