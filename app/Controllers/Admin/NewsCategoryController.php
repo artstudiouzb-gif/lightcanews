@@ -42,7 +42,8 @@ final class NewsCategoryController
 
         $id = NewsCategory::create(
             (string) ($_POST['name'] ?? ''),
-            (string) ($_POST['slug'] ?? '')
+            (string) ($_POST['slug'] ?? ''),
+            axis: NewsCategory::axis((string) ($_POST['axis'] ?? ''))
         );
         if ($id === null) {
             Flash::error('Укажите название категории.');
@@ -82,7 +83,8 @@ final class NewsCategoryController
         Csrf::verifyRequest();
 
         $id = (int) $params['id'];
-        if (NewsCategory::find($id) === null) {
+        $current = NewsCategory::find($id);
+        if ($current === null) {
             http_response_code(404);
             View::render('errors/404');
 
@@ -96,13 +98,23 @@ final class NewsCategoryController
             exit;
         }
 
+        // Ось меняется только у пустой категории: рубрика — одна ссылка у
+        // новости, страна — запись в news_countries, и перенос связей молча
+        // раздал бы новостям чужую ось. Поле в форме заблокировано, но
+        // заблокированное поле браузер просто не присылает — решает сервер.
+        $axis = NewsCategory::axis((string) ($current['axis'] ?? ''));
+        if ((NewsCategory::newsCounts()[$id] ?? 0) === 0 && isset($_POST['axis'])) {
+            $axis = NewsCategory::axis((string) $_POST['axis']);
+        }
+
         NewsCategory::update(
             $id,
             $name,
             (string) ($_POST['slug'] ?? ''),
             !empty($_POST['is_active']),
             (int) ($_POST['sort_order'] ?? 0),
-            (string) ($_POST['icon'] ?? '')
+            (string) ($_POST['icon'] ?? ''),
+            $axis
         );
         $this->saveTranslations($id);
 

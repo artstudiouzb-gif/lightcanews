@@ -32,7 +32,7 @@ final class ContentLocator
         'subscribers', 'mail_queue', 'social_posts', 'webhooks', 'webhook_deliveries',
         'notifications', 'notification_recipients', 'notification_preferences',
         'notification_deliveries', 'webpush_subscriptions', 'webpush_queue',
-        'link_checks',
+        'link_checks', 'news_countries',
     ];
 
     /**

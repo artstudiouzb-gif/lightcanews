@@ -47,13 +47,15 @@ CREATE TABLE IF NOT EXISTS news_categories (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name        VARCHAR(150) NOT NULL COMMENT 'название на основном языке',
     slug        VARCHAR(150) NOT NULL COMMENT 'один на все языки: адрес и выборки',
+    axis        ENUM('rubric','country') NOT NULL DEFAULT 'rubric' COMMENT 'ось раздела: рубрика или страна',
     icon        VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'ключ иконки Tabler',
     is_active   TINYINT(1) NOT NULL DEFAULT 1,
     sort_order  INT NOT NULL DEFAULT 0,
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_news_categories_slug (slug),
-    KEY idx_news_categories_order (is_active, sort_order, name)
+    KEY idx_news_categories_order (is_active, sort_order, name),
+    KEY idx_news_categories_axis (axis, is_active, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS news_category_translations (
@@ -197,6 +199,18 @@ CREATE TABLE IF NOT EXISTS news_translations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Галерея фотографий новости (этап 12.1)
+-- Страны новости: вторая ось разделов портала (рубрика — news.category_id).
+CREATE TABLE IF NOT EXISTS news_countries (
+    news_id     INT UNSIGNED NOT NULL,
+    category_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (news_id, category_id),
+    KEY idx_news_countries_category (category_id, news_id),
+    CONSTRAINT fk_news_countries_news
+        FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    CONSTRAINT fk_news_countries_category
+        FOREIGN KEY (category_id) REFERENCES news_categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS news_images (
     id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     news_id     INT UNSIGNED NOT NULL,
@@ -254,6 +268,54 @@ INSERT INTO languages (code, name, short_name, is_default, is_active, sort_order
     ('ru', 'Русский', 'Рус', 1, 1, 0),
     ('uz', 'Oʻzbekcha', 'Oʻzb', 0, 1, 1)
 ON DUPLICATE KEY UPDATE code = code;
+
+-- Разделы портала. Существующие записи с теми же slug не трогаются.
+INSERT IGNORE INTO news_categories (name, slug, axis, is_active, sort_order) VALUES
+    ('Новости', 'news', 'rubric', 1, 10),
+    ('Отрасли', 'industries', 'rubric', 1, 20),
+    ('Аналитика', 'analytics', 'rubric', 1, 30),
+    ('Технологии', 'technology', 'rubric', 1, 40),
+    ('Мероприятия', 'events', 'rubric', 1, 50),
+    ('Маркетплейсы', 'marketplaces', 'rubric', 1, 60),
+    ('Точка зрения', 'opinion', 'rubric', 1, 70),
+    ('В мире', 'world', 'country', 1, 110),
+    ('Узбекистан', 'uzbekistan', 'country', 1, 120),
+    ('Казахстан', 'kazakhstan', 'country', 1, 130),
+    ('Кыргызстан', 'kyrgyzstan', 'country', 1, 140),
+    ('Таджикистан', 'tajikistan', 'country', 1, 150),
+    ('Туркменистан', 'turkmenistan', 'country', 1, 160);
+
+INSERT IGNORE INTO news_category_translations (category_id, lang, name)
+SELECT c.id, t.lang, t.name
+FROM news_categories c
+JOIN (
+    SELECT 'news' AS slug, 'uz' AS lang, 'Yangiliklar' AS name
+    UNION ALL SELECT 'industries', 'uz', 'Tarmoqlar'
+    UNION ALL SELECT 'analytics', 'uz', 'Tahlil'
+    UNION ALL SELECT 'technology', 'uz', 'Texnologiyalar'
+    UNION ALL SELECT 'events', 'uz', 'Tadbirlar'
+    UNION ALL SELECT 'marketplaces', 'uz', 'Marketpleyslar'
+    UNION ALL SELECT 'opinion', 'uz', 'Nuqtai nazar'
+    UNION ALL SELECT 'world', 'uz', 'Dunyoda'
+    UNION ALL SELECT 'uzbekistan', 'uz', 'Oʻzbekiston'
+    UNION ALL SELECT 'kazakhstan', 'uz', 'Qozogʻiston'
+    UNION ALL SELECT 'kyrgyzstan', 'uz', 'Qirgʻiziston'
+    UNION ALL SELECT 'tajikistan', 'uz', 'Tojikiston'
+    UNION ALL SELECT 'turkmenistan', 'uz', 'Turkmaniston'
+    UNION ALL SELECT 'news', 'en', 'News'
+    UNION ALL SELECT 'industries', 'en', 'Industries'
+    UNION ALL SELECT 'analytics', 'en', 'Analytics'
+    UNION ALL SELECT 'technology', 'en', 'Technology'
+    UNION ALL SELECT 'events', 'en', 'Events'
+    UNION ALL SELECT 'marketplaces', 'en', 'Marketplaces'
+    UNION ALL SELECT 'opinion', 'en', 'Opinion'
+    UNION ALL SELECT 'world', 'en', 'World'
+    UNION ALL SELECT 'uzbekistan', 'en', 'Uzbekistan'
+    UNION ALL SELECT 'kazakhstan', 'en', 'Kazakhstan'
+    UNION ALL SELECT 'kyrgyzstan', 'en', 'Kyrgyzstan'
+    UNION ALL SELECT 'tajikistan', 'en', 'Tajikistan'
+    UNION ALL SELECT 'turkmenistan', 'en', 'Turkmenistan'
+) t ON t.slug = c.slug;
 
 -- Редактируемые системные переводы. Штатные lang/*.php остаются fallback.
 CREATE TABLE IF NOT EXISTS interface_translations (
@@ -1186,7 +1248,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_21_languages_is_public.sql'),
     ('2026_10_22_drop_file_repository.sql'),
     ('2026_10_22_drop_goals.sql'),
-    ('2026_10_22_drop_team_and_org_structure.sql')
+    ('2026_10_22_drop_team_and_org_structure.sql'),
+    ('2026_10_23_news_country_axis.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

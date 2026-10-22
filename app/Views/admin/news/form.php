@@ -381,8 +381,13 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
             <!-- Рубрика и метка: свойства публикации, а не текст статьи, поэтому
                  стоят в сайдбаре рядом с языком и обложкой. -->
             <?php
-            $newsCategories = \App\Models\NewsCategory::all();
+            $newsCategories = \App\Models\NewsCategory::all(null, false, \App\Models\NewsCategory::AXIS_RUBRIC);
+            $newsCountries = \App\Models\NewsCategory::all(null, false, \App\Models\NewsCategory::AXIS_COUNTRY);
             $selectedCategory = (int) ($news['category_id'] ?? 0);
+            $countryGroup = !empty($news['id']) ? \App\Models\News::groupKeyOf($news) : 0;
+            $selectedCountries = $countryGroup > 0
+                ? (\App\Models\NewsCategory::countryIdsFor([$countryGroup])[$countryGroup] ?? [])
+                : array_map('intval', is_array($_POST['countries'] ?? null) ? $_POST['countries'] : []);
             ?>
             <div class="form-card u-inline-c18e1e5580">
                 <h3 class="u-inline-3e52776664">
@@ -412,6 +417,23 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                         <a href="/admin/news-categories">Управление категориями</a>.
                     </span>
                 </div>
+
+                <?php if ($newsCountries !== []): ?>
+                    <fieldset class="form-field">
+                        <legend>Страны</legend>
+                        <input type="hidden" name="countries_present" value="1">
+                        <?php foreach ($newsCountries as $newsCountry): ?>
+                            <?php $countryId = (int) $newsCountry['id']; ?>
+                            <label class="form-check">
+                                <input type="checkbox" name="countries[]" value="<?= $countryId ?>" <?= in_array($countryId, $selectedCountries, true) ? 'checked' : '' ?>>
+                                <?= htmlspecialchars((string) $newsCountry['name'], ENT_QUOTES) ?><?= (int) $newsCountry['is_active'] === 1 ? '' : ' (скрыта)' ?>
+                            </label>
+                        <?php endforeach; ?>
+                        <span class="form-hint">
+                            Новость попадает в ленту каждой отмеченной страны. Страны общие для всех языковых версий.
+                        </span>
+                    </fieldset>
+                <?php endif; ?>
 
                 <div class="form-field">
                     <label for="badge">Метка</label>

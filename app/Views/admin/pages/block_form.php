@@ -639,14 +639,20 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                 <label for="news_block_category">Категория новостей</label>
                 <select id="news_block_category" name="category">
                     <option value="0">Все категории</option>
-                    <?php foreach ($blockCategories as $blockCat): ?>
-                        <option value="<?= (int) $blockCat['id'] ?>" <?= $blockCategory === (int) $blockCat['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars((string) $blockCat['name'], ENT_QUOTES) ?><?= (int) $blockCat['is_active'] === 1 ? '' : ' (скрыта)' ?>
-                        </option>
+                    <?php foreach (\App\Models\NewsCategory::AXES as $blockAxis => $blockAxisLabel): ?>
+                        <?php $axisCategories = array_filter($blockCategories, static fn (array $c): bool => \App\Models\NewsCategory::axis((string) ($c['axis'] ?? '')) === $blockAxis); ?>
+                        <?php if ($axisCategories === []) { continue; } ?>
+                        <optgroup label="<?= $blockAxis === \App\Models\NewsCategory::AXIS_COUNTRY ? 'Страны' : 'Рубрики' ?>">
+                            <?php foreach ($axisCategories as $blockCat): ?>
+                                <option value="<?= (int) $blockCat['id'] ?>" <?= $blockCategory === (int) $blockCat['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars((string) $blockCat['name'], ENT_QUOTES) ?><?= (int) $blockCat['is_active'] === 1 ? '' : ' (скрыта)' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
                     <?php endforeach; ?>
                 </select>
                 <span class="form-hint">
-                    Блок покажет новости только этой рубрики. «Все категории» — без ограничения.
+                    Блок покажет новости только этой рубрики или страны. «Все категории» — без ограничения.
                     Порядок вывода не меняется: сначала свежие. Названия рубрики и новостей берутся на языке страницы.
                 </span>
             </div>

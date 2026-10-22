@@ -210,6 +210,15 @@ final class SitemapController
         if ($news !== []) {
             $sections[] = ['path' => 'news', 'lastmod' => $newest['news'], 'changefreq' => 'daily', 'priority' => '0.9'];
         }
+        // Рубрики и страны — свои ленты со своими адресами (`rubric/…`,
+        // `country/…`); в карту идут только разделы с опубликованными новостями.
+        if ($news !== []) {
+            foreach ([\App\Models\NewsCategory::AXIS_RUBRIC, \App\Models\NewsCategory::AXIS_COUNTRY] as $axis) {
+                foreach (\App\Models\News::publishedCategories(Language::defaultCode(), $axis) as $category) {
+                    $sections[] = ['path' => \App\Models\NewsCategory::path($category), 'lastmod' => '', 'changefreq' => 'daily', 'priority' => '0.8'];
+                }
+            }
+        }
         if ($projects !== []) {
             $sections[] = ['path' => 'projects', 'lastmod' => $newest['projects'], 'changefreq' => 'weekly', 'priority' => '0.8'];
         }

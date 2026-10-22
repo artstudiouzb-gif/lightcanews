@@ -12,6 +12,7 @@ use App\Core\Locale;
 use App\Core\OpenGraphHelper;
 use App\Core\View;
 use App\Models\News;
+use App\Models\NewsCategory;
 use App\Models\NewsImage;
 use App\Models\Setting;
 
@@ -19,48 +20,83 @@ final class NewsController
 {
     public function index(): void
     {
-        $lang = Locale::current();
-        $page = max(1, (int) ($_GET['page'] ?? 1));
-
-        // Рубрикатор по категориям. В адресе — slug, а не идентификатор:
-        // ссылка остаётся читаемой и переживает пересоздание категории.
-        $categories = News::publishedCategories($lang);
-        $categorySlug = trim((string) ($_GET['category'] ?? ''));
-        $categoryId = 0;
-        foreach ($categories as $category) {
-            if ((string) $category['slug'] === $categorySlug) {
-                $categoryId = (int) $category['id'];
-                break;
+        // Прежний адрес рубрики (`/news?category=<slug>`) живёт в закладках и
+        // внешних ссылках — он уводит на собственный адрес раздела, иначе одна
+        // и та же лента жила бы по двум адресам.
+        $legacySlug = trim((string) ($_GET['category'] ?? ''));
+        if ($legacySlug !== '') {
+            $legacy = NewsCategory::findBySlug($legacySlug, true);
+            if ($legacy !== null) {
+                \App\Core\Redirect::to(Locale::url(NewsCategory::path($legacy)), 301);
             }
         }
-        if ($categoryId === 0) {
-            $categorySlug = '';
+
+        $this->listing(null);
+    }
+
+    /** Лента рубрики: `/rubric/<slug>`. @param array<string, string> $params */
+    public function rubric(array $params): void
+    {
+        $this->section($params, NewsCategory::AXIS_RUBRIC);
+    }
+
+    /** Лента страны: `/country/<slug>`. @param array<string, string> $params */
+    public function country(array $params): void
+    {
+        $this->section($params, NewsCategory::AXIS_COUNTRY);
+    }
+
+    /** @param array<string, string> $params */
+    private function section(array $params, string $axis): void
+    {
+        $category = NewsCategory::findBySlug((string) ($params['slug'] ?? ''), true, $axis);
+        if ($category === null) {
+            http_response_code(404);
+            View::render('errors/404');
+            return;
         }
 
-        $total = News::publishedCount($categoryId > 0 ? $categoryId : null, $lang);
+        $this->listing(NewsCategory::localize($category, Locale::current()));
+    }
 
-        // Композиция страницы одна и та же везде — и на первой, и в рубрике:
-        // лента идёт группами «крупная плюс две компактные». Отдельной крупной
-        // новости над сеткой больше нет, поэтому и особого размера первой
-        // страницы тоже: размер задаёт ритм (App\Core\NewsFeedRhythm).
+    /**
+     * Лента целиком или одного раздела. Разметка одна: у раздела свой
+     * заголовок и свой адрес, а рубрикатор и страны ведут на адреса
+     * разделов, а не на параметр общей ленты.
+     *
+     * @param array<string, mixed>|null $section
+     */
+    private function listing(?array $section): void
+    {
+        $lang = Locale::current();
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $sectionId = $section !== null ? (int) $section['id'] : 0;
+
+        $total = News::publishedCount($sectionId > 0 ? $sectionId : null, $lang);
+
+        // Композиция страницы одна и та же везде — и на первой, и в разделе:
+        // лента идёт ритмом (App\Core\NewsFeedRhythm), размер страницы
+        // задаёт он.
         $gridPageSize = \App\Core\NewsFeedRhythm::PAGE_SIZE;
         $pages = max(1, (int) ceil($total / $gridPageSize));
         $page = min($page, $pages);
-        $perPage = $gridPageSize;
         $offset = ($page - 1) * $gridPageSize;
 
         $vars = [
-            'items' => News::published($perPage, $offset, $lang, $categoryId > 0 ? $categoryId : null),
+            'items' => News::published($gridPageSize, $offset, $lang, $sectionId > 0 ? $sectionId : null),
             'page' => $page,
             'pages' => $pages,
-            'categories' => $categories,
-            'category' => $categorySlug,
+            'categories' => News::publishedCategories($lang, NewsCategory::AXIS_RUBRIC),
+            'countries' => News::publishedCategories($lang, NewsCategory::AXIS_COUNTRY),
+            'section' => $section,
+            'basePath' => $section !== null ? NewsCategory::path($section) : 'news',
             // Заголовок, лид, SEO и блоки под лентой берутся из страницы,
             // назначенной шапкой раздела в админке (может не быть вовсе).
-            'sectionPage' => \App\Core\SectionPage::render('news', $lang),
+            // У рубрики и страны шапка своя — название раздела.
+            'sectionPage' => $section === null ? \App\Core\SectionPage::render('news', $lang) : null,
         ];
 
-        // AJAX-фильтрация: тот же список, но без шапки и подвала.
+        // AJAX-переход по страницам: тот же список, но без шапки и подвала.
         if (Fragment::wanted()) {
             Fragment::render('site/_news_list', $vars);
             return;

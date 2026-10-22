@@ -180,6 +180,7 @@ function test_isolation_end(): void
     \App\Models\Setting::forgetCache();
     \App\Models\User::forgetCache();
     \App\Models\Page::forgetMenuTargets();
+    \App\Models\NewsCategory::forgetCache();
 }
 
 /**

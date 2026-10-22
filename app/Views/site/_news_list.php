@@ -13,17 +13,16 @@ use App\Models\News;
  * @var array $items
  * @var int $page
  * @var int $pages
- * @var string $category slug выбранной рубрики ('' — все)
+ * @var string $basePath адрес ленты без языкового префикса (`news`, `rubric/<slug>`)
  */
 $page = $page ?? 1;
 $pages = $pages ?? 1;
-$category = $category ?? '';
+$basePath = $basePath ?? 'news';
 
 $lang = Locale::current();
 // Дата — единым числовым форматом на всех языках: 19.07.2026.
 $fmt = static fn (string $d): string => DateFormatter::short($d);
-$pageUrl = static fn (int $p): string => Locale::url('news')
-    . (($p > 1 || $category !== '') ? '?' . http_build_query(array_filter(['category' => $category, 'page' => $p > 1 ? $p : null])) : '');
+$pageUrl = static fn (int $p): string => Locale::url($basePath) . ($p > 1 ? '?page=' . $p : '');
 
 // Названия рубрик для всех карточек одним запросом.
 $categoryNames = \App\Models\NewsCategory::namesForIds(
