@@ -24,7 +24,7 @@ final class AgencyContentSeeder
     private array $log = [];
 
     /**
-     * @return array{pages_created:int, pages_updated:int, blocks:int, team_created:int, team_updated:int, log:list<string>}
+     * @return array{pages_created:int, pages_updated:int, blocks:int, log:list<string>}
      */
     public static function run(PDO $pdo, bool $dryRun = false, ?array $fixture = null): array
     {
@@ -72,15 +72,14 @@ final class AgencyContentSeeder
 
     /**
      * @param array<string, mixed> $fixture
-     * @return array{pages_created:int, pages_updated:int, blocks:int, team_created:int, team_updated:int, log:list<string>}
+     * @return array{pages_created:int, pages_updated:int, blocks:int, log:list<string>}
      */
     private function apply(PDO $pdo, bool $dryRun, array $fixture): array
     {
         $pages = (array) ($fixture['pages'] ?? []);
         $hierarchy = (array) ($fixture['hierarchy'] ?? []);
-        $team = (array) ($fixture['team'] ?? []);
 
-        $report = ['pages_created' => 0, 'pages_updated' => 0, 'blocks' => 0, 'team_created' => 0, 'team_updated' => 0];
+        $report = ['pages_created' => 0, 'pages_updated' => 0, 'blocks' => 0];
         /** @var array<string, array<string, int>> $pageIds slug => lang => id */
         $pageIds = [];
 
@@ -178,60 +177,6 @@ final class AgencyContentSeeder
                     }
                     $pdo->prepare('UPDATE pages SET parent_id = :parent WHERE id = :id')
                         ->execute([':parent' => $parentId, ':id' => $childId]);
-                }
-            }
-
-            foreach ($team as $member) {
-                $member = (array) $member;
-                $name = (string) ($member['name'] ?? '');
-                if ($name === '') {
-                    continue;
-                }
-                $find = $pdo->prepare('SELECT id FROM team_members WHERE name = :name LIMIT 1');
-                $find->execute([':name' => $name]);
-                $memberId = (int) ($find->fetchColumn() ?: 0);
-
-                $fields = [
-                    ':name' => $name,
-                    ':position' => (string) ($member['position'] ?? ''),
-                    ':department' => (string) ($member['department'] ?? ''),
-                    ':unit' => (string) ($member['unit'] ?? ''),
-                    ':sort_order' => (int) ($member['sort_order'] ?? 0),
-                ];
-
-                if ($memberId > 0) {
-                    $pdo->prepare(
-                        "UPDATE team_members
-                            SET position = :position, department = :department, unit = :unit,
-                                sort_order = :sort_order, status = 'published'
-                          WHERE id = :id"
-                    )->execute(array_diff_key($fields, [':name' => null]) + [':id' => $memberId]);
-                    $report['team_updated']++;
-                } else {
-                    $pdo->prepare(
-                        "INSERT INTO team_members (name, position, department, unit, status, sort_order, created_at)
-                         VALUES (:name, :position, :department, :unit, 'published', :sort_order, NOW())"
-                    )->execute($fields);
-                    $memberId = (int) $pdo->lastInsertId();
-                    $report['team_created']++;
-                }
-                $this->log[] = sprintf('  сотрудник  %s', $name);
-
-                foreach ((array) ($member['translations'] ?? []) as $lang => $translation) {
-                    $translation = (array) $translation;
-                    $pdo->prepare(
-                        'INSERT INTO team_member_translations (member_id, lang, name, position, department, unit)
-                         VALUES (:member_id, :lang, :name, :position, :department, :unit)
-                         ON DUPLICATE KEY UPDATE name = VALUES(name), position = VALUES(position),
-                                                 department = VALUES(department), unit = VALUES(unit)'
-                    )->execute([
-                        ':member_id' => $memberId,
-                        ':lang' => (string) $lang,
-                        ':name' => (string) ($translation['name'] ?? ''),
-                        ':position' => (string) ($translation['position'] ?? ''),
-                        ':department' => (string) ($translation['department'] ?? ''),
-                        ':unit' => (string) ($translation['unit'] ?? ''),
-                    ]);
                 }
             }
 

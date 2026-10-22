@@ -393,39 +393,6 @@ CREATE TABLE IF NOT EXISTS content_revisions (
 -- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
--- Команда
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS team_members (
-    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name            VARCHAR(190) NOT NULL,
-    position        VARCHAR(190) NULL,
-    department      VARCHAR(190) NULL COMMENT 'Сектор — верхний уровень группировки раздела «Команда»',
-    unit            VARCHAR(190) NULL COMMENT 'Отдел или группа внутри сектора',
-    photo           VARCHAR(255) NULL,
-    email           VARCHAR(190) NULL,
-    phone           VARCHAR(60) NULL,
-    socials_json    JSON NULL COMMENT '{"facebook": "...", "instagram": "...", "telegram": "..."}',
-    status          ENUM('draft', 'published') NOT NULL DEFAULT 'published',
-    sort_order      INT NOT NULL DEFAULT 0,
-    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY idx_team_members_listing (status, sort_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Переводы сотрудников команды (имя, должность и подразделение на неосновных языках)
-CREATE TABLE IF NOT EXISTS team_member_translations (
-    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    member_id   INT UNSIGNED NOT NULL,
-    lang        VARCHAR(8) NOT NULL,
-    name        VARCHAR(190) NULL,
-    position    VARCHAR(190) NULL,
-    department  VARCHAR(190) NULL,
-    unit        VARCHAR(190) NULL,
-    UNIQUE KEY uq_team_member_translations (member_id, lang),
-    CONSTRAINT fk_team_member_translations_member FOREIGN KEY (member_id) REFERENCES team_members(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ---------------------------------------------------------------------------
 -- Конструктор форм обратной связи
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS forms (
@@ -534,7 +501,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
 CREATE TABLE IF NOT EXISTS widgets (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sidebar         ENUM('left', 'right') NOT NULL,
-    type            VARCHAR(60) NOT NULL COMMENT 'latest_news, contacts, custom_html, projects_list, team_list',
+    type            VARCHAR(60) NOT NULL COMMENT 'latest_news, contacts, custom_html, projects_list',
     title           VARCHAR(190) NULL COMMENT 'заголовок виджета на сайте',
     lang            VARCHAR(8) NOT NULL DEFAULT '' COMMENT 'код языка или пусто для всех',
     data            JSON NOT NULL,
@@ -1218,7 +1185,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_14_pages_hide_crumbs.sql'),
     ('2026_10_21_languages_is_public.sql'),
     ('2026_10_22_drop_file_repository.sql'),
-    ('2026_10_22_drop_goals.sql')
+    ('2026_10_22_drop_goals.sql'),
+    ('2026_10_22_drop_team_and_org_structure.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

@@ -20,7 +20,7 @@ final class PublicResponseCache
     private const CONTENT_ADMIN_PATHS = [
         '/admin/pages', '/admin/blocks', '/admin/snippets', '/admin/news',
         '/admin/news-categories',
-        '/admin/projects', '/admin/team', '/admin/albums', '/admin/videos',
+        '/admin/projects', '/admin/albums', '/admin/videos',
         '/admin/content', '/admin/content-types', '/admin/menu', '/admin/header',
         '/admin/footer', '/admin/widgets', '/admin/design', '/admin/settings',
         '/admin/performance', '/admin/trash', '/admin/bulk',

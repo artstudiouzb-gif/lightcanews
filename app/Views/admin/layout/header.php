@@ -22,7 +22,6 @@ $navContent = [
     'pages' => ['/admin/pages', t('Страницы')],
     'heroes' => ['/admin/heroes', t('Обложки')],
     'projects' => ['/admin/projects', t('Проекты')],
-    'team' => ['/admin/team', t('Команда')],
     'albums' => ['/admin/albums', t('Фотоальбомы')],
     'videos' => ['/admin/videos', t('Видео')],
 ];
@@ -214,7 +213,6 @@ try {
                 <a href="/admin/news/create" class="admin-user__link">Новость</a>
                 <a href="/admin/pages/create" class="admin-user__link">Страницу</a>
                 <a href="/admin/projects/create" class="admin-user__link">Проект</a>
-                <a href="/admin/team/create" class="admin-user__link">Сотрудника</a>
                 <a href="/admin/albums" class="admin-user__link">Фотоальбом</a>
                 <a href="/admin/forms/create" class="admin-user__link">Форму</a>
                 <?php foreach ($navContent as $navKey => [$navUrl, $navText]): ?>

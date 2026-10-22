@@ -6,7 +6,7 @@
  *   node scripts/split-theme-part.mjs <имя-файла> <regexp> [regexp-исключение]
  *
  * Пример:
- *   node scripts/split-theme-part.mjs org-structure 'orgstruct'
+ *   node scripts/split-theme-part.mjs media-gallery 'mediagallery'
  *
  * Правила разбора, за которые пришлось заплатить отладкой:
  *  - «Селектор» — это текст от конца прошлого правила до «{», то есть вместе

@@ -19,7 +19,6 @@ use App\Controllers\Admin\ContentRevisionController as AdminContentRevisionContr
 use App\Controllers\Admin\HealthController as AdminHealthController;
 use App\Controllers\Admin\LogController as AdminLogController;
 use App\Controllers\Admin\SettingsController;
-use App\Controllers\Admin\TeamController as AdminTeamController;
 use App\Controllers\Admin\WidgetController as AdminWidgetController;
 use App\Controllers\InstallController;
 use App\Controllers\Site\FormController as SiteFormController;
@@ -296,12 +295,6 @@ $router->post('/admin/projects/{id}/create-translation', [AdminProjectController
 $router->post('/admin/projects/{id}/duplicate', [AdminProjectController::class, 'duplicate']);
 
 // --- Admin: команда ---
-$router->get('/admin/team', [AdminTeamController::class, 'index']);
-$router->get('/admin/team/create', [AdminTeamController::class, 'create']);
-$router->post('/admin/team/create', [AdminTeamController::class, 'store']);
-$router->get('/admin/team/{id}/edit', [AdminTeamController::class, 'edit']);
-$router->post('/admin/team/{id}/edit', [AdminTeamController::class, 'update']);
-$router->post('/admin/team/{id}/delete', [AdminTeamController::class, 'destroy']);
 
 // --- Admin: формы и заявки ---
 $router->get('/admin/forms', [AdminFormController::class, 'index']);

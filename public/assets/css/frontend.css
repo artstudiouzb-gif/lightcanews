@@ -911,7 +911,7 @@ body.is-preview { outline: 3px solid #b45309; outline-offset: -3px; }/* Блок
 .testimonial__star { display: inline-flex; color: color-mix(in srgb, var(--text-muted, #6b7280) 45%, transparent); }
 .testimonial__star.is-on { color: var(--gov-teal); }
 
-.block-team__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }/* Проекты: колонки задаёт редактор, последний ряд дотягивает GridBalance. */
+/* Проекты: колонки задаёт редактор, последний ряд дотягивает GridBalance. */
 
 .block-projects__grid { display: grid; grid-template-columns: repeat(var(--grid-track, 3), minmax(0, 1fr)); gap: 24px; }
 .block-projects__grid > .project-card { grid-column: span var(--grid-span, 1); }
@@ -922,12 +922,6 @@ body.is-preview { outline: 3px solid #b45309; outline-offset: -3px; }/* Блок
 @media (max-width: 720px) {
     .block-projects__grid { grid-template-columns: minmax(0, 1fr); }
 }
-.team-card { text-align: center; }
-.team-card__photo { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 12px; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); }
-.team-card:hover .team-card__photo { transform: scale(1.04); }
-.team-card__name { font-weight: 700; transition: color 0.3s ease; }
-.team-card:hover .team-card__name { color: var(--gov-teal); }
-.team-card__position { color: var(--text-muted); font-size: var(--step--2); }
 .project-card { display: block; text-decoration: none; color: inherit; background: var(--bg-surface); border-radius: var(--radius); overflow: hidden; }
 .project-card__cover { width: 100%; aspect-ratio: 16/10; object-fit: cover; transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); }
 .project-card:hover .project-card__cover { transform: scale(1.05); }
@@ -965,7 +959,7 @@ body.is-preview { outline: 3px solid #b45309; outline-offset: -3px; }/* Блок
     .block-projects--carousel .project-card { flex: 0 0 85%; }
 }
 
-.block-team__empty, .block-projects__empty { text-align: center; color: var(--text-muted); }/* Обложка: картинка поверх фона (эмблема, логотип программы, иллюстрация).
+.block-projects__empty { text-align: center; color: var(--text-muted); }/* Обложка: картинка поверх фона (эмблема, логотип программы, иллюстрация).
    Позиция задаётся относительно текста, размер — высотой картинки. */
 
 .block-hero__inner--art { display: flex; gap: clamp(16px, 3vw, 40px); }
@@ -983,14 +977,7 @@ body.is-preview { outline: 3px solid #b45309; outline-offset: -3px; }/* Блок
 @media (max-width: 720px) {
     .block-hero__inner--art { flex-direction: column; align-items: flex-start; }
     .block-hero__inner--art-large .block-hero__art-img { max-height: 140px; }
-}/* Команда по подразделениям: сектор — заголовок с якорем, отделы и группы
-   внутри сектора — подзаголовок со своей сеткой карточек. */
-
-.block-team__group + .block-team__group { margin-top: 40px; }
-.block-team__group-title { margin: 0 0 18px; font-size: var(--step-2); }
-.block-team__group:target .block-team__group-title { color: var(--gov-teal); }
-.block-team__unit { margin-top: 26px; }
-.block-team__unit-title { margin: 0 0 14px; font-size: var(--step-0); font-weight: 700; color: var(--text-muted); }/* SVG-иконка в блоке преимуществ (группа 4.3) */
+}/* SVG-иконка в блоке преимуществ (группа 4.3) */
 
 /* FAQ / аккордеон (группа 6) */
 
@@ -1770,7 +1757,6 @@ h6 { font-size: var(--font-size-h6, var(--step--1)); line-height: var(--heading-
 .block-categories__title,
 .block-contact-cards__title,
 .block-testimonials__title,
-.block-team__title,
 .block-projects__title,
 .section-title {
     font-size: var(--font-size-h2, var(--step-6));
@@ -2722,7 +2708,7 @@ img.block-hero__button-icon { width: 20px; height: 20px; object-fit: contain; }
 .cms-empty-notice span { color: var(--text-muted, #666); }
 .cms-empty-notice__edit { margin-left: auto; font-weight: 600; white-space: nowrap; }/* --- Интерактивный Spotlight-блик при наведении --- */
 
-.cat-tile, .contact-card, .project-card, .team-card, .feature-card, .news-card, .album-card, .doc-card, .act-card, .catcard, .testimonial, .mediacard, .imgcard, .faq-item,
+.cat-tile, .contact-card, .project-card, .feature-card, .news-card, .album-card, .doc-card, .act-card, .catcard, .testimonial, .mediacard, .imgcard, .faq-item,
 .btn, .block-cta__button, .btn-cta, .block-hero__button, .timeline-card__button, .timeline-cta__button,
 .a11y-toggle, .site-theme-toggle, .site-search-toggle {
     position: relative;
@@ -2733,7 +2719,7 @@ img.block-hero__button-icon { width: 20px; height: 20px; object-fit: contain; }
 .stage, .timeline-item {
     overflow: visible;
 }
-.cat-tile::before, .contact-card::before, .project-card::before, .team-card::before, .feature-card::before, .news-card::before, .album-card::before, .doc-card::before, .act-card::before, .catcard::before, .testimonial::before, .mediacard::before, .imgcard::before, .faq-item::before,
+.cat-tile::before, .contact-card::before, .project-card::before, .feature-card::before, .news-card::before, .album-card::before, .doc-card::before, .act-card::before, .catcard::before, .testimonial::before, .mediacard::before, .imgcard::before, .faq-item::before,
 .block-icon-text--cards .icon-text__card::before,
 .btn::before, .block-cta__button::before, .btn-cta::before, .block-hero__button::before, .timeline-card__button::before, .timeline-cta__button::before,
 .a11y-toggle::before, .site-theme-toggle::before, .site-search-toggle::before {
@@ -2747,7 +2733,7 @@ img.block-hero__button-icon { width: 20px; height: 20px; object-fit: contain; }
     pointer-events: none;
     z-index: 1;
 }
-.cat-tile:hover::before, .contact-card:hover::before, .project-card:hover::before, .team-card:hover::before, .feature-card:hover::before, .news-card:hover::before, .album-card:hover::before, .doc-card:hover::before, .act-card:hover::before, .catcard:hover::before, .testimonial:hover::before, .mediacard:hover::before, .imgcard:hover::before, .faq-item:hover::before,
+.cat-tile:hover::before, .contact-card:hover::before, .project-card:hover::before, .feature-card:hover::before, .news-card:hover::before, .album-card:hover::before, .doc-card:hover::before, .act-card:hover::before, .catcard:hover::before, .testimonial:hover::before, .mediacard:hover::before, .imgcard:hover::before, .faq-item:hover::before,
 .block-icon-text--cards .icon-text__card:hover::before,
 .btn:hover::before, .block-cta__button:hover::before, .btn-cta:hover::before, .block-hero__button:hover::before, .timeline-card__button:hover::before, .timeline-cta__button:hover::before,
 .a11y-toggle:hover::before, .site-theme-toggle:hover::before, .site-search-toggle:hover::before {
@@ -2761,7 +2747,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-    .cat-tile::before, .contact-card::before, .project-card::before, .team-card::before,
+    .cat-tile::before, .contact-card::before, .project-card::before,
     .feature-card::before, .news-card::before, .album-card::before,
     .doc-card::before, .act-card::before, .catcard::before, .testimonial::before,
     .mediacard::before, .imgcard::before,
