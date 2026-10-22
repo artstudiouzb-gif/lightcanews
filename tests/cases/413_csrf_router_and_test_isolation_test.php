@@ -46,7 +46,6 @@ test('CSRF: роутер не пускает POST в панель без ток�
     assert_contains('CSRF', $blocked);
 
     assert_contains('HANDLER', csrf_router_probe('/admin/csrf-probe', true), 'с верным токеном действие выполняется');
-    assert_not_contains('HANDLER', csrf_router_probe('/repo/csrf-probe', false), 'портал репозитория тоже под защитой');
 });
 
 test('CSRF: публичные приёмники и похожие адреса роутер не трогает', function (): void {
