@@ -533,8 +533,6 @@ $router->get('/push/key', [\App\Controllers\Site\PushController::class, 'key']);
 $router->post('/push/subscribe', [\App\Controllers\Site\PushController::class, 'subscribe']);
 $router->post('/push/unsubscribe', [\App\Controllers\Site\PushController::class, 'unsubscribe']);
 $router->get('/unsubscribe', [\App\Controllers\Site\SubscribeController::class, 'unsubscribe']);
-$router->get('/opendata', [\App\Controllers\Site\OpenDataController::class, 'index']);
-$router->get('/opendata/{dataset}', [\App\Controllers\Site\OpenDataController::class, 'dataset']);
 $router->get('/catalog/{type}', [\App\Controllers\Site\ContentController::class, 'index']);
 $router->get('/catalog/{type}/{slug}', [\App\Controllers\Site\ContentController::class, 'show']);
 $router->post('/forms/{slug}/submit', [SiteFormController::class, 'submit']);
