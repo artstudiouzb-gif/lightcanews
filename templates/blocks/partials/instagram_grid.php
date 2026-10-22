@@ -1,0 +1,73 @@
+<?php
+
+use App\Core\Icon;
+use App\Core\Media;
+
+/**
+ * Сетка кадров ленты Instagram — общая у блока страницы и виджета сайдбара:
+ * вторая копия разметки разъехалась бы с первой при первой правке.
+ *
+ * @var list<array{type: string, caption: string, title?: string, permalink: string, image: string}> $posts
+ * @var bool|null $igCaptions подписи под кадрами
+ * @var string|null $igSizes атрибут sizes для кадров
+ * @var bool|null $igDates дата публикации под кадром
+ * @var int|null $igShuffle сколько кадров показать после перемешивания (0 — порядок по дате)
+ * @var int|null $captionLines строк подписи — от них и длина выдержки
+ * @var bool|null $igCarousel полоса под движок карусели (`data-carousel` у обёртки)
+ */
+$igCaptions = !empty($igCaptions ?? ($data['captions'] ?? false));
+$igSizes = (string) ($igSizes ?? '(max-width: 720px) 33vw, 240px');
+$igDates = !empty($igDates ?? false);
+$igShuffle = (int) ($igShuffle ?? 0);
+$igCarousel = !empty($igCarousel ?? false);
+$igLang = \App\Core\Locale::current();
+// Выдержка с запасом на заданное число строк: обрезает строки CSS, а текст
+// короче окна оставил бы пустые строки при пяти-десяти.
+$igCaptionChars = 70 * max(2, (int) ($captionLines ?? 2));
+?>
+<ul class="ig-feed__grid"<?= $igShuffle > 0 ? ' data-ig-shuffle="' . $igShuffle . '"' : '' ?><?= $igCarousel ? ' data-carousel-track tabindex="0" aria-label="' . htmlspecialchars(t('Публикации Instagram — прокрутка вбок'), ENT_QUOTES) . '"' : '' ?>>
+    <?php foreach ($posts as $igIndex => $post): ?>
+        <?php
+        $caption = trim((string) $post['caption']);
+        // Заголовок формулирует модель при обновлении ленты; он полужирный,
+        // подпись под ним — обычным начертанием.
+        $title = trim((string) ($post['title'] ?? '')) ?: \App\Core\InstagramPostTitle::fallback($caption);
+        $body = $title !== '' ? \App\Core\InstagramPostTitle::rest($caption, $title) : $caption;
+        // Имя ссылки — начало подписи: «пост в Instagram» восемь раз подряд
+        // диктору не говорит ничего. Новую вкладку называем явно.
+        $date = $igDates ? \App\Core\DateFormatter::long((string) ($post['timestamp'] ?? ''), $igLang) : '';
+        $label = ($title !== '' ? $title : ($caption !== '' ? excerpt($caption, 120) : t('Публикация в Instagram')))
+            . ($date !== '' ? ', ' . $date : '')
+            . ' — ' . t('откроется в Instagram');
+        $kind = match ((string) $post['type']) {
+            'VIDEO' => 'player-play',
+            'CAROUSEL_ALBUM' => 'stack-2',
+            default => '',
+        };
+        ?>
+        <?php $igCard = ($igCaptions && $caption !== '') || $date !== ''; ?>
+        <li class="ig-feed__cell"<?= $igCarousel ? ' data-carousel-item' : '' ?><?= $igShuffle > 0 && $igIndex >= $igShuffle ? ' hidden' : '' ?>>
+            <a class="ig-feed__item<?= $igCard ? ' ig-feed__item--card' : '' ?>" href="<?= htmlspecialchars((string) $post['permalink'], ENT_QUOTES) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= htmlspecialchars($label, ENT_QUOTES) ?>">
+                <span class="ig-feed__frame">
+                    <?= Media::picture((string) $post['image'], '', null, null, 'ig-feed__img', true, $igSizes) ?>
+                    <?php if ($kind !== ''): ?>
+                        <span class="ig-feed__kind" aria-hidden="true"><?= Icon::render($kind, 18) ?></span>
+                    <?php endif; ?>
+                </span>
+                <?php if ($igCard): ?>
+                    <span class="ig-feed__body">
+                        <?php if ($date !== ''): ?>
+                            <time class="ig-feed__date" datetime="<?= htmlspecialchars(\App\Core\DateFormatter::format((string) $post['timestamp'], 'Y-m-d'), ENT_QUOTES) ?>" aria-hidden="true"><?= Icon::render('calendar', 15, 'ui-icon', 1.7) ?><?= htmlspecialchars($date, ENT_QUOTES) ?></time>
+                        <?php endif; ?>
+                        <?php if ($igCaptions && $title !== ''): ?>
+                            <span class="ig-feed__title" aria-hidden="true"><?= htmlspecialchars($title, ENT_QUOTES) ?></span>
+                        <?php endif; ?>
+                        <?php if ($igCaptions && $body !== ''): ?>
+                            <span class="ig-feed__caption" aria-hidden="true"><?= htmlspecialchars(excerpt($body, $igCaptionChars), ENT_QUOTES) ?></span>
+                        <?php endif; ?>
+                    </span>
+                <?php endif; ?>
+            </a>
+        </li>
+    <?php endforeach; ?>
+</ul>

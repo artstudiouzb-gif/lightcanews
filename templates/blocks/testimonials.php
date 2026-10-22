@@ -1,0 +1,141 @@
+<?php
+
+use App\Core\Icon;
+
+/** @var array $data */
+/** @var int $blockId */
+$items = is_array($data['items'] ?? null) ? $data['items'] : [];
+// Значения проверены схемой полей (BlockFieldSchema) — читаем как есть.
+$variant = (string) $data['variant'];
+$columns = (int) $data['columns'];
+$autoplay = (int) $data['autoplay'];
+// Полосой отзывы едут только в варианте «карусель» и только когда их больше одного.
+$carousel = $variant === 'carousel' && count($items) > 1;
+
+$templateCss = '';
+if ($variant === 'grid') {
+    // Два отзыва в трёх колонках оставляли треть ряда пустой.
+    $templateCss = \App\Core\GridBalance::css($blockId, '.block-testimonials__grid', '.testimonial', count($items), $columns);
+}
+
+$navHtml = '';
+if ($carousel) {
+    ob_start(); ?>
+    <span class="carousel-nav" data-carousel-nav hidden>
+        <button type="button" class="carousel-nav__btn" data-carousel-prev aria-label="<?= htmlspecialchars(t('Назад'), ENT_QUOTES) ?>"><?= Icon::render('chevron-left', 18) ?></button>
+        <span class="carousel-nav__dots" data-carousel-dots role="group" aria-label="<?= htmlspecialchars(t('Выбор слайда'), ENT_QUOTES) ?>"></span>
+        <button type="button" class="carousel-nav__btn" data-carousel-next aria-label="<?= htmlspecialchars(t('Вперёд'), ENT_QUOTES) ?>"><?= Icon::render('chevron-right', 18) ?></button>
+    </span>
+    <?php $navHtml = (string) ob_get_clean();
+}
+
+$head = \App\Core\SectionHead::render([
+    'title' => (string) ($data['title'] ?? ''),
+    'description' => (string) ($data['description'] ?? ''),
+    'tools' => $navHtml,
+    'title_class' => 'block-testimonials__title',
+]);
+if ($variant === 'feature'):
+    // «Одна цитата» — слово руководителя: крупный текст и портрет. Выводится
+    // первый отзыв списка; остальные не теряются, а ждут другого варианта.
+    $item = is_array($items[0] ?? null) ? $items[0] : [];
+    $portrait = (string) $data['portrait'];
+    $photo = trim((string) ($item['photo'] ?? ''));
+    $name = trim((string) ($item['name'] ?? ''));
+    $role = trim((string) ($item['role'] ?? ''));
+    $company = trim((string) ($item['company'] ?? ''));
+    $quote = trim((string) ($item['quote'] ?? ''));
+    if ($quote === '') {
+        return;
+    }
+    $shape = (string) $data['portrait_shape'];
+    $portraitSize = (int) $data['portrait_size'];
+    $classes = 'block-testimonials block-testimonials--feature tquote tquote--' . $portrait
+        . ($photo !== '' ? ' tquote--has-photo' : '')
+        . ($portrait === 'round' && $shape !== 'circle' ? ' tquote--shape-' . $shape : '')
+        // Положение фото: «слева» — прежний вид, класса нет. У маленького
+        // портрета место одно — у подписи, настройка его не касается.
+        . ($photo !== '' && $portrait !== 'mini' && (string) $data['portrait_side'] !== 'left' ? ' tquote--photo-' . (string) $data['portrait_side'] : '')
+        . ($photo !== '' && $portrait === 'round' && in_array((string) $data['portrait_side'], ['top', 'bottom'], true) && (string) $data['portrait_align'] !== 'left'
+            ? ' tquote--photo-align-' . (string) $data['portrait_align'] : '')
+        // «Средний» — прежний кегль, класса у него нет.
+        . ((string) $data['quote_size'] !== 'm' ? ' tquote--size-' . (string) $data['quote_size'] : '');
+    // Размер по умолчанию в scoped CSS не печатается: у собранных блоков вид прежний.
+    if ($portrait === 'round' && $portraitSize !== 144) {
+        $templateCss .= '#block-' . $blockId . ' .tquote{--tquote-photo:' . $portraitSize . 'px}';
+    }
+    $sizes = $portrait === 'tall' ? '(max-width: 720px) 100vw, 40vw' : ($portrait === 'mini' ? '56px' : max(160, $portraitSize) . 'px');
+    $pictureHtml = $photo !== '' ? \App\Core\Media::picture($photo, $name, null, null, 'tquote__img', true, $sizes) : '';
+    ?>
+<div class="<?= $classes ?>">
+    <?= $head ?>
+    <figure class="tquote__figure" itemscope itemtype="https://schema.org/Review">
+        <?php if ($pictureHtml !== '' && $portrait !== 'mini'): ?>
+            <div class="tquote__photo"><?= $pictureHtml ?></div>
+        <?php endif; ?>
+        <div class="tquote__body">
+            <blockquote class="tquote__text" itemprop="reviewBody"><p><?= htmlspecialchars($quote, ENT_QUOTES) ?></p></blockquote>
+            <figcaption class="tquote__author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                <?php if ($pictureHtml !== '' && $portrait === 'mini'): ?><span class="tquote__mini"><?= $pictureHtml ?></span><?php endif; ?>
+                <span class="tquote__who">
+                    <?php if ($name !== ''): ?><span class="tquote__name" itemprop="name"><?= htmlspecialchars($name, ENT_QUOTES) ?></span><?php endif; ?>
+                    <?php if ($role !== '' || $company !== ''): ?>
+                        <span class="tquote__role"><?php if ($role !== ''): ?><span itemprop="jobTitle"><?= htmlspecialchars($role, ENT_QUOTES) ?></span><?php endif; ?><?php if ($role !== '' && $company !== ''): ?>, <?php endif; ?><?php if ($company !== ''): ?><span itemprop="worksFor" itemscope itemtype="https://schema.org/Organization"><span itemprop="name"><?= htmlspecialchars($company, ENT_QUOTES) ?></span></span><?php endif; ?></span>
+                    <?php endif; ?>
+                </span>
+            </figcaption>
+            <?php // Росчерк повторяет имя рукописным шрифтом — это украшение, диктору его не читаем.
+                  // Без выбранного рукописного шрифта он вышел бы тем же именем
+                  // обычным набором, то есть повтором, который читается как ошибка. ?>
+            <?php if ($portrait === 'mini' && $name !== '' && \App\Core\DesignSettings::scriptFontStack() !== ''): ?><span class="tquote__sign" aria-hidden="true"><?= htmlspecialchars($name, ENT_QUOTES) ?></span><?php endif; ?>
+        </div>
+    </figure>
+</div>
+<?php return; endif; ?>
+<div class="block-testimonials block-testimonials--<?= htmlspecialchars($variant, ENT_QUOTES) ?>"<?= $carousel ? ' data-carousel' : '' ?><?= $carousel && $autoplay > 0 ? ' data-carousel-autoplay="' . $autoplay . '"' : '' ?>>
+    <?= $head ?>
+    <?php if ($variant === 'grid'): ?>
+        <div class="block-testimonials__grid">
+    <?php else: ?>
+        <?php // Полоса прокручивается вбок: с клавиатуры до неё нужно добраться
+              // и пролистать стрелками, поэтому область фокусируемая и подписана. ?>
+        <div class="block-testimonials__track"<?= $carousel ? ' data-carousel-track' : '' ?> tabindex="0" role="group"
+             aria-label="<?= htmlspecialchars(t('Отзывы — прокрутка вбок'), ENT_QUOTES) ?>">
+    <?php endif; ?>
+        <?php // Разметка schema.org: отзыв, его оценка и автор — машиночитаемо.
+              // `itemReviewed` намеренно нет: блок ставят и под отзывы о
+              // конкретном проекте, и объявлять предметом отзыва организацию
+              // было бы неправдой. Поисковой «звёздности» это не даёт — отзывы
+              // о себе на своём же сайте поисковики не показывают, — но данные
+              // перестают быть просто набором строк. ?>
+        <?php foreach ($items as $item): ?>
+            <?php $rating = max(0, min(5, (int) ($item['rating'] ?? 0))); ?>
+            <figure class="testimonial"<?= $carousel ? ' data-carousel-item' : '' ?> itemscope itemtype="https://schema.org/Review">
+                <?php if ($rating > 0): ?>
+                    <?php // Ряд значков — одна картинка для экранного диктора: он читает подпись, а не пять звёзд подряд. ?>
+                    <span class="testimonial__rating" role="img" aria-label="<?= htmlspecialchars(t('Оценка'), ENT_QUOTES) . ' ' . $rating . ' ' . htmlspecialchars(t('из'), ENT_QUOTES) ?> 5" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                        <meta itemprop="ratingValue" content="<?= $rating ?>">
+                        <meta itemprop="worstRating" content="1">
+                        <meta itemprop="bestRating" content="5">
+                        <?php for ($star = 1; $star <= 5; $star++): ?>
+                            <span class="testimonial__star<?= $star <= $rating ? ' is-on' : '' ?>" aria-hidden="true"><?= Icon::render('star', 18) ?></span>
+                        <?php endfor; ?>
+                    </span>
+                <?php endif; ?>
+                <?php if (!empty($item['photo'])): ?>
+                    <?= \App\Core\Media::picture((string) $item['photo'], (string) ($item['name'] ?? ''), null, null, 'testimonial__photo', true, '72px') ?>
+                <?php endif; ?>
+                <blockquote class="testimonial__quote" itemprop="reviewBody"><?= htmlspecialchars($item['quote'] ?? '', ENT_QUOTES) ?></blockquote>
+                <figcaption class="testimonial__author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <span class="testimonial__name" itemprop="name"><?= htmlspecialchars($item['name'] ?? '', ENT_QUOTES) ?></span>
+                    <?php if (!empty($item['role'])): ?>
+                        <span class="testimonial__role" itemprop="jobTitle"><?= htmlspecialchars((string) $item['role'], ENT_QUOTES) ?></span>
+                    <?php endif; ?>
+                    <?php if (!empty($item['company'])): ?>
+                        <span class="testimonial__company" itemprop="worksFor" itemscope itemtype="https://schema.org/Organization"><span itemprop="name"><?= htmlspecialchars($item['company'], ENT_QUOTES) ?></span></span>
+                    <?php endif; ?>
+                </figcaption>
+            </figure>
+        <?php endforeach; ?>
+        </div>
+</div>

@@ -1,0 +1,323 @@
+<?php
+
+use App\Core\Icon;
+use App\Core\Media;
+use App\Core\MediaPosition;
+
+/** @var array $data */
+$title = trim((string) ($data['title'] ?? ''));
+$allText = trim((string) ($data['all_text'] ?? ''));
+$allUrl = trim((string) ($data['all_url'] ?? ''));
+$items = is_array($data['items'] ?? null) ? $data['items'] : [];
+// Поля карточки — простой текст. HTML в них приезжал из файла шаблона и из
+// записей, сохранённых до очистки на входе, и печатался кодом («<p>&ldquo;…»).
+foreach ($items as $itemKey => $itemRow) {
+    if (is_array($itemRow)) {
+        foreach (['title', 'text'] as $plainKey) {
+            if (isset($itemRow[$plainKey]) && is_string($itemRow[$plainKey])) {
+                $items[$itemKey][$plainKey] = \App\Core\TextProcessor::plainText($itemRow[$plainKey]);
+            }
+        }
+    }
+}
+// Значения проверены схемой полей (BlockFieldSchema) — читаем как есть.
+$variant = (string) $data['variant'];
+// «Текст под фото» — та же карточка, только подпись выносится из-под градиента
+// на подложку: длинный анонс на снимке читается плохо, что бы ни делали с
+// затемнением.
+$imageBelow = $variant === 'image_below';
+$columns = (int) $data['columns'];
+$description = trim(\App\Core\HtmlSanitizer::sanitizeText((string) ($data['description'] ?? '')));
+/*
+ * Ссылка карточки проверяется на выводе, а не только в форме. Данные приезжают
+ * не одной дорогой: кроме формы есть загруженный файл шаблона страницы и
+ * записи, сохранённые до появления проверки, — а `javascript:` в href это
+ * выполненный чужой код на публичной странице.
+ */
+$safeLink = static function (array $item): string {
+    $url = trim((string) ($item['url'] ?? ''));
+
+    return $url !== '' && \App\Core\UrlGuard::isSafeLink($url) ? $url : '';
+};
+// Нумерация была не настройкой, а вариантом, который ничего не менял: номер
+// печатался всегда, а правила, которое его прячет, в публичном CSS не было
+// вовсе — замерено на всех вариантах.
+$numbering = !empty($data['numbering']);
+// Раскладка. «Слайдер» доступен любому варианту; «авто» — прежнее поведение
+// карточек с фотографией: сетка, а когда карточек больше, чем колонок, полоса.
+// Порог считается по настройке «Колонок», а не по числу 4: в сетке и в кадре
+// слайдера обязано помещаться одно и то же число карточек, иначе настройка
+// действует наполовину. У остальных вариантов «авто» — это сетка: включать им
+// прокрутку задним числом значило бы поменять вид собранных страниц.
+$layout = (string) $data['layout'];
+$itemCount = count($items);
+$explicitSlider = $layout === 'slider' && $itemCount > 1;
+$mediaClasses = MediaPosition::classes($data['image_position'] ?? null, $data['image_position_mobile'] ?? null);
+$cardBg = (string) $data['card_bg'];
+$textColor = (string) $data['text_color'];
+$visualStyle = (string) $data['card_style'];
+$cardGap = (int) $data['card_gap'];
+$iconSize = (int) $data['icon_size'];
+$iconBackground = (string) $data['icon_bg'];
+$iconPosition = (string) $data['icon_position'];
+$textAlign = (string) $data['text_align'];
+$iconBoxSize = max(42, $iconSize + 18);
+$cardStyle = '--feature-card-icon-size:' . $iconSize . 'px;'
+    . ($cardBg !== '' ? '--card-bg:' . $cardBg . ';' : '')
+    . ($textColor !== '' ? '--cards-text:' . $textColor . ';' : '');
+$scope = '#block-' . (int) $blockId;
+// Число колонок принадлежит блоку, а не одному его варианту: сетку карточек с
+// фотографиями и кадр слайдера считает та же переменная.
+// Ноль — прежнее поведение «Преимуществ»: до пяти карточек идут одним рядом,
+// а дальше число колонок подбирается так, чтобы в последнем ряду не осталась
+// одинокая карточка (пятёрка ложится 3+2). Сетка с дырой справа читается как
+// незагрузившийся блок, а не как замысел.
+$autoColumns = $columns === 0;
+// Бегущая лента — у карточек с фотографией и от трёх карточек: ей нужен хотя
+// бы один повтор набора, иначе в шве видна пустота, а две карточки в ленте
+// читаются миганием. В остальных случаях значение ведёт себя как сетка.
+$marquee = $layout === 'marquee' && ($variant === 'image' || $imageBelow) && $itemCount >= 3;
+if ($marquee && $autoColumns) {
+    // Подбор «без одинокой карточки в последнем ряду» ленте не нужен: рядов у
+    // неё нет, колонки задают только ширину карточки.
+    $columns = 5;
+    $autoColumns = false;
+}
+if ($autoColumns) {
+    $columns = $itemCount <= 5 && $itemCount > 0
+        ? $itemCount
+        : \App\Core\GridBalance::columnsFor(max(1, $itemCount));
+}
+$templateCss = $scope . '{--cards-cols:' . $columns . ';}';
+if ($autoColumns) {
+    // Ряд без дыр: хвостовые карточки растягиваются на свободные дорожки,
+    // иначе справа зияет пустая ячейка — она читается как незагрузившаяся
+    // карточка, а не как замысел. Пришло из «Преимуществ» вместе с их
+    // автоподбором колонок.
+    $templateCss .= \App\Core\GridBalance::css($blockId, '.cards-grid', '.feature-card', $itemCount, $columns);
+}
+$templateCss .= $scope . ' .block-cards{' . $cardStyle . '}';
+if ($marquee) {
+    // Время круга — от числа карточек: с одним временем на всех длинный набор
+    // летел бы, а короткий полз.
+    $perCard = ['slow' => 10, 'normal' => 7, 'fast' => 5][(string) $data['marquee_speed']];
+    $templateCss .= $scope . ' .imgcards-marquee{--marquee-time:' . ($itemCount * $perCard) . 's;'
+        . '--marquee-ratio:' . str_replace('-', '/', (string) $data['marquee_ratio'])
+        . ((int) $data['marquee_gap'] >= 0 ? ';--marquee-gap:' . (int) $data['marquee_gap'] . 'px' : '') . ';}';
+}
+$templateCss .= $scope . ' .feature-card__icon{width:' . $iconBoxSize . 'px;height:' . $iconBoxSize . 'px;}';
+$cardClasses = ($cardBg !== '' ? ' block-cards--custom-bg' : '')
+    . ($textColor !== '' ? ' block-cards--custom-text' : '')
+    . ($iconBackground === 'off' ? ' block-cards--icons-no-bg' : '')
+    . ' block-cards--icon-pos-' . $iconPosition
+    . ' block-cards--text-align-' . $textAlign;
+
+// Новый вид включается только у выбранного экземпляра cards_grid: базовые
+// .feature-card и остальные карточки сайта остаются нетронутыми.
+if ($variant === 'icon' && $visualStyle === 'new') {
+    $cardClasses .= ' block-cards--style-new';
+    $resolvedCardGap = $cardGap > 0 ? $cardGap . 'px' : 'clamp(20px,2.4vw,36px)';
+    $templateCss .= $scope . ' .block-cards--style-new .cards-grid{gap:' . $resolvedCardGap . ';}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card{background:var(--card-bg,transparent);border:0;border-top:1px solid rgba(23,58,99,.16);border-radius:0;box-shadow:none;min-height:0;padding:26px 0 30px;transform:none;overflow:visible;transition:border-color .18s ease,color .18s ease,background-color .18s ease;}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card::before{display:none;}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card:hover{background:var(--card-bg,transparent);border-top-color:var(--gov-accent,#17999b);box-shadow:none;transform:none;}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card__top{align-items:flex-start;margin-bottom:clamp(22px,2.3vw,34px);}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card__icon{width:' . $iconSize . 'px;height:' . $iconSize . 'px;border:0;border-radius:0;background:transparent;color:var(--gov-accent,#17999b);justify-content:flex-start;}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card__num{color:var(--gov-accent,#17999b);font-size:var(--font-size-meta,.75rem);font-weight:700;letter-spacing:var(--meta-letter-spacing,.12em);}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card__title{color:var(--cards-text,var(--gov-primary,#173a63));font-size:var(--font-size-h3,clamp(18px,1.35vw,21px));line-height:1.25;margin-bottom:10px;}';
+    $templateCss .= $scope . ' .block-cards--style-new .feature-card__text{color:var(--cards-text,var(--gov-text,#334155));max-width:34ch;}';
+}
+?>
+<?php if ($variant === 'image' || $imageBelow): ?>
+    <?php
+    $carousel = !in_array($layout, ['grid', 'marquee'], true) && $itemCount > 1;
+    $desktopCarousel = $explicitSlider || ($layout === 'auto' && $itemCount > $columns);
+    ?>
+    <div class="block-imgcards<?= $imageBelow ? ' block-imgcards--below' : '' ?>"<?= $carousel ? ' data-carousel' : '' ?>>
+        <div class="section-head">
+            <?php if ($title !== ''): ?><h2 class="section-head__title"><?= \App\Core\TitleMarkup::html($title) ?></h2><?php endif; ?>
+            <div class="section-head__tools">
+                <?php if ($allText !== '' && $allUrl !== ''): ?><?= \App\Core\SectionHead::allLink($allText, $allUrl) ?><?php endif; ?>
+                <?php if ($carousel): ?><?php include __DIR__ . '/partials/carousel_nav.php'; ?><?php endif; ?>
+            </div>
+        </div>
+        <?php if ($items === []): ?>
+            <p class="block-imgcards__empty"><?= htmlspecialchars(t('Карточки ещё не добавлены.'), ENT_QUOTES) ?></p>
+        <?php elseif ($marquee): ?>
+            <?php // Набор выводится дважды: копия догоняет оригинал ровно тогда,
+                  // когда он ушёл на свою ширину, и шва не видно. Копия — для
+                  // глаз: она скрыта от диктора и не повторяет ссылок, иначе
+                  // с клавиатуры каждую карточку пришлось бы проходить дважды.
+                  // Под курсором и при фокусе лента стоит, рукой её можно
+                  // прокрутить — механика общая с «Партнёрами» (.marquee). ?>
+            <div class="imgcards-marquee<?= (int) $data['marquee_gap'] === 0 ? ' imgcards-marquee--flush' : '' ?> marquee" tabindex="0" role="group" aria-label="<?= htmlspecialchars(t('Карточки — прокрутка вбок'), ENT_QUOTES) ?>">
+                <div class="marquee__track">
+                <?php foreach (array_merge($items, $items) as $index => $item): ?>
+                    <?php
+                    $copy = $index >= $itemCount;
+                    $url = $copy ? '' : $safeLink($item);
+                    $image = trim((string) ($item['image'] ?? ''));
+                    ?>
+                    <?php if ($url !== ''): ?>
+                    <a class="imgcard<?= $imageBelow ? ' imgcard--below' : '' ?>" href="<?= htmlspecialchars($url, ENT_QUOTES) ?>">
+                    <?php else: ?>
+                    <div class="imgcard<?= $imageBelow ? ' imgcard--below' : '' ?>"<?= $copy ? ' aria-hidden="true"' : '' ?>>
+                    <?php endif; ?>
+                        <?php if ($image !== ''): ?>
+                            <?= Media::picture($image, $copy ? '' : (string) ($item['title'] ?? ''), null, null, 'imgcard__media ' . $mediaClasses, true, '(max-width: 560px) 70vw, (max-width: 1000px) 40vw, ' . (int) round(100 / max(1, $columns)) . 'vw') ?>
+                        <?php else: ?>
+                            <span class="imgcard__media" aria-hidden="true"></span>
+                        <?php endif; ?>
+                        <?php if (!$imageBelow): ?><span class="imgcard__overlay"></span><?php endif; ?>
+                        <span class="imgcard__body">
+                            <span class="imgcard__title"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></span>
+                            <?php if (!empty($item['text'])): ?><span class="imgcard__text"><?= htmlspecialchars((string) $item['text'], ENT_QUOTES) ?></span><?php endif; ?>
+                        </span>
+                    <?php if ($url !== ''): ?></a><?php else: ?></div><?php endif; ?>
+                <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="imgcards-grid<?= $desktopCarousel ? ' imgcards-grid--carousel' : ($carousel ? ' imgcards-grid--mobile-carousel' : '') ?>"<?= $carousel ? ' data-carousel-track tabindex="0" role="group" aria-label="' . htmlspecialchars(t('Карточки — прокрутка вбок'), ENT_QUOTES) . '"' : '' ?>>
+                <?php foreach ($items as $item): ?>
+                    <?php $url = $safeLink($item); $image = trim((string) ($item['image'] ?? '')); ?>
+                    <?php if ($url !== ''): ?>
+                    <a class="imgcard<?= $imageBelow ? ' imgcard--below' : '' ?>"<?= $carousel ? ' data-carousel-item' : '' ?> href="<?= htmlspecialchars($url, ENT_QUOTES) ?>">
+                    <?php else: ?>
+                    <div class="imgcard<?= $imageBelow ? ' imgcard--below' : '' ?>"<?= $carousel ? ' data-carousel-item' : '' ?>>
+                    <?php endif; ?>
+                        <?php if ($image !== ''): ?>
+                            <?= Media::picture($image, (string) ($item['title'] ?? ''), null, null, 'imgcard__media ' . $mediaClasses, true, '(max-width: 700px) 100vw, ' . (int) round(100 / max(1, $columns)) . 'vw') ?>
+                        <?php else: ?>
+                            <span class="imgcard__media" aria-hidden="true"></span>
+                        <?php endif; ?>
+                        <?php if (!$imageBelow): ?><span class="imgcard__overlay"></span><?php endif; ?>
+                        <span class="imgcard__body">
+                            <span class="imgcard__title"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></span>
+                            <?php if (!empty($item['text'])): ?><span class="imgcard__text"><?= htmlspecialchars((string) $item['text'], ENT_QUOTES) ?></span><?php endif; ?>
+                        </span>
+                    <?php if ($url !== ''): ?></a><?php else: ?></div><?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php elseif (in_array($variant, ['lead', 'index', 'mark', 'panel'], true)): ?>
+<?php include __DIR__ . '/partials/cards_layouts.php'; ?>
+<?php elseif ($variant === 'band'): ?>
+    <?php // Компактная полоса: сплошная тёмная лента вместо карточек. Пришла
+          // из «Преимуществ» вместе с их разметкой — правила темы висят на
+          // `.featband`, и переименование классов поехало бы видом на уже
+          // собранных страницах. ?>
+    <div class="block-featband">
+        <?= \App\Core\SectionHead::render([
+            'title' => $title,
+            'description' => $description,
+            'description_html' => true,
+            'all_text' => $allText,
+            'all_url' => $allUrl,
+            'class' => 'block-featband__head',
+            'title_class' => 'block-featband__title',
+            'description_class' => 'block-featband__description',
+        ]) ?>
+        <?php if ($items === []): ?>
+            <p class="block-featband__empty"><?= htmlspecialchars(t('Элементы ещё не добавлены.'), ENT_QUOTES) ?></p>
+        <?php else: ?>
+            <div class="featband">
+                <?php foreach ($items as $item): ?>
+                    <div class="featband__item">
+                        <?php if (!empty($item['icon_svg'])): ?><span class="featband__icon" aria-hidden="true"><?= Icon::render((string) $item['icon_svg'], 28) ?></span><?php endif; ?>
+                        <span class="featband__name"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></span>
+                        <?php if (!empty($item['text'])): ?><span class="featband__text"><?= htmlspecialchars((string) $item['text'], ENT_QUOTES) ?></span><?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php elseif ($variant === 'compact'): ?>
+    <div class="block-categories"<?= $explicitSlider ? ' data-carousel' : '' ?>>
+        <?php if ($title !== '' || $explicitSlider): ?>
+            <div class="block-categories__head">
+                <?php if ($title !== ''): ?><h2 class="block-categories__title"><?= \App\Core\TitleMarkup::html($title) ?></h2><?php endif; ?>
+                <?php if ($explicitSlider): ?><?php include __DIR__ . '/partials/carousel_nav.php'; ?><?php endif; ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($items === []): ?>
+            <p class="block-categories__empty"><?= htmlspecialchars(t('Категории ещё не добавлены.'), ENT_QUOTES) ?></p>
+        <?php else: ?>
+            <div class="cat-grid<?= $explicitSlider ? ' cards-track' : '' ?>"<?= $explicitSlider ? ' data-carousel-track tabindex="0" role="group" aria-label="' . htmlspecialchars(t('Категории — прокрутка вбок'), ENT_QUOTES) . '"' : '' ?>>
+                <?php foreach ($items as $index => $item): ?>
+                    <?php $url = $safeLink($item); ?>
+                    <?php if ($url !== ''): ?>
+                    <a class="cat-tile<?= $index === 0 ? ' is-active' : '' ?>"<?= $explicitSlider ? ' data-carousel-item' : '' ?> href="<?= htmlspecialchars($url, ENT_QUOTES) ?>">
+                    <?php else: ?>
+                    <span class="cat-tile<?= $index === 0 ? ' is-active' : '' ?>"<?= $explicitSlider ? ' data-carousel-item' : '' ?>>
+                    <?php endif; ?>
+                        <?php if (!empty($item['icon_svg'])): ?><span class="cat-tile__icon" aria-hidden="true"><?= Icon::render($item['icon_svg'], 28) ?></span><?php endif; ?>
+                        <span class="cat-tile__label"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></span>
+                    <?php if ($url !== ''): ?></a><?php else: ?></span><?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php else: ?>
+    <div class="block-cards<?= $cardClasses ?><?= $numbering ? ' block-cards--numbered' : '' ?>"<?= $explicitSlider ? ' data-carousel' : '' ?>>
+        <?php
+        // Шапка секции — общая: у «Преимуществ» было своё описание раздела, и
+        // при переезде сюда оно обязано остаться, иначе текст пропал бы со
+        // страниц молча.
+        $cardsNav = '';
+        if ($explicitSlider) {
+            ob_start();
+            include __DIR__ . '/partials/carousel_nav.php';
+            $cardsNav = (string) ob_get_clean();
+        }
+        ?>
+        <?= \App\Core\SectionHead::render([
+            'title' => $title,
+            'description' => $description,
+            'description_html' => true,
+            'all_text' => $allText,
+            'all_url' => $allUrl,
+            'tools' => $cardsNav,
+        ]) ?>
+        <?php if ($items === []): ?>
+            <p class="block-cards__empty"><?= htmlspecialchars(t('Пункты ещё не добавлены.'), ENT_QUOTES) ?></p>
+        <?php else: ?>
+            <div class="cards-grid<?= $explicitSlider ? ' cards-track' : '' ?>"<?= $explicitSlider ? ' data-carousel-track tabindex="0" role="group" aria-label="' . htmlspecialchars(t('Карточки — прокрутка вбок'), ENT_QUOTES) . '"' : '' ?>>
+                <?php foreach ($items as $index => $item): ?>
+                    <?php $url = $safeLink($item); $hasIcon = !empty($item['icon_svg']); ?>
+                    <?php if ($url !== '' && $hasIcon): ?>
+                    <a class="feature-card feature-card--has-icon"<?= $explicitSlider ? ' data-carousel-item' : '' ?> href="<?= htmlspecialchars($url, ENT_QUOTES) ?>">
+                    <?php elseif ($url !== ''): ?>
+                    <a class="feature-card"<?= $explicitSlider ? ' data-carousel-item' : '' ?> href="<?= htmlspecialchars($url, ENT_QUOTES) ?>">
+                    <?php elseif ($hasIcon): ?>
+                    <article class="feature-card feature-card--has-icon"<?= $explicitSlider ? ' data-carousel-item' : '' ?>>
+                    <?php else: ?>
+                    <article class="feature-card"<?= $explicitSlider ? ' data-carousel-item' : '' ?>>
+                    <?php endif; ?>
+                        <?php // «В строке с заголовком»: заголовок уходит в верхнюю
+                              // строку, к иконке, а номер прижимается вправо — так
+                              // карточка ниже, и в ряд их влезает больше. ?>
+                        <div class="feature-card__top">
+                            <?php if ($hasIcon): ?>
+                                <span class="feature-card__icon" aria-hidden="true"><?= Icon::render($item['icon_svg'], $iconSize) ?></span>
+                            <?php else: ?>
+                                <span class="feature-card__spacer"></span>
+                            <?php endif; ?>
+                            <?php if ($iconPosition === 'inline'): ?>
+                                <h3 class="feature-card__title"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></h3>
+                            <?php endif; ?>
+                            <?php if ($numbering): ?><span class="feature-card__num" aria-hidden="true"><?= sprintf('%02d', $index + 1) ?></span><?php endif; ?>
+                        </div>
+                        <div class="feature-card__content">
+                            <?php if ($iconPosition !== 'inline'): ?>
+                                <h3 class="feature-card__title"><?= htmlspecialchars((string) ($item['title'] ?? ''), ENT_QUOTES) ?></h3>
+                            <?php endif; ?>
+                            <?php if (!empty($item['text'])): ?><p class="feature-card__text"><?= htmlspecialchars((string) $item['text'], ENT_QUOTES) ?></p><?php endif; ?>
+                        </div>
+                    <?php if ($url !== ''): ?></a><?php else: ?></article><?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

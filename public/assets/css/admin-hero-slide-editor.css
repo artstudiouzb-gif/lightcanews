@@ -1,0 +1,362 @@
+/* Hero slide editor: readable section hierarchy and consistent field rhythm. */
+
+form[action*="/admin/heroes/"][action*="/slides/"] {
+    --hero-editor-border: var(--admin-border, #dce3ed);
+    --hero-editor-surface: var(--admin-surface, #ffffff);
+    --hero-editor-soft: var(--admin-surface-soft, #f7f9fc);
+    --hero-editor-text: var(--admin-text, #1f2937);
+    --hero-editor-muted: var(--admin-muted, #667085);
+    --hero-editor-accent: var(--admin-accent, #2563eb);
+    --hero-editor-accent-soft: color-mix(in srgb, var(--hero-editor-accent) 7%, var(--hero-editor-surface));
+    width: min(100%, 1240px);
+    margin-inline: auto;
+}
+
+/* Подпись поля. Исключение — подпись галочки «по умолчанию» у поля цвета:
+   она не подпись поля, а сама галочка, и `display: block` разворачивал её в
+   отдельную строку под полем. Исключение обёрнуто в `:where()`, чтобы не
+   поднимать вес правила (тот же приём, что в admin.css). */
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field > label:not(:where(.colorfield__off)),
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field > .field-label {
+    display: block;
+    margin: 0 0 7px !important;
+    color: var(--hero-editor-text);
+    font-size: var(--admin-fs-sm) !important;
+    font-weight: var(--admin-fw-semibold) !important;
+    line-height: 1.35;
+}
+
+/* Поле цвета исключено: у него свои размеры и отступ под образец слева
+   (см. `.colorfield` в admin.css). Общее правило задавало ему padding 10px,
+   и значение уезжало под образец — «Использовать общую настройку обложки»
+   читалось как «ользовать общую настройку обложки». */
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not(:where([data-coloris])),
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field select,
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 3px;
+    font-size: var(--admin-fs-base);
+    line-height: 1.4;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--hero-editor-muted);
+    font-size: var(--admin-fs-xs);
+    font-weight: var(--admin-fw-medium);
+    line-height: 1.45;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field--checkbox {
+    position: relative;
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 42px;
+    padding: 10px 11px;
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 3px;
+    background: var(--hero-editor-soft);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field--checkbox:has(input:checked) {
+    border-color: color-mix(in srgb, var(--hero-editor-accent) 34%, var(--hero-editor-border));
+    background: var(--hero-editor-accent-soft);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__input {
+    position: absolute;
+    width: 1px;
+    min-width: 1px;
+    max-width: 1px;
+    height: 1px;
+    min-height: 1px;
+    max-height: 1px;
+    margin: 0;
+    opacity: 0;
+    clip-path: inset(50%);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field--checkbox > .slide-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__track {
+    position: relative;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 20px;
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 10px;
+    background: var(--hero-editor-surface);
+    transition: border-color .15s ease, background .15s ease;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__track::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--hero-editor-muted);
+    content: '';
+    transition: transform .15s ease, background .15s ease;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__input:checked + .slide-switch .slide-switch__track {
+    border-color: var(--hero-editor-accent);
+    background: var(--hero-editor-accent);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__input:checked + .slide-switch .slide-switch__track::after {
+    background: var(--hero-editor-surface);
+    transform: translateX(16px);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__input:focus-visible + .slide-switch .slide-switch__track {
+    outline: 2px solid color-mix(in srgb, var(--hero-editor-accent) 35%, transparent);
+    outline-offset: 2px;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-switch__text {
+    color: var(--hero-editor-text);
+    font-size: var(--admin-fs-sm);
+    font-weight: var(--admin-fw-semibold);
+    line-height: 1.35;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .form-field--checkbox > .form-hint {
+    flex-basis: 100%;
+    margin: 3px 0 0 45px;
+}
+
+/* Размеры превью задаёт сам компонент (`.image-field__row` в admin.css):
+   доля ряда вместо фиксированных пикселей. Прежде этот слой прибивал ему
+   108px через `!important`, и на ряде шире 1400px фоновая фотография
+   1920×1080 показывалась ноготком. Здесь остаётся только своя поверхность. */
+form[action*="/admin/heroes/"][action*="/slides/"] .image-field__preview {
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 3px;
+    background: var(--hero-editor-soft);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .image-field__main,
+form[action*="/admin/heroes/"][action*="/slides/"] .image-field__controls {
+    min-width: 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .image-field__controls {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .image-field__controls .btn {
+    min-height: 40px;
+    white-space: nowrap;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__control {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) auto auto;
+    gap: 0;
+    align-items: center;
+    min-width: 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__preview {
+    width: 42px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 3px 0 0 3px;
+    background: var(--hero-editor-soft);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__control > input {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__choose,
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__clear {
+    min-height: 40px;
+    white-space: nowrap;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__choose {
+    border-radius: 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__clear {
+    margin-left: -1px;
+    border-radius: 0 3px 3px 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .clr-field {
+    width: 100%;
+    max-width: none;
+}
+
+/* Buttons and links are separate tasks. Keeping each one in its own panel
+   prevents conditional fields from jumping into unrelated rows when a button
+   or one of its styles is disabled. */
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-stack {
+    display: grid;
+    gap: 14px;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel {
+    overflow: hidden;
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 4px;
+    background: var(--hero-editor-surface);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 66px;
+    padding: 13px 15px;
+    background: var(--hero-editor-soft);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__title {
+    margin: 0;
+    color: var(--hero-editor-text);
+    font-size: var(--admin-fs-base);
+    font-weight: var(--admin-fw-semibold);
+    line-height: 1.35;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__hint {
+    margin: 3px 0 0;
+    color: var(--hero-editor-muted);
+    font-size: var(--admin-fs-xs);
+    font-weight: var(--admin-fw-medium);
+    line-height: 1.4;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__toggle {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    white-space: nowrap;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__toggle:has(input:checked) {
+    border-color: transparent;
+    background: transparent;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body {
+    gap: 16px 18px;
+    padding: 16px;
+    border-top: 1px solid var(--hero-editor-border);
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body > .form-field,
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body > [class^="col-"],
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body > [class*=" col-"] {
+    min-width: 0;
+    margin: 0;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body .form-field--checkbox {
+    align-self: end;
+    min-height: 40px;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body > .form-field--checkbox {
+    align-self: center;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body > .form-field--checkbox:has(input:checked) {
+    border-color: transparent;
+    background: transparent;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel--colors .colorfield__control {
+    min-height: 40px;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] [data-hero-dependent-group][hidden],
+form[action*="/admin/heroes/"][action*="/slides/"] [data-hero-dependent][hidden] {
+    display: none;
+}
+
+form[action*="/admin/heroes/"][action*="/slides/"] > .form-actions {
+    position: sticky;
+    z-index: 20;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(100%, 1240px);
+    margin: 14px auto 0;
+    padding: 10px 12px;
+    border: 1px solid var(--hero-editor-border);
+    border-radius: 3px 3px 0 0;
+    background: color-mix(in srgb, var(--hero-editor-surface) 94%, transparent);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, .06);
+    backdrop-filter: blur(12px);
+}
+
+@media (max-width: 760px) {
+    form[action*="/admin/heroes/"][action*="/slides/"] .image-field__controls,
+    form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__control {
+        grid-template-columns: 1fr auto;
+    }
+
+    form[action*="/admin/heroes/"][action*="/slides/"] .image-field__controls > input,
+    form[action*="/admin/heroes/"][action*="/slides/"] .tabler-icon-field__control > input {
+        grid-column: 1 / -1;
+    }
+
+    form[action*="/admin/heroes/"][action*="/slides/"] > .form-actions {
+        flex-wrap: wrap;
+        border-radius: 3px 3px 0 0;
+    }
+
+    form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__toggle {
+        width: 100%;
+        white-space: normal;
+    }
+
+    form[action*="/admin/heroes/"][action*="/slides/"] .slide-action-panel__body {
+        gap: 14px;
+        padding: 14px;
+    }
+}
