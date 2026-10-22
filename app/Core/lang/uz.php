@@ -279,7 +279,6 @@ return [
     'Настройки' => 'Sozlamalar',
     'Журнал действий' => 'Harakatlar jurnali',
     'Подписчики' => 'Obunachilar',
-    'Репозиторий' => 'Omborxona (Repozitoriy)',
     'Быстрые действия' => 'Tezkor harakatlar',
     'Создать' => 'Yaratish',
     'Новость' => 'Yangilik',

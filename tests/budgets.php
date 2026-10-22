@@ -774,7 +774,7 @@ function template_tell_sources(): array
     }
     $out = [];
     $files = [];
-    foreach (['app/Views/site', 'app/Views/repo', 'templates'] as $dir) {
+    foreach (['app/Views/site', 'templates'] as $dir) {
         /** @var SplFileInfo $file */
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(APP_ROOT . '/' . $dir)) as $file) {
             if (str_ends_with($file->getPathname(), '.php')) {
@@ -975,10 +975,10 @@ function quality_budgets(): array
             'guard' => 'tests/cases/293_phpstan_baseline_budget_test.php',
             'why' => 'новый код проверяется целиком, старый долг посчитан и виден; '
                 . 'дописать находку в эталон вместо починки нельзя',
-            // 724 -> 578 -> 577 -> 570 -> 565 -> 480 -> 427 -> 360 -> 359: каждая закрытая находка
+            // 724 -> 578 -> 577 -> 570 -> 565 -> 480 -> 427 -> 360 -> 359 -> 337: каждая закрытая находка
             // оказывалась настоящим отказом под strict_types (см. коммиты). В
             // эталоне остались только «нет типа значений массива».
-            'ceiling' => static fn (): int => 359,
+            'ceiling' => static fn (): int => 337,
             'measure' => static function (): array {
                 $baseline = APP_ROOT . '/phpstan-baseline.neon';
                 if (!is_file($baseline)) {

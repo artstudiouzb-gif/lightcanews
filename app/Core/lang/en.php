@@ -279,7 +279,6 @@ return [
     'Настройки' => 'Settings',
     'Журнал действий' => 'Audit Log',
     'Подписчики' => 'Subscribers',
-    'Репозиторий' => 'Repository',
     'Быстрые действия' => 'Quick Actions',
     'Создать' => 'Create',
     'Новость' => 'News',
