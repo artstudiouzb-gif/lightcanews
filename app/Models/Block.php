@@ -1,0 +1,561 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Core\BlockTypeRegistry;
+use App\Core\ConcurrencyException;
+use App\Core\Database;
+use App\Core\Logger;
+
+final class Block
+{
+    /**
+     * Блоки страницы для конкретного языкового стека. По умолчанию — только
+     * верхнего уровня (parent_block_id IS NULL); дочерние блоки колонок
+     * (группа 4.1) выбираются отдельно через childrenOf().
+     */
+    public static function forPage(int $pageId, ?string $lang = null, bool $topLevelOnly = true, bool $activeOnly = false): array
+    {
+        $lang = $lang ?? Language::defaultCode();
+        $sql = 'SELECT * FROM blocks WHERE page_id = :page_id AND lang = :lang';
+        if ($topLevelOnly) {
+            $sql .= ' AND parent_block_id IS NULL';
+        }
+        if ($activeOnly) {
+            $sql .= ' AND is_active = 1';
+        }
+        $sql .= ' ORDER BY sort_order ASC, id ASC';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute([':page_id' => $pageId, ':lang' => $lang]);
+
+        return self::canonicalTypes($stmt->fetchAll());
+    }
+
+    /**
+     * Дочерние блоки родителя-колонок, сгруппированные по номеру колонки
+     * (группа 4.1). Порядок: колонка, затем позиция внутри неё.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public static function childrenOf(int $parentBlockId, bool $activeOnly = false): array
+    {
+        $sql = 'SELECT * FROM blocks WHERE parent_block_id = :pid';
+        if ($activeOnly) {
+            $sql .= ' AND is_active = 1';
+        }
+        $sql .= ' ORDER BY column_index ASC, sort_order ASC, id ASC';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute([':pid' => $parentBlockId]);
+
+        return self::canonicalTypes($stmt->fetchAll());
+    }
+
+    /**
+     * Блоки для вывода на сайте: только активные; приоритеты:
+     * 1. Собственные блоки текущей страницы нужного языка
+     * 2. Собственные блоки текущей страницы языка по умолчанию
+     * 3. Блоки родительской страницы группы переводов нужного языка
+     * 4. Блоки родительской страницы группы переводов языка по умолчанию
+     */
+    public static function forPageLocalized(int $pageId, string $lang): array
+    {
+        // 1. Блоки самой текущей страницы для запрошенного языка
+        $blocks = self::forPage($pageId, $lang, true, true);
+        if (!empty($blocks)) {
+            return $blocks;
+        }
+
+        // 2. Блоки самой текущей страницы на языке по умолчанию
+        $defaultBlocks = self::forPage($pageId, Language::defaultCode(), true, true);
+        if (!empty($defaultBlocks)) {
+            return $defaultBlocks;
+        }
+
+        // 3. Фолбэк на родительскую страницу группы переводов
+        try {
+            $stmtPage = Database::pdo()->prepare("SELECT translation_group_id FROM pages WHERE id = :id LIMIT 1");
+            $stmtPage->execute([':id' => $pageId]);
+            $groupId = (int) $stmtPage->fetchColumn();
+            if ($groupId > 0 && $groupId !== $pageId) {
+                $parentBlocks = self::forPage($groupId, $lang, true, true);
+                if (!empty($parentBlocks)) {
+                    return $parentBlocks;
+                }
+
+                return self::forPage($groupId, Language::defaultCode(), true, true);
+            }
+        } catch (\Throwable $e) {
+            Logger::swallowed('Block::forPageLocalized: фолбэк на страницу группы переводов не сработал', $e);
+        }
+
+        return [];
+    }
+
+    public static function setActive(int $id, bool $active): void
+    {
+        $stmt = Database::pdo()->prepare('UPDATE blocks SET is_active = :a WHERE id = :id');
+        $stmt->execute([':a' => $active ? 1 : 0, ':id' => $id]);
+    }
+
+    public static function findById(int $id): ?array
+    {
+        $stmt = Database::pdo()->prepare('SELECT * FROM blocks WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            return null;
+        }
+        return self::canonicalRow($row);
+    }
+
+    /**
+     * Переименованные типы читаются по-новому.
+     *
+     * Записи в базе переписывает миграция, но полагаться только на неё нельзя:
+     * код и база на сервере обновляются разными путями (архив релиза, ветка
+     * `deploy`, `git pull`), и в окне между ними форма редактора открыла бы
+     * блок как незнакомый — без единого поля, — а страница вывела бы на его
+     * месте комментарий. Правило переименования объявлено один раз, в реестре
+     * типов.
+     *
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private static function canonicalTypes(array $rows): array
+    {
+        foreach ($rows as $i => $row) {
+            $rows[$i] = self::canonicalRow($row);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Одна строка блока в терминах нынешнего типа. Данные разбираются только у
+     * переименованных типов: у остальных лишний json_decode на каждую строку
+     * списка страницы — это работа впустую.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private static function canonicalRow(array $row): array
+    {
+        $type = (string) ($row['type'] ?? '');
+        if (!isset(BlockTypeRegistry::LEGACY_TYPES[$type])) {
+            return $row;
+        }
+
+        $row['type'] = BlockTypeRegistry::canonicalType($type);
+        $data = json_decode((string) ($row['data'] ?? '{}'), true);
+        if (is_array($data)) {
+            // Форма редактора обязана показывать блок так же, как его видит
+            // сайт: иначе редактор открыл бы хронологию в виде ленты и первым
+            // же сохранением превратил её в ленту на самом деле.
+            $row['data'] = json_encode(
+                BlockTypeRegistry::canonicalData($type, $data),
+                JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+            ) ?: (string) $row['data'];
+        }
+
+        return $row;
+    }
+
+    public static function create(
+        int $pageId,
+        string $lang,
+        string $type,
+        ?string $title,
+        array $data,
+        string $customCss,
+        ?int $parentBlockId = null,
+        int $columnIndex = 0
+    ): int {
+        // Порядок считаем в пределах одного родителя (или верхнего уровня) и колонки.
+        $stmt = Database::pdo()->prepare(
+            'SELECT COALESCE(MAX(sort_order), 0) + 1 FROM blocks
+             WHERE page_id = :page_id AND lang = :lang AND parent_block_id <=> :parent AND column_index = :col'
+        );
+        $stmt->execute([':page_id' => $pageId, ':lang' => $lang, ':parent' => $parentBlockId, ':col' => $columnIndex]);
+        $nextOrder = (int) $stmt->fetchColumn();
+
+        $stmt = Database::pdo()->prepare(
+            'INSERT INTO blocks (page_id, parent_block_id, column_index, lang, type, title, data, custom_css, sort_order, created_at)
+             VALUES (:page_id, :parent, :col, :lang, :type, :title, :data, :custom_css, :sort_order, NOW())'
+        );
+        $stmt->execute([
+            ':page_id' => $pageId,
+            ':parent' => $parentBlockId,
+            ':col' => $columnIndex,
+            ':lang' => $lang,
+            ':type' => $type,
+            ':title' => $title,
+            ':data' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            ':custom_css' => $customCss,
+            ':sort_order' => $nextOrder,
+        ]);
+
+        return (int) Database::pdo()->lastInsertId();
+    }
+
+    public static function update(
+        int $id,
+        ?string $title,
+        array $data,
+        string $customCss,
+        ?int $expectedLockVersion = null,
+        ?string $type = null
+    ): void
+    {
+        // Тип меняется только явно (смена типа или откат к версии другого
+        // типа, BlockConversion): обычное сохранение формы его не трогает.
+        $stmt = Database::pdo()->prepare(
+            'UPDATE blocks
+             SET title = :title, data = :data, custom_css = :custom_css, lock_version = lock_version + 1'
+             . ($type !== null ? ', type = :type' : '') . '
+             WHERE id = :id' . ($expectedLockVersion !== null ? ' AND lock_version = :expected_lock_version' : '')
+        );
+        $params = [
+            ':title' => $title,
+            ':data' => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            ':custom_css' => $customCss,
+            ':id' => $id,
+        ];
+        if ($expectedLockVersion !== null) {
+            $params[':expected_lock_version'] = $expectedLockVersion;
+        }
+        if ($type !== null) {
+            $params[':type'] = $type;
+        }
+        $stmt->execute($params);
+        if ($expectedLockVersion !== null && $stmt->rowCount() !== 1) {
+            throw new ConcurrencyException('Блок был изменён другим пользователем.');
+        }
+    }
+
+    /**
+     * Копия блока встаёт сразу за оригиналом — в той же ячейке контейнера или
+     * на том же уровне страницы. Контейнер копируется вместе с содержимым:
+     * пустые «Колонки» вместо копии собранного ряда редактору ни к чему.
+     * Скрытый блок остаётся скрытым — копия не должна сама появиться на сайте.
+     *
+     * Возвращает id копии или null, если оригинала нет.
+     */
+    public static function duplicate(int $id): ?int
+    {
+        $source = self::findById($id);
+        if ($source === null) {
+            return null;
+        }
+
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $parent = $source['parent_block_id'] !== null ? (int) $source['parent_block_id'] : null;
+            $order = (int) $source['sort_order'];
+            // Соседей ниже оригинала сдвигаем на одну позицию, чтобы копия
+            // встала рядом, а не в конец списка.
+            $pdo->prepare(
+                'UPDATE blocks SET sort_order = sort_order + 1
+                 WHERE page_id = :pid AND lang = :lang AND parent_block_id <=> :parent
+                   AND column_index = :col AND sort_order > :ord'
+            )->execute([
+                ':pid' => (int) $source['page_id'],
+                ':lang' => (string) $source['lang'],
+                ':parent' => $parent,
+                ':col' => (int) $source['column_index'],
+                ':ord' => $order,
+            ]);
+
+            $copyId = self::insertCopy($source, $parent, (int) $source['column_index'], $order + 1);
+            foreach (self::childrenOf($id) as $child) {
+                self::insertCopy($child, $copyId, (int) $child['column_index'], (int) $child['sort_order']);
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+
+        return $copyId;
+    }
+
+    /** @param array<string, mixed> $row */
+    private static function insertCopy(array $row, ?int $parentId, int $columnIndex, int $sortOrder): int
+    {
+        $stmt = Database::pdo()->prepare(
+            'INSERT INTO blocks (page_id, parent_block_id, column_index, lang, type, title, data, custom_css, sort_order, is_active, created_at)
+             VALUES (:page_id, :parent, :col, :lang, :type, :title, :data, :custom_css, :sort_order, :active, NOW())'
+        );
+        $stmt->execute([
+            ':page_id' => (int) $row['page_id'],
+            ':parent' => $parentId,
+            ':col' => $columnIndex,
+            ':lang' => (string) $row['lang'],
+            ':type' => (string) $row['type'],
+            ':title' => $row['title'],
+            ':data' => (string) ($row['data'] ?? '{}'),
+            ':custom_css' => (string) ($row['custom_css'] ?? ''),
+            ':sort_order' => $sortOrder,
+            ':active' => (int) ($row['is_active'] ?? 1),
+        ]);
+
+        return (int) Database::pdo()->lastInsertId();
+    }
+
+    public static function delete(int $id): void
+    {
+        $pdo = Database::pdo();
+        $stmtChildren = $pdo->prepare('DELETE FROM blocks WHERE parent_block_id = :pid');
+        $stmtChildren->execute([':pid' => $id]);
+
+        $stmt = $pdo->prepare('DELETE FROM blocks WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * Устанавливает порядок блоков по заданному списку id (drag-and-drop,
+     * задача 134). Учитываются только блоки, реально принадлежащие странице
+     * и языку; посторонние id игнорируются.
+     *
+     * @param array<int, int> $orderedIds
+     */
+    public static function reorder(int $pageId, string $lang, array $orderedIds): void
+    {
+        $valid = [];
+        foreach (self::forPage($pageId, $lang) as $block) {
+            $valid[(int) $block['id']] = true;
+        }
+
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare('UPDATE blocks SET sort_order = :order WHERE id = :id AND page_id = :pid AND lang = :lang');
+            $order = 1;
+            foreach ($orderedIds as $id) {
+                $id = (int) $id;
+                if (!isset($valid[$id])) {
+                    continue;
+                }
+                $stmt->execute([':order' => $order++, ':id' => $id, ':pid' => $pageId, ':lang' => $lang]);
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function moveUp(int $id, int $pageId, string $lang): void
+    {
+        self::swap($id, $pageId, $lang, 'up');
+    }
+
+    public static function moveDown(int $id, int $pageId, string $lang): void
+    {
+        self::swap($id, $pageId, $lang, 'down');
+    }
+
+    private static function swap(int $id, int $pageId, string $lang, string $direction): void
+    {
+        $blocks = self::forPage($pageId, $lang);
+        $index = null;
+        foreach ($blocks as $i => $block) {
+            if ((int) $block['id'] === $id) {
+                $index = (int) $i;
+                break;
+            }
+        }
+
+        if ($index === null) {
+            return;
+        }
+
+        $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
+        if ($swapIndex < 0 || $swapIndex >= count($blocks)) {
+            return;
+        }
+
+        $current = $blocks[$index];
+        $target = $blocks[$swapIndex];
+
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare('UPDATE blocks SET sort_order = :order WHERE id = :id');
+            $stmt->execute([':order' => $target['sort_order'], ':id' => $current['id']]);
+            $stmt->execute([':order' => $current['sort_order'], ':id' => $target['id']]);
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Число ячеек контейнера: колонок у «Колонок» (2–4), непустых вкладок у
+     * «Вкладок» (до 10). Одно правило на конструктор и на перенос блока:
+     * ячейка, которой конструктор не рисует, — место, где блок пропал бы из
+     * вида редактора.
+     *
+     * @param array<string, mixed> $container
+     */
+    public static function cellCount(array $container): int
+    {
+        $data = json_decode((string) ($container['data'] ?? '{}'), true) ?: [];
+        if ((string) ($container['type'] ?? '') === 'tabs') {
+            $count = 0;
+            foreach ((array) ($data['items'] ?? []) as $tab) {
+                if (is_array($tab) && trim((string) ($tab['title'] ?? '')) !== '') {
+                    $count++;
+                }
+            }
+
+            return min(10, $count);
+        }
+        $columns = (int) ($data['columns'] ?? 2);
+
+        return $columns >= 2 && $columns <= 4 ? $columns : 2;
+    }
+
+    /**
+     * Почему блок нельзя поставить в это место, или null, если можно.
+     * $parent = null — верхний уровень страницы.
+     *
+     * @param array<string, mixed> $block
+     * @param array<string, mixed>|null $parent
+     */
+    public static function placementError(array $block, ?array $parent, int $columnIndex): ?string
+    {
+        if ($parent === null) {
+            return null;
+        }
+        if ((int) $parent['id'] === (int) $block['id']
+            || (int) $parent['page_id'] !== (int) $block['page_id']
+            || (string) $parent['lang'] !== (string) $block['lang']
+            || $parent['parent_block_id'] !== null
+            || !BlockTypeRegistry::isContainer((string) $parent['type'])
+        ) {
+            return 'Сюда блок переместить нельзя: место принадлежит другой странице или не является колонками и вкладками.';
+        }
+        if (BlockTypeRegistry::isContainer((string) $block['type'])) {
+            return 'Колонки и вкладки нельзя вкладывать друг в друга.';
+        }
+        if ($columnIndex < 0 || $columnIndex >= self::cellCount($parent)) {
+            return 'Такой колонки или вкладки нет.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Ставит блок в ячейку контейнера ($parentId) или на верхний уровень
+     * страницы (null) и раскладывает порядок внутри места назначения по
+     * $orderedIds. Блоки места, которых в списке нет, идут следом в прежнем
+     * порядке, а сам блок без позиции встаёт в конец: присланный порядок —
+     * подсказка браузера, и потерять из-за неё блок нельзя. Проверку места
+     * делает placementError().
+     *
+     * @param array<int, int> $orderedIds
+     */
+    public static function place(int $id, ?int $parentId, int $columnIndex, array $orderedIds = []): void
+    {
+        $block = self::findById($id);
+        if ($block === null) {
+            return;
+        }
+        $columnIndex = $parentId === null ? 0 : $columnIndex;
+
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('UPDATE blocks SET parent_block_id = :parent, column_index = :col WHERE id = :id')
+                ->execute([':parent' => $parentId, ':col' => $columnIndex, ':id' => $id]);
+
+            $sql = 'SELECT id FROM blocks WHERE page_id = :page_id AND lang = :lang AND parent_block_id <=> :parent';
+            $params = [':page_id' => (int) $block['page_id'], ':lang' => (string) $block['lang'], ':parent' => $parentId];
+            if ($parentId !== null) {
+                $sql .= ' AND column_index = :col';
+                $params[':col'] = $columnIndex;
+            }
+            $stmt = $pdo->prepare($sql . ' ORDER BY sort_order ASC, id ASC');
+            $stmt->execute($params);
+            $existing = array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
+            $inPlace = array_flip($existing);
+
+            $final = [];
+            foreach ($orderedIds as $orderedId) {
+                $orderedId = (int) $orderedId;
+                if (isset($inPlace[$orderedId]) && !isset($final[$orderedId])) {
+                    $final[$orderedId] = true;
+                }
+            }
+            foreach ($existing as $existingId) {
+                if ($existingId !== $id && !isset($final[$existingId])) {
+                    $final[$existingId] = true;
+                }
+            }
+            $final[$id] = true;
+
+            $update = $pdo->prepare('UPDATE blocks SET sort_order = :order WHERE id = :id');
+            $order = 1;
+            foreach (array_keys($final) as $placedId) {
+                $update->execute([':order' => $order++, ':id' => $placedId]);
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function copyLanguageBlocks(int $pageId, string $fromLang, string $toLang): int
+    {
+        $sourceBlocks = self::forPage($pageId, $fromLang, true);
+        if (empty($sourceBlocks)) {
+            return 0;
+        }
+
+        $pdo = Database::pdo();
+        $stmtDel = $pdo->prepare("SELECT id FROM blocks WHERE page_id = :pid AND lang = :lang");
+        $stmtDel->execute([':pid' => $pageId, ':lang' => $toLang]);
+        foreach ($stmtDel->fetchAll(\PDO::FETCH_COLUMN) as $oldId) {
+            self::delete((int) $oldId);
+        }
+
+        $count = 0;
+        foreach ($sourceBlocks as $b) {
+            $data = is_array($b['data']) ? $b['data'] : (json_decode((string) $b['data'], true) ?: []);
+            $newParentId = self::create(
+                $pageId,
+                $toLang,
+                (string) $b['type'],
+                $b['title'] !== null ? (string) $b['title'] : null,
+                $data,
+                (string) ($b['custom_css'] ?? ''),
+                null,
+                (int) ($b['column_index'] ?? 0)
+            );
+            $count++;
+
+            $children = self::childrenOf((int) $b['id']);
+            foreach ($children as $c) {
+                $cData = is_array($c['data']) ? $c['data'] : (json_decode((string) $c['data'], true) ?: []);
+                self::create(
+                    $pageId,
+                    $toLang,
+                    (string) $c['type'],
+                    $c['title'] !== null ? (string) $c['title'] : null,
+                    $cData,
+                    (string) ($c['custom_css'] ?? ''),
+                    $newParentId,
+                    (int) ($c['column_index'] ?? 0)
+                );
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+}

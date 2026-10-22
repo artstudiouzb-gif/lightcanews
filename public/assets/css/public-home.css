@@ -1,0 +1,112 @@
+/* Compact public homepage. Explicit block spacing and CMS colour choices
+   remain authoritative; internal pages keep their existing composition. */
+@media screen {
+    .site-home .site-content { --space-premium: 32px; }
+    .site-home .section-head {
+        margin-bottom: 16px;
+        padding-bottom: 0;
+        border-bottom: 0;
+        gap: 12px 24px;
+        align-items: center;
+    }
+    .site-home .section-head__title {
+        font-size: var(--font-size-h2, var(--step-5));
+        line-height: 1.2;
+        letter-spacing: -.025em;
+        padding-inline-start: 15px;
+    }
+    .site-home .section-head__all { font-size: var(--step--2); font-weight: 500; text-decoration: none; transition: color .2s ease; }
+    .site-home .section-head__all:hover { text-decoration: none; color: var(--gov-teal); }
+
+    .site-home .hero {
+        --hero-nav-pad: 24px;
+        --hero-nav-bottom: 24px;
+    }
+    .site-home .hero__inner {
+        padding-block-start: 36px;
+        padding-block-end: calc(28px + var(--hero-nav-space));
+    }
+    .site-home .hero__title {
+        /* Кегля здесь нет намеренно. Он стоял тут числом
+           (clamp(--step-6, 3.6vw, --step-9) = 48px на экране 1440px) и весом
+           селектора (0,2,0) перебивал класс размера из настроек обложки:
+           «Крупный» просит 56px, «Очень крупный» — 78px, и ни один из них на
+           главной не действовал — то есть настройка обещала выбор, которого
+           не существует (тот же дефект, что снятый «Масштаб типографики»).
+           Кегль задаёт обложка: класс размера плюс доводка процентом. */
+        line-height: 1.1;
+        letter-spacing: -.035em;
+        /* Один заголовок на экран: разъезжаться по переносу не с кем.
+           Разобранный случай, см. TEXT_WRAP_BALANCE_BY_DESIGN. */
+        text-wrap: balance;
+    }
+    .site-home .hero__subtitle { font-size: var(--step-0); line-height: 1.5; max-width: 58ch; }
+    /* Надзаголовок — в обычном регистре и без разрядки (DESIGN_PLAN 4.4):
+       разрядка .18em была нужна капслоку, строчным она только мешает. */
+    .site-home .hero__eyebrow { font-size: var(--step--2); }
+    .site-home .hero__cta { min-height: 44px; padding: 10px 20px; font-size: var(--step--2); box-shadow: none; }
+
+    .site-home .cards-grid,
+    .site-home .imgcards-grid { gap: 16px; }
+    .site-home .feature-card {
+        padding: 20px 18px;
+        gap: 12px;
+    }
+    .site-home .feature-card__top { margin-bottom: 0; }
+    .site-home .feature-card__title { font-size: var(--step-0); line-height: 1.35; }
+    /* Текст карточек на главной — тот же, что на внутренних страницах: был
+       ступенью мельче (14px против 15.2px), и посетитель видел главную мельче
+       остального сайта при той же настройке «Основной текст». */
+    .site-home .feature-card__text { font-size: var(--font-size-card-text, var(--step--1)); line-height: 1.5; }
+    /* Плитка иконки на главной только уменьшена. Прежде она вдобавок
+       обнуляла скругление и делала фон прозрачным, а файл идёт в бандле
+       последним — поэтому настройки «Фон иконок» и «Скругление углов» на
+       главной не делали ничего: правило темы они не перебивали. Фон и
+       радиус берутся у темы; «без фона» по-прежнему включает
+       `.block-cards--icons-no-bg`. */
+    .site-home .feature-card__icon { width: 36px; height: 36px; padding: 0; }
+    .site-home .feature-card__num { font-size: var(--step--2); }
+    .site-home .imgcard { min-height: 190px; }
+    .site-home .imgcard__body { padding: 18px; }
+    .site-home .imgcard__title { font-size: var(--step--1); line-height: 1.4; }
+
+    .site-home :is(.news-column, .news-card, .newslist-lead, .relnews-card) {
+        text-decoration: none;
+        box-shadow: var(--card-shadow);
+        transition: transform var(--feature-card-motion-duration, .4s) cubic-bezier(.16, 1, .3, 1),
+            box-shadow var(--feature-card-motion-duration, .4s) cubic-bezier(.16, 1, .3, 1),
+            border-color .3s ease;
+    }
+    @media (hover: hover) and (pointer: fine) {
+        .site-home :is(.news-column, .news-card, .newslist-lead, .relnews-card):hover {
+            text-decoration: none;
+            box-shadow: var(--shadow-hover);
+            transform: translateY(var(--feature-card-hover-lift, -4px));
+            border-color: var(--gov-teal);
+        }/* Крупные карточки ленты исключены: их заголовок лежит на фотографии
+           и красится `--newshero-fg`, а тот считается по контрасту с
+           подложкой, цвет и плотность которой настраиваются. Бирюзовый на
+           тёмной подложке ещё проходит (замерено 5.2:1), а на светлой даёт
+           2.6:1 при норме 4.5:1 — настройка вуали молча ломала бы заголовок
+           на наведении. О наведении там говорит акцентная рамка поверх кадра. */
+        
+        .site-home :is(.news-column, .news-card, .newslist-lead, .relnews-card:not(.relnews-card--hero):not(.relnews-card--wide)):hover :is(.news-column__title, .news-card__title, .newslist-lead__title, .relnews-card__title) {
+            color: var(--gov-teal);
+            text-decoration: none;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .site-home .site-content { --space-premium: 24px; }
+        .site-home .hero__inner { padding-block-start: 28px; }
+        .site-home .hero__cta { padding-inline: 16px; }
+    }
+}
+
+/* Заголовок секции главной сжимается только на телефоне: на ноутбуке он
+   держит тот же кегль, что и на большом мониторе (см. «Типографика» в
+   CLAUDE.md — плавные размеры между 721 и 1440px делали текст у посетителей
+   мельче, чем видел владелец). */
+@media (max-width: 720px) {
+    .site-home .section-head__title { font-size: var(--font-size-h2, clamp(1.35rem, 2vw, 1.75rem)); }
+}

@@ -1,0 +1,652 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core;
+
+
+/**
+ * Состояние системы одним списком проверяемых фактов.
+ *
+ * Механизмы самопроверки в проекте были написаны давно и работают: `Watchdog`
+ * видит молчащие воркеры и кончающийся диск, `Heartbeat` помнит запуски,
+ * `Integrity` сверяет файлы с эталоном, `RestoreDrill` репетирует
+ * восстановление, `MigrationRunner` знает про неприменённые миграции. Беда в
+ * том, где они живут: в CLI и cron на shared-хостинге, куда владелец не
+ * заходит. `release_check` годами повторял «восстановление ни разу не
+ * проверялось» — и не читал этого никто.
+ *
+ * То есть в системе, где тихий отказ считается худшим видом отказа, **молча
+ * отказывали сами проверки**. Этот класс ничего не проверяет заново — он
+ * приводит уже посчитанное к одному виду и отдаёт экрану.
+ *
+ * **В сеть не ходим.** Не потому, что нельзя (админке — можно), а потому, что
+ * страница, которую открывают в тревоге, обязана отвечать сразу: полдесятка
+ * запросов к чужим API растянули бы её на десятки секунд, а на упавшем канале
+ * связи — до таймаута. Всё, что требует сети, приходит из памяти: воркеры
+ * оставляют отметки, интеграции — свои (`IntegrationStatus`). Поэтому у
+ * каждого факта есть «когда проверено», и «неизвестно» — это честный ответ,
+ * а не пустая строка.
+ */
+final class SystemHealth
+{
+    public const OK = 'ok';
+    public const WARN = 'warn';
+    public const FAIL = 'fail';
+    public const UNKNOWN = 'unknown';
+
+    /** Эталон целостности старше этого срока — повод пересобрать. */
+    private const BASELINE_STALE = 30 * 86400;
+
+    /** Репетиция восстановления считается свежей столько. */
+    private const DRILL_FRESH = 8 * 86400;
+
+    /**
+     * Все факты о состоянии, сгруппированные по разделам.
+     *
+     * @return list<array{title:string, checks:list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}>}>
+     */
+    public static function groups(): array
+    {
+        return [
+            ['title' => 'Обслуживание', 'checks' => self::maintenance()],
+            ['title' => 'Выкладка', 'checks' => self::deployment()],
+            ['title' => 'Защита данных', 'checks' => self::protection()],
+            ['title' => 'Интеграции', 'checks' => self::integrations()],
+            ['title' => 'Скорость у посетителей', 'checks' => self::vitals()],
+        ];
+    }
+
+    /** Худшее состояние по всем фактам — для строки-итога наверху. */
+    public static function worst(): string
+    {
+        $worst = self::OK;
+        foreach (self::groups() as $group) {
+            foreach ($group['checks'] as $check) {
+                if ($check['state'] === self::FAIL) {
+                    return self::FAIL;
+                }
+                if ($check['state'] === self::WARN) {
+                    $worst = self::WARN;
+                }
+            }
+        }
+
+        return $worst;
+    }
+
+    /**
+     * Следующий шаг для строки состояния.
+     *
+     * Подсказка у проверки объясняет причину, но сама по себе не отвечает на
+     * вопрос «куда нажать». Маршрут и короткая инструкция живут рядом с
+     * идентификатором проверки, чтобы дашборд и полный экран не расходились.
+     * Пустой href означает действие на хостинге, которому в CMS нет честной
+     * кнопки: в таком случае экран показывает инструкцию, а не притворяется,
+     * что может исправить cron или переменную окружения сам.
+     *
+     * @return array{label:string,href:string,instruction:string}
+     */
+    public static function solution(string $id): array
+    {
+        if (str_starts_with($id, 'worker:')) {
+            $name = substr($id, strlen('worker:'));
+            $workers = [
+                'mail' => ['mail_worker.php', '* * * * *'],
+                'webhook' => ['webhook_worker.php', '* * * * *'],
+                'social' => ['social_worker.php', '*/5 * * * *'],
+                'backup' => ['backup_worker.php', '0 3 * * *'],
+                'youtube' => ['youtube_worker.php', '0 * * * *'],
+            ];
+            [$script, $schedule] = $workers[$name] ?? [$name . '_worker.php', 'по расписанию задачи'];
+
+            return [
+                'label' => 'Настроить cron',
+                'href' => '',
+                'instruction' => 'В панели хостинга откройте Cron Jobs и восстановите запуск: '
+                    . $schedule . ' php /путь/к/сайту/app/Console/' . $script
+                    . '. После первого успешного запуска статус обновится сам.',
+            ];
+        }
+
+        if (str_starts_with($id, 'vitals')) {
+            return [
+                'label' => 'Открыть замеры',
+                'href' => '/admin/performance#perf-vitals',
+                'instruction' => 'В разделе «Производительность» есть разбивка по типам страниц: начните с того, где хуже всего, и с телефонов — их больше и они медленнее. Оценка обновится по мере новых визитов: считается 75-й перцентиль за 28 дней.',
+            ];
+        }
+
+        if (str_starts_with($id, 'watchdog:queue:social_posts')) {
+            return [
+                'label' => 'Открыть публикации',
+                'href' => '/admin/social',
+                'instruction' => 'Проверьте настройки соцсетей и запустите очередь вручную. Если задача снова остаётся в очереди, откройте журнал ошибок.',
+            ];
+        }
+        if (str_starts_with($id, 'watchdog:queue:mail_queue')) {
+            return [
+                'label' => 'Проверить почту',
+                'href' => '/admin/settings#smtp-section',
+                'instruction' => 'Проверьте SMTP контрольной отправкой, затем восстановите ежеминутный запуск mail_worker.php в cron.',
+            ];
+        }
+
+        $solutions = [
+            'watchdog:disk' => [
+                'Проверить хранилище', '/admin/performance#perf-images',
+                'Удалите ненужные загрузки, старые резервные копии и журналы через соответствующие разделы либо увеличьте квоту диска в панели хостинга.',
+            ],
+            'release' => [
+                'Открыть обновления', '/admin/update',
+                'Проверьте установленную версию и завершите обновление тем же способом, которым сайт был развёрнут: git pull либо архив релиза.',
+            ],
+            'migrations' => [
+                'Открыть базу данных', '/admin/database#db-migrations',
+                'Сначала сделайте резервную копию, затем примените ожидающие миграции. Если файлов миграций нет, повторите полную выкладку кода.',
+            ],
+            'https' => [
+                'Проверить адрес сайта', '',
+                'Укажите APP_URL с https:// в конфигурации хостинга, включите SSL-сертификат и после этого заново откройте страницу проверки.',
+            ],
+            'integrity' => [
+                'Пересобрать эталон', '',
+                'После завершённой выкладки выполните: php app/Console/integrity_check.php --baseline. Не пересобирайте эталон, пока происхождение изменённых файлов не проверено.',
+            ],
+            'restore_drill' => [
+                'Открыть резервные копии', '/admin/database#db-diagnostics',
+                'Запустите php app/Console/restore_drill.php, затем добавьте его еженедельный запуск в cron. Команда использует свежую резервную копию и отдельную проверочную базу.',
+            ],
+            'errors_24h' => [
+                'Открыть журнал ошибок', '/admin/audit/errors',
+                'Начните с самой частой свежей группы ошибок. После исправления очистите только старые записи — новые покажут, исчезла ли причина.',
+            ],
+            'heartbeat_ping' => [
+                'Настроить мониторинг', '',
+                'Создайте проверку в сервисе внешнего мониторинга и задайте её URL в переменной окружения MONITORING_HEARTBEAT_URL.',
+            ],
+            'integration:cloudflare' => [
+                'Настроить Cloudflare', '/admin/performance#perf-cloudflare',
+                'Проверьте Zone ID, API-токен и право Zone.Cache Purge, затем выполните контрольную очистку кэша.',
+            ],
+            'integration:telegram' => [
+                'Настроить Telegram', '/admin/telegram',
+                'Проверьте токен бота, привязку администратора и доступ бота к выбранному каналу, затем повторите контрольное действие.',
+            ],
+            'integration:mail' => [
+                'Проверить SMTP', '/admin/settings#smtp-section',
+                'Сохраните параметры SMTP и выполните контрольную отправку внизу раздела настроек.',
+            ],
+            'integration:youtube' => [
+                'Настроить YouTube', '/admin/videos#youtube-import',
+                'Проверьте адрес канала и ключ YouTube Data API, затем запустите импорт вручную.',
+            ],
+            'integration:ai' => [
+                'Настроить ИИ', '/admin/settings#settings-ai',
+                'Проверьте API-ключ и повторите создание аннотации или перевода.',
+            ],
+        ];
+
+        [$label, $href, $instruction] = $solutions[$id] ?? [
+            'Посмотреть подробности', '',
+            'Проверьте указанную причину и журнал ошибок. После исправления состояние обновится при следующем запуске проверки.',
+        ];
+
+        return ['label' => $label, 'href' => $href, 'instruction' => $instruction];
+    }
+
+    /** @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}> */
+    private static function maintenance(): array
+    {
+        $checks = [];
+
+        foreach (Heartbeat::status() as $name => $state) {
+            $last = $state['last'];
+            if ($last === null) {
+                // Никогда не запускавшийся воркер — это не поломка: возможно,
+                // он просто не нужен на этой установке. Но и «в порядке» тут
+                // сказать нельзя: если он нужен, молчание выглядит так же.
+                $checks[] = self::check(
+                    'worker:' . $name,
+                    'Воркер «' . $name . '»',
+                    self::UNKNOWN,
+                    'ни разу не запускался',
+                    'Если этот воркер нужен, добавьте его вызов в cron — иначе задача не выполняется вовсе.',
+                    null
+                );
+                continue;
+            }
+
+            $stale = !empty($state['stale']);
+            $checks[] = self::check(
+                'worker:' . $name,
+                'Воркер «' . $name . '»',
+                $stale ? self::FAIL : self::OK,
+                $stale
+                    ? 'молчит ' . self::age((int) $state['age']) . ' при ожидаемых ' . self::age((int) $state['expected'])
+                    : 'отработал ' . self::age((int) $state['age']) . ' назад',
+                $stale ? 'Похоже, cron перестал его вызывать. Проверьте расписание на хостинге.' : '',
+                $last
+            );
+        }
+
+        // Очереди и диск считает сторож. Его же строки про воркеров пропускаем:
+        // они уже разобраны выше поимённо, а второй раз тот же факт читается
+        // как две разные проблемы.
+        try {
+            $problems = Watchdog::check();
+        } catch (\Throwable $e) {
+            // Сторож спрашивает очереди у базы. Открыть раздел при мёртвой базе
+            // всё равно нельзя (панель требует входа), но падать здесь он не
+            // вправе: экран состояния — последнее, что должно ломаться.
+            Logger::swallowed('SystemHealth: сторож недоступен', $e);
+            $problems = [];
+        }
+
+        foreach ($problems as $key => $text) {
+            if (str_starts_with($key, 'worker:')) {
+                continue;
+            }
+            $checks[] = self::check(
+                'watchdog:' . $key,
+                $key === 'disk' ? 'Место на диске' : 'Очередь задач',
+                self::FAIL,
+                $text,
+                '',
+                time()
+            );
+        }
+        if (!self::hasKey($checks, 'watchdog:disk')) {
+            $checks[] = self::check('watchdog:disk', 'Место на диске', self::OK, 'запаса хватает', '', time());
+        }
+
+        return $checks;
+    }
+
+    /** @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}> */
+    private static function deployment(): array
+    {
+        $checks = [];
+
+        $version = Release::id();
+        // По форме идентификатора видно способ выкладки: ветка `deploy` кладёт
+        // короткий SHA, архив релиза — имя тега. Их нельзя смешивать на одном
+        // сервере, и путаница уже случалась, поэтому способ назван прямо.
+        $isSha = preg_match('/^[0-9a-f]{7,40}$/', $version) === 1;
+        $checks[] = self::check(
+            'release',
+            'Установленная версия',
+            $version === '' || $version === 'unknown' ? self::WARN : self::OK,
+            $version === '' || $version === 'unknown'
+                ? 'неизвестна'
+                : $version . ($isSha ? ' — выложено из ветки deploy (git pull)' : ' — установлено из архива релиза'),
+            $isSha
+                ? 'Обновляйтесь через git pull. Кнопка в разделе «Обновление» развернула бы поверх git-дерева архив релиза и подменила бы способ выкладки.'
+                : ($version === '' || $version === 'unknown'
+                    ? 'В storage/release.json нет версии: панель обновления будет считать доступным любой релиз.'
+                    : ''),
+            null
+        );
+
+        $checks[] = self::migrations();
+
+        return $checks;
+    }
+
+    /**
+     * Миграции: три состояния вместо прежних двух.
+     *
+     * Панель показывала «неприменённых нет» и в том случае, когда файлов
+     * миграций на сервере вовсе нет — она перечисляет их с диска, и о файле,
+     * который не доехал при выкладке, знать не может. Отличить это можно по
+     * записям в базе: если в `migrations` числятся файлы, которых на диске
+     * больше нет, значит база новее выложенного кода.
+     *
+     * @return array{id:string,title:string,state:string,value:string,hint:string,at:?int}
+     */
+    private static function migrations(): array
+    {
+        $dir = (defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__, 2)) . '/database/migrations';
+        try {
+            $status = MigrationRunner::status(Database::pdo(), $dir);
+        } catch (\Throwable $e) {
+            Logger::swallowed('SystemHealth: состояние миграций недоступно', $e);
+
+            return self::check('migrations', 'Миграции базы', self::UNKNOWN, 'не удалось прочитать', '', null);
+        }
+
+        $onDisk = [];
+        foreach ($status['all'] as $item) {
+            $onDisk[$item['name']] = true;
+        }
+        $missing = [];
+        foreach ($status['applied'] as $item) {
+            if (!isset($onDisk[$item['name']])) {
+                $missing[] = $item['name'];
+            }
+        }
+
+        if ($status['total'] === 0) {
+            return self::check(
+                'migrations',
+                'Миграции базы',
+                self::FAIL,
+                'файлов миграций на сервере нет',
+                'Каталог database/migrations пуст — выкладка не довезла файлы. Пока их нет, панель не может знать о неприменённых миграциях.',
+                null
+            );
+        }
+
+        if ($missing !== []) {
+            return self::check(
+                'migrations',
+                'Миграции базы',
+                self::WARN,
+                'база знает ' . count($missing) . ' миграций, которых нет в файлах',
+                'База новее выложенного кода: похоже, релиз доехал не полностью. Первая из недостающих — ' . $missing[0] . '.',
+                null
+            );
+        }
+
+        $pending = (int) $status['pending_count'];
+
+        return self::check(
+            'migrations',
+            'Миграции базы',
+            $pending > 0 ? self::WARN : self::OK,
+            $pending > 0
+                ? 'не применено: ' . $pending
+                : 'применены все ' . (int) $status['total'],
+            $pending > 0 ? 'Примените их в разделе «Базы данных» — часть функций до этого работать не будет.' : '',
+            null
+        );
+    }
+
+    /** @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}> */
+    private static function protection(): array
+    {
+        $checks = [];
+
+        $appUrl = (string) Config::get('app.url', '');
+        $https = str_starts_with(strtolower(trim($appUrl)), 'https://');
+        $checks[] = self::check(
+            'https',
+            'HTTPS',
+            $https ? self::OK : self::WARN,
+            $https ? 'адрес сайта объявлен по https' : 'адрес сайта объявлен по http',
+            $https ? '' : 'Пока app.url начинается с http://, не работает ни принудительный переход на https, ни HSTS, а cookie админки уходит открытым текстом.',
+            null
+        );
+
+        $baselineAge = Integrity::baselineAge();
+        if (!Integrity::hasBaseline()) {
+            $checks[] = self::check(
+                'integrity',
+                'Эталон целостности',
+                self::WARN,
+                'не собран',
+                'Без эталона подмену файлов кода замечать нечем. Собирается при выпуске релиза и при обновлении.',
+                null
+            );
+        } else {
+            $stale = $baselineAge !== null && $baselineAge > self::BASELINE_STALE;
+            $checks[] = self::check(
+                'integrity',
+                'Эталон целостности',
+                $stale ? self::WARN : self::OK,
+                $baselineAge !== null ? 'собран ' . self::age($baselineAge) . ' назад' : 'собран',
+                $stale ? 'Эталон старше выложенного кода — сверка будет ругаться на ваши же обновления.' : '',
+                $baselineAge !== null ? time() - $baselineAge : null
+            );
+        }
+
+        $drill = @filemtime(RestoreDrill::markerPath());
+        if ($drill === false) {
+            $checks[] = self::check(
+                'restore_drill',
+                'Репетиция восстановления',
+                self::WARN,
+                'ни разу не проводилась',
+                'Копия, которую ни разу не восстанавливали, бэкапом не является. Репетицию выполняет app/Console/restore_drill.php по cron.',
+                null
+            );
+        } else {
+            $age = time() - $drill;
+            $checks[] = self::check(
+                'restore_drill',
+                'Репетиция восстановления',
+                $age > self::DRILL_FRESH ? self::WARN : self::OK,
+                'успешно ' . self::age($age) . ' назад',
+                $age > self::DRILL_FRESH ? 'Давно не проверялось, что копия действительно разворачивается.' : '',
+                $drill
+            );
+        }
+
+        // Журнал держится отдельным разделом, но молчащий о себе журнал —
+        // это тот же тихий отказ: за неделю владелец дважды скачивал файл и
+        // отдавал его инженеру, чтобы узнать, что у него на сайте. Число за
+        // сутки, а не за всё время: важно, что происходит сейчас.
+        $errors = LogReader::countSince('error');
+        $checks[] = self::check(
+            'errors_24h',
+            'Ошибки за сутки',
+            $errors === 0 ? self::OK : ($errors >= 50 ? self::FAIL : self::WARN),
+            $errors === 0 ? 'ни одной' : 'записей: ' . $errors,
+            $errors === 0 ? '' : 'Разбор — в разделе «Журнал ошибок»: одинаковые записи там сведены, и видно, что повторяется.',
+            time()
+        );
+
+        $ping = trim((string) getenv('MONITORING_HEARTBEAT_URL'));
+        $checks[] = self::check(
+            'heartbeat_ping',
+            'Сигнал наружу',
+            $ping !== '' ? self::OK : self::WARN,
+            $ping !== '' ? 'настроен' : 'не настроен',
+            $ping !== '' ? '' : 'Сторож живёт на этом же сервере: если упадёт сервер или cron, сообщить о простое будет некому. Адрес приёмника задаётся переменной MONITORING_HEARTBEAT_URL.',
+            null
+        );
+
+        return $checks;
+    }
+
+    /** @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}> */
+    private static function integrations(): array
+    {
+        $checks = [];
+        foreach (IntegrationStatus::all() as $row) {
+            if (!$row['used']) {
+                $checks[] = self::check(
+                    'integration:' . $row['name'],
+                    $row['title'],
+                    self::UNKNOWN,
+                    'ни разу не использовалась',
+                    'Либо она не настроена, либо её ещё не вызывали. До первого вызова сказать о ней нечего.',
+                    null
+                );
+                continue;
+            }
+
+            $okAt = $row['ok_at'];
+            $failAt = $row['fail_at'];
+            // Последняя по времени попытка и решает состояние. Обе отметки при
+            // этом остаются: успех не стирает вчерашний сбой, а сбой — того,
+            // что десять минут назад всё работало.
+            $failing = $failAt !== null && ($okAt === null || $failAt > $okAt);
+            $value = $okAt !== null
+                ? 'работала ' . self::age(time() - $okAt) . ' назад'
+                : 'ни разу не срабатывала успешно';
+            if ($failAt !== null) {
+                $value .= '; последний отказ ' . self::age(time() - $failAt) . ' назад';
+            }
+
+            $checks[] = self::check(
+                'integration:' . $row['name'],
+                $row['title'],
+                $failing ? self::FAIL : self::OK,
+                $value,
+                $failing ? $row['error'] : '',
+                $okAt ?? $failAt
+            );
+        }
+
+        return $checks;
+    }
+
+    /**
+     * Скорость у реальных посетителей — замеры `WebVitals` за 28 дней.
+     *
+     * Страница «Производительность» показывала их давно, но туда заходят,
+     * когда уже знают, что сайт медленный; здесь медленная страница видна
+     * наравне с молчащим воркером. Состояние — предупреждение, а не отказ:
+     * сайт работает, просто плохо.
+     *
+     * @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}>
+     */
+    private static function vitals(): array
+    {
+        if (!WebVitals::enabled()) {
+            return self::vitalsChecks(false, []);
+        }
+        try {
+            $slices = WebVitals::slices(28);
+        } catch (\Throwable $e) {
+            Logger::swallowed('SystemHealth: замеры скорости недоступны', $e);
+            $slices = [];
+        }
+
+        return self::vitalsChecks(true, $slices);
+    }
+
+    /**
+     * Чистая часть `vitals()`: из срезов — строки состояния.
+     *
+     * Оценка у метрики — худшая по устройствам, где замеров достаточно:
+     * компьютеры в зелёной зоне не должны прятать телефоны в красной, а
+     * Google оценивает мобильную версию отдельно. Рядом называется тип
+     * страницы, где хуже всего, — иначе «плохо» не говорит, куда смотреть.
+     *
+     * @param array<string, array{device: array<string, array{p75: float, count: int, rating: string}>, kinds: array<string, array<string, array{p75: float, count: int, rating: string}>>}> $slices
+     * @return list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}>
+     */
+    public static function vitalsChecks(bool $enabled, array $slices): array
+    {
+        if (!$enabled) {
+            return [self::check(
+                'vitals',
+                'Сбор замеров',
+                self::UNKNOWN,
+                'выключен',
+                'Без замеров с посетителей о медленной странице узнают от них, а не отсюда. Включается в «Производительности», cookie и персональных данных не требует.',
+                null
+            )];
+        }
+
+        $titles = [
+            'LCP' => 'Загрузка главного (LCP)',
+            'INP' => 'Отклик на нажатие (INP)',
+            'CLS' => 'Сдвиги вёрстки (CLS)',
+        ];
+        $devices = ['mobile' => 'телефоны', 'desktop' => 'компьютеры'];
+        $ratings = ['good' => 'хорошо', 'needs-improvement' => 'нужно улучшить', 'poor' => 'плохо'];
+        $rank = ['good' => 0, 'needs-improvement' => 1, 'poor' => 2];
+        $checks = [];
+
+        foreach (WebVitals::CORE as $metric) {
+            $slice = $slices[$metric] ?? ['device' => [], 'kinds' => []];
+            $parts = [];
+            $worst = null;
+            $worstDevice = '';
+            $samples = 0;
+            foreach ($devices as $device => $label) {
+                $stat = $slice['device'][$device] ?? null;
+                if ($stat === null) {
+                    continue;
+                }
+                $samples += $stat['count'];
+                if ($stat['count'] < WebVitals::MIN_SAMPLES) {
+                    continue;
+                }
+                $parts[] = $label . ' ' . WebVitals::format($metric, $stat['p75'])
+                    . ' — ' . ($ratings[$stat['rating']] ?? $stat['rating']);
+                if ($worst === null || ($rank[$stat['rating']] ?? 0) > ($rank[$worst] ?? 0)) {
+                    $worst = $stat['rating'];
+                    $worstDevice = $device;
+                }
+            }
+
+            if ($worst === null) {
+                $checks[] = self::check(
+                    'vitals:' . $metric,
+                    $titles[$metric],
+                    self::UNKNOWN,
+                    $samples === 0 ? 'замеров нет' : 'мало замеров: ' . $samples,
+                    'Оценка выносится от ' . WebVitals::MIN_SAMPLES . ' замеров на устройство: на меньшей выборке перцентиль случаен.',
+                    null
+                );
+                continue;
+            }
+
+            $hint = '';
+            if ($worst !== 'good') {
+                $kindWorst = null;
+                foreach ($slice['kinds'][$worstDevice] ?? [] as $kind => $stat) {
+                    if ($stat['count'] >= WebVitals::MIN_SAMPLES
+                        && ($kindWorst === null || $stat['p75'] > $kindWorst[1]['p75'])) {
+                        $kindWorst = [$kind, $stat];
+                    }
+                }
+                if ($kindWorst !== null) {
+                    $hint = 'Хуже всего: ' . (WebVitals::KIND_LABELS[$kindWorst[0]] ?? $kindWorst[0])
+                        . ' (' . ($devices[$worstDevice] ?? $worstDevice) . ') — '
+                        . WebVitals::format($metric, $kindWorst[1]['p75']) . '.';
+                }
+            }
+
+            $checks[] = self::check(
+                'vitals:' . $metric,
+                $titles[$metric],
+                $worst === 'good' ? self::OK : self::WARN,
+                implode('; ', $parts),
+                $hint,
+                time()
+            );
+        }
+
+        return $checks;
+    }
+
+    /** @return array{id:string,title:string,state:string,value:string,hint:string,at:?int} */
+    private static function check(string $id, string $title, string $state, string $value, string $hint, ?int $at): array
+    {
+        return ['id' => $id, 'title' => $title, 'state' => $state, 'value' => $value, 'hint' => $hint, 'at' => $at];
+    }
+
+    /** @param list<array{id:string,title:string,state:string,value:string,hint:string,at:?int}> $checks */
+    private static function hasKey(array $checks, string $id): bool
+    {
+        foreach ($checks as $check) {
+            if ($check['id'] === $id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Возраст словами: экран читают глазами, а не считают секунды. */
+    public static function age(int $seconds): string
+    {
+        $seconds = max(0, $seconds);
+        if ($seconds < 90) {
+            return 'меньше минуты';
+        }
+        if ($seconds < 5400) {
+            return (int) round($seconds / 60) . ' мин';
+        }
+        if ($seconds < 172800) {
+            return (int) round($seconds / 3600) . ' ч';
+        }
+
+        return (int) round($seconds / 86400) . ' дн';
+    }
+}

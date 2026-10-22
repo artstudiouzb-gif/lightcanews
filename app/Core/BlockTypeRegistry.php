@@ -1,0 +1,408 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core;
+
+use App\Core\BlockData\BlockFieldSchema;
+
+/**
+ * Единый реестр типов блоков.
+ *
+ * Здесь собраны ключи типов, их дефолтные данные и названия для редактора.
+ * Шаблоны обычных блоков следуют соглашению templates/blocks/{type}.php;
+ * columns рендерится программно, потому отдельного шаблона у него нет.
+ */
+final class BlockTypeRegistry
+{
+    /**
+     * Умолчания типов, у которых поля описаны по-старому — списком здесь,
+     * полем в `block_form.php` и веткой в `BlockController::collectData()`.
+     *
+     * Пустой массив означает, что тип переехал на схему полей
+     * (`App\Core\BlockData\BlockFieldSchema`) и умолчания берутся оттуда;
+     * ключ остаётся, чтобы не менялся порядок типов в редакторе. Полный
+     * список даёт `defaults()`, обращаться нужно к нему.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    public const BASE_DEFAULTS = [
+        'text' => [], // схема: BlockFieldSchema
+        'html' => ['html' => ''],
+        'cta' => [], // схема: BlockFieldSchema
+        'slider' => [], // схема: BlockFieldSchema
+        'form' => [],
+        'columns' => [], // схема: BlockFieldSchema
+        // Вкладки — такой же контейнер, как columns: содержимое вкладки это
+        // вложенные блоки любого типа (column_index = номер вкладки), а сам
+        // блок хранит только подписи вкладок и оформление.
+        'tabs' => [], // схема: BlockFieldSchema
+        'testimonials' => [], // схема: BlockFieldSchema
+        'counters' => [], // схема: BlockFieldSchema
+        'team_list' => [], // схема: BlockFieldSchema
+        'projects_list' => [], // схема: BlockFieldSchema
+        'news_latest' => [], // схема: BlockFieldSchema
+        'partners' => [], // схема: BlockFieldSchema
+        'subscribe' => [], // схема: BlockFieldSchema
+        'faq' => [], // схема: BlockFieldSchema
+        'contact_cards' => [], // схема: BlockFieldSchema
+        // hero_id — ссылка на обложку (тип контента «Обложки»). Когда он задан,
+        // блок только размещает обложку: содержимое и настройки берутся из неё,
+        // а собственные поля блока не используются. Ноль — старая обложка,
+        // собранная прямо в блоке; такие страницы продолжают работать.
+        'hero' => ['hero_id' => 0, 'title' => '', 'title_size' => 0, 'eyebrow' => '', 'subtitle' => '', 'bg_type' => 'none', 'image' => '', 'image_mobile' => '', 'image_position' => 'center-center', 'image_position_mobile' => 'center-center', 'video_url' => '', 'video_mobile' => 'poster', 'youtube_url' => '', 'bg_color' => '', 'width' => 'full', 'height' => 'regular', 'custom_height' => '720px', 'height_mobile' => '', 'custom_height_mobile' => '', 'overlay_enabled' => false, 'overlay_mode' => 'gradient', 'overlay_direction' => 'auto', 'overlay_color' => '#0b1a30', 'overlay_opacity' => 35, 'text_position' => 'left', 'text_align_y' => 'center', 'text_width' => '', 'text_color' => '', 'art_image' => '', 'art_alt' => '', 'art_position' => 'above', 'art_size' => 'medium', 'button_color' => '', 'panel_enabled' => false, 'panel_color' => '#0b1a30', 'panel_opacity' => 0, 'button_text' => '', 'button_url' => '', 'button_icon' => '', 'button_icon_image' => '', 'button_icon_size' => 0, 'button2_text' => '', 'button2_url' => '', 'button2_icon' => '', 'button2_icon_image' => '', 'video_button_text' => '', 'video_button_url' => '', 'slides' => [], 'autoplay' => 0],
+        'cards_grid' => [], // схема: BlockFieldSchema
+        'media_gallery' => [], // схема: BlockFieldSchema
+        'news_feature' => [], // схема: BlockFieldSchema
+        'news_docs' => [], // схема: BlockFieldSchema
+        'bio_education' => [], // схема: BlockFieldSchema
+        'anchor_nav' => [], // схема: BlockFieldSchema
+        'stages' => [], // схема: BlockFieldSchema
+        'text_image' => [], // схема: BlockFieldSchema
+        'docs_list' => [], // схема: BlockFieldSchema
+        'map_point' => [], // схема: BlockFieldSchema
+        'org_structure' => [], // схема: BlockFieldSchema
+        'leader_card' => [], // схема: BlockFieldSchema
+        'icon_text' => [], // схема: BlockFieldSchema
+        'collage' => [], // схема: BlockFieldSchema
+        'table' => [], // схема: BlockFieldSchema
+        'image' => [], // схема: BlockFieldSchema
+        'embed' => [], // схема: BlockFieldSchema
+        'chart' => [], // схема: BlockFieldSchema
+        'divider' => [], // схема: BlockFieldSchema
+        'buttons' => [], // схема: BlockFieldSchema
+        'instagram_feed' => [], // схема: BlockFieldSchema
+    ];
+
+    /** Короткие русские названия для сообщений редактору. */
+    public const TYPE_LABELS = [
+        'text' => 'Текст', 'html' => 'Произвольный HTML', 'cta' => 'Призыв к действию',
+        'slider' => 'Слайдер',
+        'form' => 'Форма', 'columns' => 'Колонки', 'tabs' => 'Вкладки', 'testimonials' => 'Отзывы',
+        'counters' => 'Счётчики', 'team_list' => 'Команда', 'projects_list' => 'Проекты',
+        'news_latest' => 'Последние новости', 'partners' => 'Партнёры',
+        'subscribe' => 'Подписка', 'faq' => 'Вопросы и ответы', 'contact_cards' => 'Контакты',
+        'hero' => 'Обложка',
+        'cards_grid' => 'Карточки', 'media_gallery' => 'Медиагалерея',
+        'news_feature' => 'Новости и аналитика',
+        'news_docs' => 'Новости и документы',
+        'bio_education' => 'Биография и образование',
+        'anchor_nav' => 'Якорная навигация', 'stages' => 'Хронология и этапы',
+        'text_image' => 'Текст с фото',
+        'docs_list' => 'Список документов', 'map_point' => 'Карта', 'org_structure' => 'Оргструктура',
+        'leader_card' => 'Карточка руководителя',
+        'icon_text' => 'Иконка и текст', 'collage' => 'Коллаж', 'table' => 'Таблица',
+        'image' => 'Изображение', 'embed' => 'Внешняя врезка',
+        'chart' => 'Диаграмма', 'divider' => 'Разделитель', 'buttons' => 'Кнопки',
+        'instagram_feed' => 'Лента Instagram',
+    ];
+
+    /**
+     * Более подробные подписи только там, где список добавления блока требует
+     * пояснения. Остальные берутся из TYPE_LABELS.
+     */
+    private const EDITOR_LABEL_OVERRIDES = [
+        'cta' => 'Призыв к действию (CTA)',
+        'tabs' => 'Вкладки (любые блоки внутри)',
+        'team_list' => 'Список команды',
+        'projects_list' => 'Список проектов',
+        'partners' => 'Партнёры (логотипы)',
+        'subscribe' => 'Подписка на дайджест',
+        'contact_cards' => 'Контактные карточки',
+        'hero' => 'Герой (титул + фото/видео)',
+        'cards_grid' => 'Карточки (иконки / фото / категории)',
+        'media_gallery' => 'Медиа-галерея (видео/фото)',
+        'news_feature' => 'Новости и аналитика (крупная + список)',
+        'news_docs' => 'Новости + документы (2 колонки)',
+        'bio_education' => 'Биография + образование',
+        'anchor_nav' => 'Якорная навигация (вкладки)',
+        // «Хронология» и «Этапы» были двумя блоками, и оба подписывались
+        // словом «таймлайн» — выбрать между ними по описанию было нельзя.
+        'stages' => 'Хронология / этапы (лента или список)',
+        'text_image' => 'Текст + фото (о проекте)',
+        'docs_list' => 'Документы (сетка)',
+        'map_point' => 'Карта с меткой',
+        'org_structure' => 'Структура организации (оргсхема)',
+        'leader_card' => 'Карточка руководителя (с вкладками)',
+        'icon_text' => 'Иконка и текст (контакты, телефоны)',
+        'collage' => 'Коллаж (фото внахлёст, плитки, печать)',
+        'table' => 'Таблица (строки текстом, ячейки через |)',
+        'image' => 'Изображение (одно фото с подписью)',
+        'embed' => 'Внешняя врезка (YouTube, Telegram, Google Формы)',
+        'chart' => 'Диаграмма (столбцы, доли, показатель к цели)',
+        'divider' => 'Разделитель (линия, знак или пустое место)',
+        'buttons' => 'Кнопки (до трёх в ряд)',
+        'instagram_feed' => 'Лента Instagram (последние публикации)',
+        // Аккордеон и цитата — это FAQ и «Отзывы»: разметка, скрипт и стили у
+        // них те же, и отдельные блоки-близнецы разъехались бы с ними при
+        // первой правке. Названы так, чтобы редактор их нашёл по своему слову.
+        'faq' => 'FAQ / аккордеон (свёрнутые разделы)',
+        'testimonials' => 'Отзывы и цитаты (автор, должность, фото)',
+    ];
+
+    /**
+     * Группы списка добавления блока. Длинный выпадающий список из сорока
+     * типов приходилось читать целиком, а подпись в скобках у половины пунктов
+     * не объясняла, чем тип отличается от соседа. Каждый тип входит ровно в
+     * одну группу, порядок внутри — порядок плиток (сверяет тест 131).
+     */
+    public const EDITOR_GROUPS = [
+        'Текст и медиа' => [
+            'text', 'text_image', 'image', 'slider', 'media_gallery', 'collage',
+            'embed', 'instagram_feed', 'html',
+        ],
+        'Карточки и списки' => [
+            'cards_grid', 'icon_text', 'contact_cards', 'faq', 'testimonials',
+            'stages', 'partners', 'docs_list',
+        ],
+        'Первый экран и действия' => ['hero', 'cta', 'buttons', 'subscribe', 'form'],
+        'Цифры и данные' => ['counters', 'chart', 'table', 'map_point'],
+        'Новости и проекты' => ['news_latest', 'news_feature', 'news_docs', 'projects_list'],
+        'Люди и структура' => ['team_list', 'leader_card', 'bio_education', 'org_structure'],
+        'Раскладка страницы' => ['columns', 'tabs', 'anchor_nav', 'divider'],
+    ];
+
+    /** Строка под названием плитки: что блок показывает, одной фразой. */
+    public const EDITOR_HINTS = [
+        'text' => 'Абзацы, списки и цитата из редактора',
+        'text_image' => 'Текст рядом с фотографией или поверх неё',
+        'image' => 'Одна фотография с подписью',
+        'slider' => 'Карусель фотографий',
+        'media_gallery' => 'Фотоальбомы и видео из разделов сайта',
+        'collage' => 'Фото, числа и цитата одной композицией',
+        'embed' => 'Ролик YouTube, пост Telegram, Google Форма',
+        'instagram_feed' => 'Последние публикации аккаунта',
+        'html' => 'Свой код — только супер-администратор',
+        'cards_grid' => 'Сетка карточек с иконкой или фото',
+        'icon_text' => 'Короткие пункты с иконкой: телефоны, адреса',
+        'contact_cards' => 'Отделы и люди: телефон, почта, адрес',
+        'faq' => 'Вопросы с ответами, раскрываются по щелчку',
+        'testimonials' => 'Отзывы или слово руководителя',
+        'stages' => 'Этапы и годы: лентой или списком',
+        'partners' => 'Логотипы организаций-партнёров',
+        'docs_list' => 'Файлы для скачивания и правовые акты',
+        'hero' => 'Заголовок страницы на фото или видео',
+        'cta' => 'Заголовок с кнопкой на заметной подложке',
+        'buttons' => 'До трёх кнопок в ряд, без подложки',
+        'subscribe' => 'Подписка на рассылку новостей',
+        'form' => 'Форма из раздела «Формы»: заявка, обращение',
+        'counters' => 'Ключевые числа с подписями',
+        'chart' => 'Столбцы, доли целого, путь к цели',
+        'table' => 'Строки и столбцы: тарифы, реквизиты, график',
+        'map_point' => 'Карта с отметкой адреса',
+        'news_latest' => 'Свежие новости, обновляются сами',
+        'news_feature' => 'Главная новость крупно и список рядом',
+        'news_docs' => 'Новости и документы в две колонки',
+        'projects_list' => 'Карточки из раздела «Проекты»',
+        'team_list' => 'Сотрудники из раздела «Команда»',
+        'leader_card' => 'Один руководитель: фото, должность, вкладки',
+        'bio_education' => 'Биография и образование человека',
+        'org_structure' => 'Схема подчинения подразделений',
+        'columns' => 'Ряд из колонок, в них — любые блоки',
+        'tabs' => 'Вкладки, в каждой — свои блоки',
+        'anchor_nav' => 'Оглавление со ссылками на разделы страницы',
+        'divider' => 'Линия, знак или пустое место между секциями',
+    ];
+
+    /** @var array<string, array<string, mixed>>|null */
+    private static ?array $defaults = null;
+
+    /**
+     * Умолчания всех типов: у переехавших на схему — из неё, у остальных — из
+     * BASE_DEFAULTS. Порядок типов сохраняется, он же порядок в редакторе.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function defaults(): array
+    {
+        if (self::$defaults !== null) {
+            return self::$defaults;
+        }
+
+        $all = [];
+        foreach (self::BASE_DEFAULTS as $type => $fields) {
+            $all[$type] = BlockFieldSchema::has($type) ? BlockFieldSchema::defaults($type) : $fields;
+        }
+
+        return self::$defaults = $all;
+    }
+
+    /** @return list<string> */
+    public static function types(): array
+    {
+        return array_keys(self::BASE_DEFAULTS);
+    }
+
+    public static function has(string $type): bool
+    {
+        return array_key_exists($type, self::BASE_DEFAULTS);
+    }
+
+    /** @return array<string, mixed> */
+    public static function defaultsFor(string $type): array
+    {
+        return self::defaults()[$type] ?? [];
+    }
+
+    /** @return array<string, string> */
+    public static function editorLabels(): array
+    {
+        return array_replace(self::TYPE_LABELS, self::EDITOR_LABEL_OVERRIDES);
+    }
+
+    /**
+     * Плитки выбора типа по группам. Поиск идёт по короткому названию,
+     * подробной подписи (в ней «аккордеон» и «цитата» — слова, по которым
+     * редактор ищет FAQ и «Отзывы»), пояснению и системному коду.
+     *
+     * @return array<string, array<string, array{name: string, hint: string, search: string}>>
+     */
+    public static function editorCatalog(): array
+    {
+        $labels = self::editorLabels();
+        $catalog = [];
+        foreach (self::EDITOR_GROUPS as $group => $types) {
+            foreach ($types as $type) {
+                $name = self::TYPE_LABELS[$type];
+                $hint = self::EDITOR_HINTS[$type];
+                $catalog[$group][$type] = [
+                    'name' => $name,
+                    'hint' => $hint,
+                    'search' => mb_strtolower($name . ' ' . ($labels[$type] ?? '') . ' ' . $hint . ' ' . $type),
+                ];
+            }
+        }
+
+        return $catalog;
+    }
+
+    /**
+     * Контейнеры: содержимое — вложенные блоки, а не поля формы. Шаблона у них
+     * нет (рендер программный, с рекурсией), и вкладывать контейнер в контейнер
+     * нельзя — иначе редактор получает дерево, которое некому показать.
+     *
+     * @var list<string>
+     */
+    public const CONTAINER_TYPES = ['columns', 'tabs'];
+
+    public static function isContainer(string $type): bool
+    {
+        return in_array($type, self::CONTAINER_TYPES, true);
+    }
+
+    /**
+     * Переименованные типы: ключ — как записано в старых блоках, значение —
+     * нынешний тип.
+     *
+     * Миграция переписывает `blocks.type`, но полагаться только на неё нельзя:
+     * база и код на сервере обновляются разными путями (архив релиза, ветка
+     * `deploy`, `git pull`), и между ними бывает окно. Неизвестный тип
+     * рендерится комментарием «Неизвестный тип блока», то есть страница
+     * молча теряет секцию — а это как раз тот случай, когда лучше показать
+     * содержимое по-старому. Знание о переименовании лежит здесь одно на всех
+     * читателей: вывод, форма редактора и список блоков страницы.
+     *
+     * @var array<string, array{
+     *     type: string,
+     *     data: array<string, mixed>,
+     *     rename: array<string, string>,
+     *     values?: array<string, array<string, array<string, mixed>>>
+     * }>
+     */
+    public const LEGACY_TYPES = [
+        // «Хронология» и «Этапы» — один тип: оба показывали события во времени
+        // и оба подписывались «таймлайн». Вертикальный список остался видом
+        // (`layout = list`), а кнопка под ним — той же ссылкой «Все …», что у
+        // ленты. Одного переименования типа тут мало: без раскладки старая
+        // хронология вышла бы лентой карточек, то есть вид собранной страницы
+        // поменялся бы молча — а это хуже, чем незнакомый тип.
+        'timeline' => [
+            'type' => 'stages',
+            'data' => ['layout' => 'list'],
+            'rename' => ['button_text' => 'all_text', 'button_url' => 'all_url'],
+        ],
+        // «Преимущества» и «Карточки» печатали одну и ту же карточку
+        // (`.feature-card` с тем же нутром) из одних и тех же полей — иконка,
+        // заголовок, текст, ссылка. Разошлись они только настройками: у
+        // «Карточек» есть размер и фон иконки, стиль и цвета, у «Преимуществ»
+        // — ряды без дыр и нумерация. Правка одного до второго не доходила:
+        // подложка иконки у «Карточек» давно берёт тон акцента, а у
+        // «Преимуществ» осталась синеватой — замерено.
+        //
+        // Вариант «в одну строку» у «Преимуществ» меняет ровно положение
+        // иконки, поэтому переезжает в настройку «Положение иконки», а не во
+        // второй вариант с тем же смыслом. Значение там своё: у «Карточек»
+        // «слева» кладёт иконку слева от всего текста, а здесь она стоит на
+        // одной линии с заголовком — замерено, вид разный.
+        'advantages' => [
+            'type' => 'cards_grid',
+            // Номер печатался всегда и во всех вариантах, включая «Карточки»
+            // без нумерации: правила, которое его прячет, в публичном CSS не
+            // было вовсе. Настройка появилась включённой, чтобы вид собранных
+            // страниц не менялся, а выключить её теперь можно.
+            'data' => ['numbering' => true],
+            'rename' => [],
+            'values' => [
+                'variant' => [
+                    'grid' => ['variant' => 'icon'],
+                    'indexed' => ['variant' => 'icon'],
+                    'inline' => ['variant' => 'icon', 'icon_position' => 'inline'],
+                    'band' => ['variant' => 'band'],
+                ],
+            ],
+        ],
+    ];
+
+    /** Нынешнее имя типа: переименованный отдаёт новое, остальные — себя. */
+    public static function canonicalType(string $type): string
+    {
+        return isset(self::LEGACY_TYPES[$type])
+            ? (string) self::LEGACY_TYPES[$type]['type']
+            : $type;
+    }
+
+    /**
+     * Данные блока в терминах нынешнего типа: подставленная раскладка и
+     * переименованные ключи. Сохранённое значение всегда сильнее умолчания —
+     * блок, уже переехавший миграцией, эта функция не меняет.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public static function canonicalData(string $type, array $data): array
+    {
+        $legacy = self::LEGACY_TYPES[$type] ?? null;
+        if ($legacy === null) {
+            return $data;
+        }
+
+        foreach ($legacy['rename'] as $from => $to) {
+            if (!array_key_exists($to, $data) && array_key_exists($from, $data)) {
+                $data[$to] = $data[$from];
+            }
+        }
+
+        // Значение поля тоже бывает переименовано, и не всегда один в один:
+        // «в одну строку» у «Преимуществ» — это вариант «Иконка и текст» плюс
+        // настройка «Положение иконки: слева». Поэтому карта отдаёт набор
+        // полей, а не строку.
+        $replacement = [];
+        foreach ($legacy['values'] ?? [] as $field => $map) {
+            $current = $data[$field] ?? null;
+            if (is_string($current) && isset($map[$current])) {
+                $replacement += $map[$current];
+            }
+        }
+
+        return array_merge($legacy['data'], $data, $replacement);
+    }
+
+    public static function templateFile(string $type): ?string
+    {
+        if (!self::has($type) || self::isContainer($type)) {
+            return null;
+        }
+
+        return dirname(__DIR__, 2) . '/templates/blocks/' . $type . '.php';
+    }
+}

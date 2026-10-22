@@ -1,0 +1,40 @@
+{
+  ".image-field": {
+    "backgroundColor": "rgb(30, 41, 59)",
+    "borderColor": "rgb(51, 65, 85)",
+    "borderRadius": "3px",
+    "padding": "12px 14px"
+  },
+  ".image-field > label": {
+    "color": "rgb(241, 245, 249)",
+    "fontSize": "13px",
+    "fontWeight": "600",
+    "marginBottom": "9px"
+  },
+  ".image-field__row": {
+    "display": "grid",
+    "gap": "14px",
+    "alignItems": "start"
+  },
+  ".image-field__preview": {
+    "aspectRatio": "16 / 10",
+    "borderColor": "rgb(51, 65, 85)",
+    "borderRadius": "3px",
+    "backgroundColor": "rgb(39, 52, 73)"
+  },
+  ".image-field__name": {
+    "color": "rgb(241, 245, 249)",
+    "fontSize": "13px",
+    "fontWeight": "500"
+  },
+  ".image-field__controls": {
+    "display": "flex",
+    "gap": "6px",
+    "flexWrap": "wrap"
+  },
+  ".image-field__url": {
+    "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "height": "38px",
+    "borderRadius": "3px"
+  }
+}

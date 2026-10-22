@@ -1,0 +1,323 @@
+{
+  "version": 1,
+  "generatedBy": "npm run build:assets",
+  "css": {
+    "path": "/assets/css/public.min.css",
+    "sources": [
+      "/assets/css/gov-fonts.css",
+      "/assets/css/tokens.css",
+      "/assets/css/frontend.css",
+      "/assets/css/gov-theme.css",
+      "/assets/css/rich-content.css",
+      "/assets/css/a11y.css",
+      "/assets/css/public-layout-polish.css",
+      "/assets/css/public-editorial-pages.css",
+      "/assets/css/public-home.css"
+    ],
+    "sourceSha256": "ff3b37fcce9f74d0d1a1f7c212fa06b3315ecedf00a15a03da1222215eb82446",
+    "sha256": "019d69d2e549febc97fc1332a04790a5934d4630d6f46a3f06c70d540948c826",
+    "raw": 408153,
+    "gzip": 68610,
+    "brotli": 53189
+  },
+  "js": {
+    "path": "/assets/js/public.min.js",
+    "sources": [
+      "/assets/js/a11y.js",
+      "/assets/js/frontend.js",
+      "/assets/js/forms.js"
+    ],
+    "sourceSha256": "e2abf1c1f51aa971e2eb140a45fbec43466a3e834255931d134cd44588336a9b",
+    "sha256": "937fed7dae9f464fe6174e6169efca3cabd305bfa3bd1c2ea2e3c858ebfca5b7",
+    "raw": 60386,
+    "gzip": 16066,
+    "brotli": 14093
+  },
+  "blocks": {
+    "/assets/css/blocks/buttons.css": {
+      "path": "/assets/css/blocks/buttons.min.css",
+      "sourceSha256": "a687bd48f6396d545e72bc81b273164ffe89124bfed263c761006c92bca0aa3e",
+      "sha256": "ca42ee5a23b0d74393fd6f4d053a989a8e9c99097ffc42d787bfd086337a9cd0",
+      "raw": 1693,
+      "gzip": 656,
+      "brotli": 521
+    },
+    "/assets/css/blocks/cards-layouts.css": {
+      "path": "/assets/css/blocks/cards-layouts.min.css",
+      "sourceSha256": "05a286a962e1a92e73408f01857034090a60fdf6ad3cfeb33cef16f77ba48da9",
+      "sha256": "babd84e237886ddc62979345325e4a99af3347ab945397c97d68ed0cdb71d528",
+      "raw": 7308,
+      "gzip": 1770,
+      "brotli": 1515
+    },
+    "/assets/css/blocks/catalog.css": {
+      "path": "/assets/css/blocks/catalog.min.css",
+      "sourceSha256": "d7595b1b2654cb6b062ac10e85f42e1e4347d64cd65bc26c3533b69540de3c7a",
+      "sha256": "455bd1587b8fe286d6ebcbf0276b87f89303558edd67ff1ebb06067f75b450f5",
+      "raw": 9736,
+      "gzip": 2230,
+      "brotli": 1901
+    },
+    "/assets/css/blocks/chart.css": {
+      "path": "/assets/css/blocks/chart.min.css",
+      "sourceSha256": "bddb4e37f69ab023265b0dc7d0c6ca9b4d5439b80ae4b332942f7c977992ce9d",
+      "sha256": "94a9a906c5ef673051ea35a357bc47bc50d7683f23fa4e5e8603cbe02a58f0ae",
+      "raw": 2057,
+      "gzip": 815,
+      "brotli": 682
+    },
+    "/assets/css/blocks/collage.css": {
+      "path": "/assets/css/blocks/collage.min.css",
+      "sourceSha256": "7293616ed43e3d7e34434bb2c82e334a83abdaf274af7e4759408fc15f332082",
+      "sha256": "4c76d582112e6240dc1e21e95ed8a34b61ca01a88fdcd47edcee22d1c7253267",
+      "raw": 23011,
+      "gzip": 4586,
+      "brotli": 4077
+    },
+    "/assets/css/blocks/counters.css": {
+      "path": "/assets/css/blocks/counters.min.css",
+      "sourceSha256": "1d6c37d126ab3f61cdd84306be1b13a0b1354a27cd3b5ecfc07f72b929942644",
+      "sha256": "7b8d6ab40fb1f2e2ab743eeb7d2726dce93a22656ce1678821394db98ce6f4bf",
+      "raw": 30393,
+      "gzip": 5011,
+      "brotli": 4466
+    },
+    "/assets/css/blocks/divider.css": {
+      "path": "/assets/css/blocks/divider.min.css",
+      "sourceSha256": "cc4825e592b1372317ef2c540c5c4e00c386da89e0d9f4e37baf8d271481345e",
+      "sha256": "5dfe24f9510d0cd0b702f3eca2bc0cd9b77c10027fa9cc42deb8c4551a5d4eda",
+      "raw": 587,
+      "gzip": 298,
+      "brotli": 229
+    },
+    "/assets/css/blocks/embed.css": {
+      "path": "/assets/css/blocks/embed.min.css",
+      "sourceSha256": "63f7ff02d57a76e1009452e0c0be5b09c009eb06e6b5b4384afa18c7e59633e7",
+      "sha256": "efd0e489ad3bba5bf1c892bf53e78b0917f07233de7822a048b6c15b16dcad5d",
+      "raw": 745,
+      "gzip": 363,
+      "brotli": 274
+    },
+    "/assets/css/blocks/hero-art-layout.css": {
+      "path": "/assets/css/blocks/hero-art-layout.min.css",
+      "sourceSha256": "aedc10e3f1482aee893dc01bba10022d23413729c540d427c579cdaa3ea91c4e",
+      "sha256": "ca7ab5cbc43d0c72ac197408a3d91166d2389fd07df6d200eeeb9f5aca73b36d",
+      "raw": 1370,
+      "gzip": 423,
+      "brotli": 352
+    },
+    "/assets/css/blocks/hero.css": {
+      "path": "/assets/css/blocks/hero.min.css",
+      "sourceSha256": "0ae4bd881fba63b23f4def68d77141f23ca5f71fc882ac05a3ca9f0bb75ce6fd",
+      "sha256": "849202a624a2065dbd8465925937876de040975e3d56b51b1f4dba0f6ef7e59a",
+      "raw": 14399,
+      "gzip": 3549,
+      "brotli": 3162
+    },
+    "/assets/css/blocks/image.css": {
+      "path": "/assets/css/blocks/image.min.css",
+      "sourceSha256": "c1ca055d5f199eb2fc47b12534ab0631b9e95c22d00ad96a4f9b5b4e03b119f4",
+      "sha256": "bd60a09b026a17ceafd77752af51787cef1d08c10274a2d41c59d024e8613fc5",
+      "raw": 1333,
+      "gzip": 514,
+      "brotli": 411
+    },
+    "/assets/css/blocks/instagram-feed.css": {
+      "path": "/assets/css/blocks/instagram-feed.min.css",
+      "sourceSha256": "0a20a1895b339aa1d39ea02076e15b964a171ce5946f9433f3ff678873760739",
+      "sha256": "1fa61c567d0fd2a3439aa3e622cd4754d804c218c940368b5b7726f3faa40930",
+      "raw": 4553,
+      "gzip": 1442,
+      "brotli": 1216
+    },
+    "/assets/css/blocks/leader-card.css": {
+      "path": "/assets/css/blocks/leader-card.min.css",
+      "sourceSha256": "f7b76e833e5da248d330c45d136d1bbefcf2fabdb5ff8b6ea4521c2b5b2c450d",
+      "sha256": "6aa46e93affa395dbb4d9ca4df379502e0c48b9e0c5a2e42f15e717ca5b93be6",
+      "raw": 10833,
+      "gzip": 2442,
+      "brotli": 2103
+    },
+    "/assets/css/blocks/media-gallery.css": {
+      "path": "/assets/css/blocks/media-gallery.min.css",
+      "sourceSha256": "136accc52441840fcc47980d05ed83592f80196c3552f53f30ab2b4140a7ec59",
+      "sha256": "7dc8d51a9522d6535d1db440bedbe0951a38e77e4461600661c6f6b6c864587d",
+      "raw": 4188,
+      "gzip": 1323,
+      "brotli": 1112
+    },
+    "/assets/css/blocks/news-detail.css": {
+      "path": "/assets/css/blocks/news-detail.min.css",
+      "sourceSha256": "93751b5e6eaa6db529f14cc8b3fb897e4fc5f1966c0458d909089f46d4ce2cc4",
+      "sha256": "2f1f79c482a158ace4223d67a07b1937f480fbbac3635161f59d9b99f2ac297d",
+      "raw": 36677,
+      "gzip": 6429,
+      "brotli": 5654
+    },
+    "/assets/css/blocks/news-feature.css": {
+      "path": "/assets/css/blocks/news-feature.min.css",
+      "sourceSha256": "463a64ed22df01dd528811b075bc4139f0b28a13470d6e64127338391d37e2dd",
+      "sha256": "69ddf37948cea390b4657aa42d22f833df8378b3ba562b724ec274d89e2e5721",
+      "raw": 7949,
+      "gzip": 1994,
+      "brotli": 1711
+    },
+    "/assets/css/blocks/org-structure.css": {
+      "path": "/assets/css/blocks/org-structure.min.css",
+      "sourceSha256": "b0b647d9dd752ee8f3d966732d954bbaa0a02bc5d3d0978906d04c7a85242900",
+      "sha256": "75ea0d335d515a8bc008f46ea7abb4df558b54a2d956dacfa741efd4ad94e9a1",
+      "raw": 17614,
+      "gzip": 3381,
+      "brotli": 2924
+    },
+    "/assets/css/blocks/table.css": {
+      "path": "/assets/css/blocks/table.min.css",
+      "sourceSha256": "fb1a7bee9a2a8999b0dd70d8e771044f918a0e4d7bd817935d3f79b9ec0800fc",
+      "sha256": "08bdd1d6b0562ab3dfc4c4e5c05b91b202b81c18abad347a62a8e4580edbe883",
+      "raw": 1788,
+      "gzip": 608,
+      "brotli": 483
+    },
+    "/assets/css/blocks/tabs.css": {
+      "path": "/assets/css/blocks/tabs.min.css",
+      "sourceSha256": "4a5101e9fde83440bd9d355cad237ee3ed0773916415bde4d09e2835b6693b0d",
+      "sha256": "d258adab004bf9d4446696bf09cc9b5c058f460fca4c94a2c51b1c44f20db122",
+      "raw": 3120,
+      "gzip": 1016,
+      "brotli": 818
+    },
+    "/assets/js/blocks/anchor_nav.js": {
+      "path": "/assets/js/blocks/anchor_nav.min.js",
+      "sourceSha256": "60c373ef3c55aa87d2aabe57cecd422b5391f280bd91111ae67ce4ea38020746",
+      "sha256": "9e35023987d2cf8fe60f66f8f162bd4f334041170843e50429e930752a1cf817",
+      "raw": 1196,
+      "gzip": 651,
+      "brotli": 533
+    },
+    "/assets/js/blocks/hero.js": {
+      "path": "/assets/js/blocks/hero.min.js",
+      "sourceSha256": "ef2d4cefe650072e9000cb6ec5f3cb2e8b8d299b1263b36e4c0e3bcce4269164",
+      "sha256": "be865f577ea2d54407ce36031e7851d281423536667de8e03ee6fcd77d465c9c",
+      "raw": 9011,
+      "gzip": 3012,
+      "brotli": 2651
+    },
+    "/assets/js/blocks/instagram_feed.js": {
+      "path": "/assets/js/blocks/instagram_feed.min.js",
+      "sourceSha256": "f4c1d7ef946ed2ad4bc58a39ba6c62ab1724e9cfaa3a2137812f6583da9e5159",
+      "sha256": "02a0f513e3c227db66adabd9a02f120b4a25a347bf11755032aea297bbba2f0c",
+      "raw": 404,
+      "gzip": 303,
+      "brotli": 219
+    },
+    "/assets/js/blocks/leader_card.js": {
+      "path": "/assets/js/blocks/leader_card.min.js",
+      "sourceSha256": "d5fdc835d38062cb029829aa13d930b7fe13a38ae1dc781ff3ddba71a122ddd2",
+      "sha256": "3b3ad291d1d0c485a25f78951678cbbb53a2629a8db8dbe1b3a07b96495485e6",
+      "raw": 1724,
+      "gzip": 744,
+      "brotli": 621
+    },
+    "/assets/js/blocks/news_feature.js": {
+      "path": "/assets/js/blocks/news_feature.min.js",
+      "sourceSha256": "edbd227158e25b5cd571a146c81cf25a73d1c1cd8832a9e3f3e2fb3e57474b98",
+      "sha256": "1ee7c442b01a66a176a3d8b378cf8d280138d6d537f70cdc2603d014a779c56e",
+      "raw": 783,
+      "gzip": 435,
+      "brotli": 356
+    },
+    "/assets/js/blocks/org_structure.js": {
+      "path": "/assets/js/blocks/org_structure.min.js",
+      "sourceSha256": "c8941037d91563e7935df3fb37e0a85ca11bc16b767c8ff07dfe4f909526b77e",
+      "sha256": "1d0a37107b19cdba6038496c2f1d9f3cd8d2b0c2b1a0866783cc4b97765308c7",
+      "raw": 2002,
+      "gzip": 859,
+      "brotli": 715
+    },
+    "/assets/js/blocks/slider.js": {
+      "path": "/assets/js/blocks/slider.min.js",
+      "sourceSha256": "e89908a8518b47aed85f125b20ffc292b05b5e65d3419912524fb53394542d37",
+      "sha256": "7c3769e1627d3211be473fad82d536494b45d1db0045b191f287940eded0f4c2",
+      "raw": 4115,
+      "gzip": 1558,
+      "brotli": 1333
+    },
+    "/assets/js/blocks/tabs.js": {
+      "path": "/assets/js/blocks/tabs.min.js",
+      "sourceSha256": "3f79ee273a08965420cbf04ee20e5a014f7d357b1d22c8a94282b6af24b6893a",
+      "sha256": "8083a3525aa37bbc9f1b9dc71a02dac9fe8461057501dea0b33d25c4699a3a29",
+      "raw": 3010,
+      "gzip": 1189,
+      "brotli": 1019
+    },
+    "/assets/js/news.js": {
+      "path": "/assets/js/news.min.js",
+      "sourceSha256": "a443b1530d0ab4bae49e6ca2f272faef2b14d7220d75b672aa8fab2586f9555d",
+      "sha256": "6d4640f7de7c4ad02349cc1833e3b3196309fe90923e4ce0e08ac741f61e28f6",
+      "raw": 7152,
+      "gzip": 2539,
+      "brotli": 2143
+    }
+  },
+  "admin": {
+    "/assets/admin/admin-core.min.css": {
+      "sources": [
+        "/assets/css/admin.css"
+      ],
+      "sourceSha256": "5ce162bd355bb6ebe8427b23412852c7518c6602999392feac600d2e2becc9cd",
+      "sha256": "de4cf051bb06c0fb12ac2bbef99ec2833d95406e67668eb4613ff02eadb4be17",
+      "raw": 280508,
+      "gzip": 47637,
+      "brotli": 38615
+    },
+    "/assets/admin/admin-shell.min.css": {
+      "sources": [
+        "/assets/css/admin-shell-v2.css"
+      ],
+      "sourceSha256": "351156e0e25f2182ab1bc18c39b43b17ae7b06984cee54d1b4d00862de82b57c",
+      "sha256": "c80b63cfd2a193081386b925331c12b0e0ac01798b6bd2eecbb45ff698c977b9",
+      "raw": 11471,
+      "gzip": 2685,
+      "brotli": 2337
+    },
+    "/assets/admin/admin-brand.min.css": {
+      "sources": [
+        "/assets/css/admin-notifications.css",
+        "/assets/css/admin-shell-stability.css",
+        "/assets/css/admin-hero-slide-editor.css"
+      ],
+      "sourceSha256": "ecf187b5259910c424b64a12c2cc71277336d3adbb913836b3a567a61706b59c",
+      "sha256": "531ee9aaa2019e2b2c1b084fd5e671e0dff4a0d52828f08e07fe4e34f2221595",
+      "raw": 20315,
+      "gzip": 3787,
+      "brotli": 3317
+    },
+    "/assets/admin/admin-panel.min.css": {
+      "sources": [
+        "/assets/css/admin-workflow-fixes.css",
+        "/assets/css/admin-media-unified.css",
+        "/assets/css/admin-slider-settings-layout.css"
+      ],
+      "sourceSha256": "c9c7bc1bf49032b98986874c279303808cee8aeefc0801c6f60b2d727f013348",
+      "sha256": "2660fa3a3433a7f6569cf59ae3fe84619d3de92e0ba769ec904aa9c5d1009c5a",
+      "raw": 14609,
+      "gzip": 2873,
+      "brotli": 2512
+    },
+    "/assets/admin/admin.min.js": {
+      "sources": [
+        "/assets/js/admin.js",
+        "/assets/js/admin-media-bridge.js",
+        "/assets/js/admin-workflow-fixes.js",
+        "/assets/js/admin-slider-settings-layout.js",
+        "/assets/js/admin-gallery-dropzone.js",
+        "/assets/js/admin-media-loadmore.js"
+      ],
+      "sourceSha256": "e26b1b8c0303e4ae15400eb6fff19ff37452bed4e6695dbdba01c93c49a870f8",
+      "sha256": "e0972f2905c5346e04d7c7b5546edff90174bfe9b6cccdc16182f5adf783c07e",
+      "raw": 135913,
+      "gzip": 36337,
+      "brotli": 30598
+    }
+  }
+}
