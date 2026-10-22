@@ -84,20 +84,20 @@ test('Неопубликованная версия видна только пр
 test('Сущности без связанных записей обслуживаются тем же фасадом (БД)', function () {
     ensure_test_db();
 
-    // У команды перевода отдельной записью не бывает — только поля, и
-    // переводится имя, а не заголовок.
-    assert_false(Translations::supportsLinkedRecords('team_members'));
+    // У фотоальбома перевода отдельной записью не бывает — только поля.
+    assert_false(Translations::supportsLinkedRecords('photo_albums'));
     assert_true(Translations::supportsLinkedRecords('news'));
     assert_true(Translations::supportsLinkedRecords('pages'));
 
-    $id = \App\Models\TeamMember::create([
-        'name' => 'Иванов Иван', 'position' => 'Директор', 'status' => 'published',
-    ]);
-    \App\Models\TeamMemberTranslation::upsert($id, 'uz', ['name' => 'Ivanov Ivan', 'position' => 'Direktor']);
+    $pdo = \App\Core\Database::pdo();
+    $pdo->exec("INSERT INTO photo_albums (title, slug) VALUES ('Форум', 'facade-album-216')");
+    $id = (int) $pdo->lastInsertId();
+    $pdo->prepare("INSERT INTO photo_album_translations (album_id, lang, title) VALUES (?, 'uz', 'Forum')")
+        ->execute([$id]);
 
-    $rows = Translations::rows('team_members', $id);
-    assert_true(isset($rows['uz']), 'перевод по имени, а не по заголовку');
-    assert_same('Ivanov Ivan', (string) $rows['uz']['name']);
+    $rows = Translations::rows('photo_albums', $id);
+    assert_true(isset($rows['uz']), 'перевод полями находится тем же фасадом');
+    assert_same('Forum', (string) $rows['uz']['title']);
 });
 
 test('Неизвестная таблица и несуществующая запись отвечают пустотой', function () {
@@ -106,5 +106,5 @@ test('Неизвестная таблица и несуществующая за
     assert_same([], Translations::paths('news', -5));
     // primaryId никогда не теряет исходный id — иначе публикация уйдёт «в никуда».
     assert_same(42, Translations::primaryId('cats', 42));
-    assert_same(42, Translations::primaryId('team_members', 42));
+    assert_same(42, Translations::primaryId('photo_albums', 42));
 });

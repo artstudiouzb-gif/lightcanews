@@ -22,12 +22,12 @@ use App\Core\BlockTypeRegistry;
 const EXPECTED_BLOCK_TYPES = [
     'text', 'html', 'cta',
     'slider', 'form', 'columns', 'tabs', 'testimonials',
-    'counters', 'team_list', 'projects_list', 'news_latest',
+    'counters', 'projects_list', 'news_latest',
     'partners', 'subscribe', 'faq', 'contact_cards',
     'hero', 'cards_grid', 'media_gallery', 'news_feature',
     'news_docs',
     'bio_education', 'anchor_nav', 'stages', 'text_image',
-    'docs_list', 'map_point', 'org_structure', 'leader_card', 'icon_text',
+    'docs_list', 'map_point', 'icon_text',
     'collage', 'table', 'image', 'embed', 'chart', 'divider', 'buttons',
     'instagram_feed',
 ];

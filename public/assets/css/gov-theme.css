@@ -206,8 +206,7 @@ html { font-size: var(--base-font-size, 16px); overflow-x: clip; }/* Загол�
 
 h1, h2, h3, h4, h5, h6,
 .section-title, .block-title, .card__title,
-.feature-card__title, .imgcard__title, .catcard__title, .catdetail__title, .gcal-list__title,
-.orgstruct__head-name, .timeline-item__year, .ctaband__title, .bio__title, .block-text__title,
+.feature-card__title, .imgcard__title, .catcard__title, .catdetail__title, .gcal-list__title, .timeline-item__year, .ctaband__title, .bio__title, .block-text__title,
 .featband__name, .bio-quote__mark, .widget__title, .bio-extra__title,
 .block-hero__title, .news-index__title, .content-list__head h1,
 .block-news__title, .block-categories__title,
@@ -1651,9 +1650,9 @@ body .site-header--borders-container.site-header--transparent:not(.is-scrolled) 
 
 :is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
-    .feature-card, .leader-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
+    .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
-    .social-embed-card, .team-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {
+    .social-embed-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {
     /* --gov-ink, а не --text-primary: такой переменной нет нигде, и
        объявление через неё оставляло --section-fg пустым — карточка
        наследовала цвет секции, то есть белый текст на тёмной секции
@@ -1673,9 +1672,9 @@ body .site-header--borders-container.site-header--transparent:not(.is-scrolled) 
 
 :root[data-theme="dark"] :is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
-    .feature-card, .leader-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
+    .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
-    .social-embed-card, .team-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {
+    .social-embed-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {
     /* В тёмной теме поверхность карточки сама тёмная — акцент снова светлый. */
     --gov-teal-text: var(--gov-teal-on-dark);
 }
@@ -1691,7 +1690,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    ============================================================================ *//* --- Карточки: классические, с мягкими контурами и микро-тенями --- */
 
 .news-card, .content-card, .contact-card, .cat-tile, .site-search-results__item,
-.block-testimonials__item, .testimonial, .team-card, .project-card, .album-card,
+.block-testimonials__item, .testimonial, .project-card, .album-card,
 .doc-card, .catcard, .catdetail__card, .widget--style-card {
     background: color-mix(in srgb, var(--gov-surface) 68%, transparent);
     backdrop-filter: blur(16px) saturate(180%);
@@ -1701,7 +1700,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     box-shadow: var(--card-shadow);
     transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.4s ease, background-color 0.35s ease;
 }
-.news-card:hover, .content-card:hover, .contact-card:hover, .cat-tile:hover, .team-card:hover, .project-card:hover, .album-card:hover,
+.news-card:hover, .content-card:hover, .contact-card:hover, .cat-tile:hover, .project-card:hover, .album-card:hover,
 .doc-card:hover, .catcard:hover, .catdetail__card:hover, .widget--style-card:hover {
     background: color-mix(in srgb, var(--gov-surface) 88%, transparent);
     box-shadow: var(--shadow-hover);
@@ -2224,14 +2223,6 @@ body.lightbox-active { overflow: hidden; }
 .crumbs-print-btn:hover { opacity: 1; text-decoration: underline; }
 .crumbs-print-btn svg { display: inline-block; vertical-align: middle; }
 
-/* Печать схемы. Браузер по умолчанию не печатает фоновую графику, поэтому
-   тёмные карточки («Координационный совет», «Директор») уходили белым по
-   белому. На печати переводим их в контур с чёрным текстом, а линиям
-   соединителей включаем принудительную заливку. */
-@media print {
-    .orgstruct__branch, .orgstruct__unit, .block-team__group { break-inside: avoid; }
-}
-
 /* --- Тач-устройства: отключаем hover-подъёмы карточек и кнопок ---
    На касание :hover срабатывает при тапе и «залипает» после возврата
    со страницы — карточка остаётся приподнятой. Цвет/тень оставляем
@@ -2239,8 +2230,7 @@ body.lightbox-active { overflow: hidden; }
    защищены блоком (hover:hover) and (pointer:fine) выше — здесь
    покрываем старые правила этого файла и frontend.css. */
 @media (hover: none) {
-    .news-card:hover, .content-card:hover, .contact-card:hover, .cat-tile:hover,
-    .team-card:hover, .project-card:hover, .feature-card:hover,
+    .news-card:hover, .content-card:hover, .contact-card:hover, .cat-tile:hover, .project-card:hover, .feature-card:hover,
     .album-card:hover, .site-cta:hover,
     .block-cta a:hover, .block-partners__item:hover, .block-banner__button:hover,
     .block-cta__button:hover, .site-footer__social-link:hover,
@@ -2388,7 +2378,6 @@ h6, .h6 { font-size: var(--font-size-h6, var(--step-0)); }
 .news-single h1 { font-size: var(--font-size-h1, var(--step-8)); }
 .block-contact-cards__title { font-size: var(--font-size-h2, var(--step-6)); }
 .block-categories__title { font-size: var(--font-size-h2, var(--step-6)); }
-.block-team__title,
 .block-projects__title,
 .section-title { font-size: var(--font-size-h2, var(--step-6)); }
 
@@ -2429,7 +2418,6 @@ h6, .h6 { font-size: var(--font-size-h6, var(--step-0)); }
     body[class] .news-single h1 { font-size: var(--step-5); }
     body[class] .block-contact-cards__title { font-size: var(--step-4); }
     body[class] .block-categories__title { font-size: var(--step-3); }
-    body[class] .block-team__title,
     body[class] .block-projects__title,
     body[class] .section-title { font-size: var(--step-4); }
 }/* ============================================================================
@@ -2483,7 +2471,6 @@ h6, .h6 { font-size: var(--font-size-h6, var(--step-0)); }
 .album-card,
 .catcard,
 .project-card,
-.team-card,
 .mediacard {
     display: flex;
     flex-direction: column;
@@ -2500,8 +2487,7 @@ h6, .h6 { font-size: var(--font-size-h6, var(--step-0)); }
 .relnews-card:hover,
 .album-card:hover,
 .catcard:hover,
-.project-card:hover,
-.team-card:hover {
+.project-card:hover {
     transform: translateY(-4px);
     border-color: color-mix(in srgb, var(--gov-teal) 35%, var(--gov-border));
     box-shadow: var(--shadow-hover);
@@ -4419,9 +4405,9 @@ h4.section-head__title { font-size: var(--font-size-card-title, var(--step-2)); 
 
 .cms-block--bg-navy :is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
-    .feature-card, .leader-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
+    .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
-    .social-embed-card, .team-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) { background-color: var(--gov-surface); }
+    .social-embed-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) { background-color: var(--gov-surface); }
 .cms-block--bg-navy .section-head__all { color: var(--section-link-fg); }
 
 .cms-block--fullwidth { background: transparent; }
@@ -6319,7 +6305,6 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
 
 .album-card,
 .project-card,
-.team-card,
 .catcard--with-image {
     overflow: hidden;
 }
@@ -6330,18 +6315,10 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
 }
 .album-card__cover,
 .project-card__cover,
-.team-card__photo,
 .catcard__event-media {
     border-radius: 0;
 }
 .album-card__body { padding: 14px; }
-.team-card {
-    gap: 0;
-    padding: 0 0 14px;
-}
-.team-card__photo { margin-bottom: 12px; }
-.team-card__name,
-.team-card__position { margin-inline: 14px; }
 
 @media (max-width: 1000px) {
     .newsdetail:not(.newsdetail--premium) .newsdetail-article { order: 2; }

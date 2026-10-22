@@ -59,7 +59,7 @@ final class PagePresets
             'cards_grid', 'contact_cards',
             'counters', 'docs_list', 'media_gallery',
             'news_feature', 'news_latest', 'partners',
-            'projects_list', 'team_list', 'testimonials',
+            'projects_list', 'testimonials',
         ];
 
         foreach (array_values($types) as $index => $type) {
@@ -263,7 +263,7 @@ final class PagePresets
         return [
             'name' => 'Страница подразделения',
             'description' => 'Управление, департамент или отдел: чем занимается, кто руководит, документы и контакты.',
-            'outline' => ['Заголовок раздела', 'О подразделении с фото', 'Руководство', 'Документы', 'Контакты', 'Призыв обратиться'],
+            'outline' => ['Заголовок раздела', 'О подразделении с фото', 'Документы', 'Контакты', 'Призыв обратиться'],
             'blocks' => [
                 [
                     'type' => 'hero',
@@ -298,18 +298,6 @@ final class PagePresets
                             ['label' => 'Третье направление', 'icon_svg' => ''],
                         ],
                     ], self::look('none', 'premium', 'fade')),
-                ],
-                [
-                    // Состав берётся из раздела «Команда»: те же люди уже
-                    // заведены там записями, и второй их список в блоке
-                    // разъехался бы с ним при первой же перестановке.
-                    'type' => 'team_list',
-                    'title' => 'Руководство',
-                    'data' => array_merge([
-                        'title' => 'Руководство подразделения',
-                        'limit' => 0,
-                        'group_by_department' => false,
-                    ], self::look('light', 'premium', 'slide-up')),
                 ],
                 [
                     'type' => 'docs_list',
@@ -431,7 +419,7 @@ final class PagePresets
         return [
             'name' => 'О ведомстве',
             'description' => 'Миссия, цифры, направления работы, история и руководство — представительская страница.',
-            'outline' => ['Заголовок', 'Миссия', 'В цифрах', 'Направления работы', 'История', 'Руководство', 'Призыв к сотрудничеству'],
+            'outline' => ['Заголовок', 'Миссия', 'В цифрах', 'Направления работы', 'История', 'Призыв к сотрудничеству'],
             'blocks' => [
                 [
                     'type' => 'hero',
@@ -495,15 +483,6 @@ final class PagePresets
                             ['year' => '2025', 'text' => 'Текущий этап и приоритеты.', 'status' => 'active'],
                         ],
                     ], self::look('tint', 'premium', 'fade')),
-                ],
-                [
-                    'type' => 'team_list',
-                    'title' => 'Руководство',
-                    'data' => array_merge([
-                        'title' => 'Руководство',
-                        'limit' => 0,
-                        'group_by_department' => true,
-                    ], self::look('none', 'premium', 'slide-up')),
                 ],
                 self::ctaBand('Открыты к сотрудничеству', 'Предложения о партнёрстве и инвестициях направляйте через форму обращения.'),
             ],

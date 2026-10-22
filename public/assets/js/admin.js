@@ -4405,28 +4405,6 @@ document.addEventListener('click', function (event) {
     toggle.textContent = open ? 'скрыть' : 'показать';
 });
 
-/* Оргструктура: выбор сектора из списка дописывает готовую строку
-   «Название | /страница#team-slug» в поле подразделений этой же ветки.
-   Раньше адрес собирали руками, и переименование сектора молча ломало ссылку. */
-document.addEventListener('change', function (event) {
-    var picker = event.target.closest ? event.target.closest('[data-org-sector-insert]') : null;
-    if (!picker || !picker.value) return;
-
-    var row = picker.closest('.repeater-row') || picker.parentElement.parentElement;
-    var field = row ? row.querySelector('textarea[name$="[units]"]') : null;
-    if (!field) {
-        picker.value = '';
-        return;
-    }
-
-    var value = field.value.replace(/\s+$/, '');
-    field.value = (value ? value + '\n' : '') + picker.value + '\n';
-    field.dispatchEvent(new Event('input', { bubbles: true }));
-    field.focus();
-    field.selectionStart = field.selectionEnd = field.value.length;
-    picker.value = '';
-});
-
 /* Фон секции и подвала: показываем поля только выбранного режима. Раньше все
    двенадцать полей висели разом, и было не понять, какие из них сейчас
    работают. Без скрипта видно всё — форма остаётся рабочей. */

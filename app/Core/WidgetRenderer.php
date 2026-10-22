@@ -7,7 +7,6 @@ namespace App\Core;
 use App\Models\News;
 use App\Models\Project;
 use App\Models\Setting;
-use App\Models\TeamMember;
 use App\Models\Widget;
 
 /**
@@ -23,7 +22,6 @@ final class WidgetRenderer
         'contacts' => ['show_socials' => true],
         'custom_html' => ['html' => ''],
         'projects_list' => ['count' => 5],
-        'team_list' => ['count' => 5],
         'subscribe' => ['text' => 'Eng muhim yangiliklar va tahliliy materiallarni pochtangizga oling.'],
         // Карусель фотографий без подписей и ссылок. Порядок по умолчанию
         // случайный — виджет для того и заводился, чтобы показывать набор
@@ -178,9 +176,6 @@ final class WidgetRenderer
                 break;
             case 'projects_list':
                 $data['items'] = array_slice(Project::published($lang), 0, (int) ($data['count'] ?? 5));
-                break;
-            case 'team_list':
-                $data['items'] = array_slice(TeamMember::published($lang), 0, (int) ($data['count'] ?? 5));
                 break;
             case 'instagram_feed':
                 $data['posts'] = InstagramFeed::posts((int) ($data['count'] ?? 6));

@@ -17,7 +17,7 @@ test('Копия блока встаёт сразу за оригиналом, �
 
     $columns = Block::create($pageId, $lang, 'columns', 'Колонки', ['columns' => 2], '');
     $faq = Block::create($pageId, $lang, 'faq', 'FAQ', [], '');
-    $card = Block::create($pageId, $lang, 'leader_card', 'Сотрудник', ['name' => 'Имя', 'layout' => 'stack'], '', $columns, 0);
+    $card = Block::create($pageId, $lang, 'image', 'Снимок', ['caption' => 'Подпись', 'width' => 'reading'], '', $columns, 0);
     $below = Block::create($pageId, $lang, 'text', 'Ниже', ['content' => 'a'], '', $columns, 0);
     $other = Block::create($pageId, $lang, 'text', 'Соседняя колонка', [], '', $columns, 1);
     Block::setActive($faq, false);
@@ -40,7 +40,7 @@ test('Копия блока встаёт сразу за оригиналом, �
     $columnsCopy = (int) Block::duplicate($columns);
     assert_same([$columns, $columnsCopy, $faq, $faqCopy], $ids(Block::forPage($pageId, $lang)));
     $copiedKids = array_map(static fn (array $b): array => [(string) $b['title'], (int) $b['column_index']], Block::childrenOf($columnsCopy));
-    assert_same([['Сотрудник', 0], ['Сотрудник', 0], ['Ниже', 0], ['Соседняя колонка', 1]], $copiedKids);
+    assert_same([['Снимок', 0], ['Снимок', 0], ['Ниже', 0], ['Соседняя колонка', 1]], $copiedKids);
     assert_same(4, count(Block::childrenOf($columns)), 'оригинал не тронут');
 
     assert_same(null, Block::duplicate(999999999));

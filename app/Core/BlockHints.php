@@ -143,16 +143,6 @@ final class BlockHints
             $hints[] = 'Форма не выбрана — на сайте вместо неё будет предупреждение. Выберите форму в поле блока.';
         }
 
-        // Связка «Команда» ↔ «Оргструктура»: ссылка со схемы работает только
-        // тогда, когда блок команды создаёт якоря секторов.
-        if ($type === 'team_list') {
-            $hints = array_merge($hints, self::teamListHints($data));
-        }
-        if ($type === 'org_structure' && self::linksToTeamAnchors($data) && !self::hasGroupedTeamBlock()) {
-            $hints[] = 'В схеме есть ссылки на состав сектора (#team-…), но ни в одном блоке «Команда» '
-                . 'не включена группировка по секторам — такие ссылки никуда не приведут.';
-        }
-
         return $hints;
     }
 
@@ -190,71 +180,6 @@ final class BlockHints
 
         return 'Фон секции весит ' . round($size / 1048576, 1) . ' МБ. Фон не грузится лениво: '
             . 'страница будет ждать этот файл. Уменьшите кадр или возьмите более сжатый.';
-    }
-
-    /**
-     * Предупреждения блока «Команда»: фильтр по несуществующему сектору даёт
-     * пустой блок, а выключенная группировка ломает ссылки со схемы.
-     *
-     * @param array<string,mixed> $data
-     * @return list<string>
-     */
-    private static function teamListHints(array $data): array
-    {
-        $selected = trim((string) ($data['department'] ?? ''));
-        $grouped = !empty($data['group_by_department']);
-        if ($selected === '' && $grouped) {
-            return [];
-        }
-
-        try {
-            $departments = \App\Models\TeamMember::departments();
-        } catch (\Throwable $e) {
-            Logger::swallowed('BlockHints: не удалось прочитать секторы команды', $e);
-            return [];
-        }
-
-        $hints = [];
-        $slugs = array_column($departments, 'slug');
-        if ($selected !== '' && !in_array($selected, $slugs, true)) {
-            $hints[] = 'Выбран сектор, которого нет ни у одного опубликованного сотрудника — блок будет пустым. '
-                . 'Проверьте поле «Сектор» в карточках сотрудников.';
-        }
-        if (!$grouped && $departments !== []) {
-            $hints[] = 'Группировка по секторам выключена: якоря вида #team-… не создаются, '
-                . 'поэтому ссылки со схемы оргструктуры на состав сектора работать не будут.';
-        }
-
-        return $hints;
-    }
-
-    /** Есть ли в данных схемы ссылки на якоря секторов. */
-    private static function linksToTeamAnchors(array $data): bool
-    {
-        $haystack = json_encode($data, JSON_UNESCAPED_UNICODE);
-
-        return is_string($haystack) && str_contains($haystack, '#team-');
-    }
-
-    /** Есть ли на сайте блок «Команда» с включённой группировкой по секторам. */
-    private static function hasGroupedTeamBlock(): bool
-    {
-        try {
-            $stmt = Database::pdo()->query(
-                // Значение приходит и как JSON true, и как 1. JSON_UNQUOTE вместо
-                // CAST(... AS JSON): CAST в такой форме не понимает MariaDB.
-                "SELECT COUNT(*) FROM blocks
-                 WHERE type = 'team_list'
-                   AND JSON_UNQUOTE(JSON_EXTRACT(data, '$.group_by_department')) IN ('true', '1')"
-            );
-
-            return (int) $stmt->fetchColumn() > 0;
-        } catch (\Throwable $e) {
-            Logger::swallowed('BlockHints: не удалось проверить блоки команды', $e);
-
-            // Молча пропускаем подсказку: ложное предупреждение хуже его отсутствия.
-            return true;
-        }
     }
 
     /**

@@ -139,18 +139,6 @@ parameters:
 			path: app/Controllers/Admin/ProjectController.php
 
 		-
-			message: '#^Method App\\Controllers\\Admin\\TeamController\:\:collectInput\(\) has parameter \$existing with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Controllers/Admin/TeamController.php
-
-		-
-			message: '#^Method App\\Controllers\\Admin\\TeamController\:\:collectInput\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Controllers/Admin/TeamController.php
-
-		-
 			message: '#^Method App\\Controllers\\Admin\\WebhookController\:\:collect\(\) has parameter \$current with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -373,12 +361,6 @@ parameters:
 			path: app/Core/BlockData/BlockPresentationNormalizer.php
 
 		-
-			message: '#^Method App\\Core\\BlockHints\:\:linksToTeamAnchors\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Core/BlockHints.php
-
-		-
 			message: '#^Method App\\Core\\BlockRenderer\:\:defaultsFor\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -505,18 +487,6 @@ parameters:
 			path: app/Core/BlockRenderer.php
 
 		-
-			message: '#^Method App\\Core\\BlockRenderer\:\:enrichTeamList\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Core/BlockRenderer.php
-
-		-
-			message: '#^Method App\\Core\\BlockRenderer\:\:enrichTeamList\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Core/BlockRenderer.php
-
-		-
 			message: '#^Method App\\Core\\BlockRenderer\:\:renderTemplate\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -620,12 +590,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Core\\DemoSeeder\:\:seedProjects\(\) has parameter \$c with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Core/DemoSeeder.php
-
-		-
-			message: '#^Method App\\Core\\DemoSeeder\:\:seedTeam\(\) has parameter \$c with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Core/DemoSeeder.php
@@ -1633,18 +1597,6 @@ parameters:
 			path: app/Models/Subscriber.php
 
 		-
-			message: '#^Method App\\Models\\TeamMemberTranslation\:\:find\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/TeamMemberTranslation.php
-
-		-
-			message: '#^Method App\\Models\\TeamMemberTranslation\:\:upsert\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Models/TeamMemberTranslation.php
-
-		-
 			message: '#^Method App\\Models\\User\:\:all\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1871,12 +1823,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: app/Views/admin/subscribers/index.php
-
-		-
-			message: '#^PHPDoc tag @var for variable \$items has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Views/admin/team/index.php
 
 		-
 			message: '#^PHPDoc tag @var for variable \$translations has no value type specified in iterable type array\.$#'

@@ -175,17 +175,3 @@ test('Контент Агентства: все блоки рендерятся 
     assert_false(isset($renderedPages['direktor|ru']), 'страница директора больше не из фикстуры');
     assert_false(isset($renderedPages['rukovodstvo|ru']), 'страница руководства больше не из фикстуры');
 });
-
-test('Контент Агентства: у руководителей есть узбекский перевод', function () {
-    $team = agency_fixture()['team'];
-    assert_true(count($team) >= 2, 'ожидались директор и первый заместитель');
-    foreach ($team as $member) {
-        assert_true(trim((string) $member['name']) !== '', 'сотрудник без имени');
-        assert_true(trim((string) $member['position']) !== '', 'сотрудник без должности');
-        assert_true(isset($member['translations']['uz']['name']), 'нет узбекского имени: ' . $member['name']);
-        assert_true(
-            trim((string) $member['translations']['uz']['position']) !== '',
-            'нет узбекской должности: ' . $member['name']
-        );
-    }
-});

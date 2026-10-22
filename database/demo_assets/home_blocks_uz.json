@@ -50,12 +50,6 @@
           "value": "5",
           "suffix": "",
           "label": "asosiy normativ-huquqiy hujjat"
-        },
-        {
-          "icon_svg": "users",
-          "value": "2",
-          "suffix": "",
-          "label": "amaldagi rahbariyat profili"
         }
       ]
     }
@@ -86,7 +80,7 @@
           "icon_svg": "network",
           "title": "Muvofiqlashtirish",
           "text": "Vazirlik, idora va hududlardagi strategik rejalashtirishni umummilliy ustuvor yo‘nalishlar bilan uyg‘unlashtirish.",
-          "url": "/struktura"
+          "url": "/o-nas"
         },
         {
           "icon_svg": "clipboard-check",

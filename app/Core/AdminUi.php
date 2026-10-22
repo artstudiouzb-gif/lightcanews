@@ -63,8 +63,7 @@ final class AdminUi
             'counters' => 'number-123', 'chart' => 'chart-bar', 'table' => 'table', 'map_point' => 'map-pin',
             'news_latest' => 'news', 'news_feature' => 'layout-list', 'news_docs' => 'file-text',
             'projects_list' => 'briefcase',
-            'team_list' => 'users', 'leader_card' => 'id-badge', 'bio_education' => 'school',
-            'org_structure' => 'hierarchy',
+            'bio_education' => 'school',
             'columns' => 'columns', 'tabs' => 'folders', 'anchor_nav' => 'list-numbers',
             'divider' => 'separator-horizontal',
         ];
@@ -173,7 +172,6 @@ final class AdminUi
         // фотоальбомов, пользователи — от команды. Одинаковые значки в колонке
         // читались как один и тот же раздел.
         $name = [
-            'team' => 'users',
             'users' => 'user-shield',
             'security' => 'shield',
             'news_categories' => 'category',

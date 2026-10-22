@@ -28,8 +28,8 @@ final class SectionHead
     public const DECORATED_TYPES = [
         'cards_grid', 'chart', 'collage', 'contact_cards', 'counters', 'docs_list', 'embed', 'faq',
         'icon_text', 'image', 'instagram_feed', 'map_point', 'media_gallery', 'news_docs',
-        'news_feature', 'news_latest', 'org_structure', 'partners', 'projects_list', 'slider',
-        'stages', 'table', 'team_list', 'testimonials',
+        'news_feature', 'news_latest', 'partners', 'projects_list', 'slider',
+        'stages', 'table', 'testimonials',
     ];
 
     /**

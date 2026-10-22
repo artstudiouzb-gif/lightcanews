@@ -515,7 +515,6 @@ require __DIR__ . '/../layout/header.php';
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="pages" checked> Страницы</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="projects" checked> Проекты</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="entries" checked> Документы и тендеры</label>
-                        <label class="demo-module-item"><input type="checkbox" name="modules[]" value="team" checked> Руководство</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="media" checked> Фотоальбомы и видео</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="forms" checked> Формы</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="menu" checked> Главное меню (стандарт)</label>
@@ -547,7 +546,6 @@ require __DIR__ . '/../layout/header.php';
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="pages" checked> Страницы</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="projects" checked> Проекты</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="entries" checked> Документы и тендеры</label>
-                        <label class="demo-module-item"><input type="checkbox" name="modules[]" value="team" checked> Руководство</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="media" checked> Фотоальбомы и видео</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="forms" checked> Формы</label>
                         <label class="demo-module-item"><input type="checkbox" name="modules[]" value="menu" checked> Главное меню (стандарт)</label>

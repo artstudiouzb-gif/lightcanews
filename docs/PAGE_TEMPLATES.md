@@ -114,7 +114,6 @@
 | `tabs` | Вкладки | `variant`, `title`, `description`, `align`, `items` |
 | `testimonials` | Отзывы | `variant`, `title`, `description`, `columns`, `autoplay`, `items` |
 | `counters` | Счётчики | `title`, `card_bg`, `text_color`, `icon_size`, `icon_bg`, `icon_position`, `text_align`, `variant`, `value_size`, `items` |
-| `team_list` | Команда | `title`, `limit`, `department`, `group_by_department` |
 | `projects_list` | Проекты | `variant`, `title`, `description`, `all_text`, `all_url`, `columns`, `limit`, `autoplay` |
 | `news_latest` | Последние новости | `title`, `all_text`, `all_url`, `limit`, `category` |
 | `partners` | Партнёры | `title`, `description`, `all_text`, `all_url`, `columns`, `logo_size`, `grayscale`, `autoplay`, `items` |
@@ -133,8 +132,6 @@
 | `text_image` | Текст с фото | `title`, `text`, `image`, `image_position`, `image_position_mobile`, `image_side`, `image_ratio`, `image_width`, `button_text`, `button_url`, `items` |
 | `docs_list` | Список документов | `variant`, `title`, `all_text`, `all_url`, `columns`, `search_enabled`, `emblem`, `items` |
 | `map_point` | Карта | `title`, `image`, `embed_url`, `load_mode`, `card_title`, `address`, `copy_enabled`, `button_text`, `button_url` |
-| `org_structure` | Оргструктура | `title`, `layout`, `columns`, `council`, `head_title`, `head_name`, `head_url`, `side_items`, `branches`, `collapsible`, `search`, `notes`, `footnote` |
-| `leader_card` | Карточка руководителя | `photo`, `name`, `name_tag`, `position`, `phone`, `email`, `hours`, `facebook`, `x`, `linkedin`, `instagram`, `telegram`, `facts_title`, `facts_icon`, `items`, `bio_title`, `bio_icon`, `bio`, `duties_title`, `duties_icon`, `duties`, `mobile_icons_only` |
 | `icon_text` | Иконка и текст | `variant`, `title`, `description`, `icon_position`, `align`, `rows_layout`, `columns`, `items` |
 
 Контейнеры — `columns` и `tabs`: их содержимое лежит в `children`.

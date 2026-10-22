@@ -14,7 +14,6 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\PhotoAlbum;
 use App\Models\Project;
-use App\Models\TeamMember;
 
 /**
  * Массовые операции над списками (задача 91) и дублирование (задача 80):
@@ -26,7 +25,6 @@ final class BulkController
         'news' => News::class,
         'pages' => Page::class,
         'projects' => Project::class,
-        'team' => TeamMember::class,
         'albums' => PhotoAlbum::class,
     ];
 
@@ -35,11 +33,11 @@ final class BulkController
      * которую видит редактор, и то, что действие реально делает, берутся из
      * одной записи. Второй список в шаблоне разъехался бы с этим молча (тот
      * же случай, ради которого настройка блока объявляется один раз в схеме
-     * полей). Дублирования нет ни у team, ни у albums — методов
-     * `duplicate()` у этих моделей никогда не было.
+     * полей). Дублирования нет у albums — метода
+     * `duplicate()` у этой модели никогда не было.
      * Удаление у News/Page/Project мягкое (уходит в корзину, `deleted_at`), у
-     * TeamMember/PhotoAlbum — настоящее (`DELETE FROM`), поэтому подпись
-     * у них честно «Удалить»: назвать необратимое действие «В корзину»
+     * PhotoAlbum — настоящее (`DELETE FROM`), поэтому подпись
+     * у неё честно «Удалить»: назвать необратимое действие «В корзину»
      * значило бы пообещать восстановление, которого не будет.
      *
      * @return array<string, array{label: string, run: callable(int): bool}>
@@ -77,34 +75,6 @@ final class BulkController
                         'label' => 'В корзину',
                         'run' => static function (int $id) use ($model): bool {
                             $model::delete($id);
-
-                            return true;
-                        },
-                    ],
-                ];
-
-            case 'team':
-                return [
-                    'publish' => [
-                        'label' => 'Опубликовать',
-                        'run' => static function (int $id): bool {
-                            TeamMember::setStatus($id, 'published');
-
-                            return true;
-                        },
-                    ],
-                    'unpublish' => [
-                        'label' => 'Снять с публикации',
-                        'run' => static function (int $id): bool {
-                            TeamMember::setStatus($id, 'draft');
-
-                            return true;
-                        },
-                    ],
-                    'delete' => [
-                        'label' => 'Удалить',
-                        'run' => static function (int $id): bool {
-                            TeamMember::delete($id);
 
                             return true;
                         },

@@ -121,44 +121,6 @@ test('Вью списка проектов: колонка «Языки» и б�
     assert_contains('admin/layout/lang_badges', $view);
 });
 
-test('TeamMember::availableLangsForIds + localize: перевод имени/должности с фолбэком (БД)', function () {
-    ensure_test_db();
-    $pdo = Database::pdo();
-    $default = \App\Models\Language::defaultCode();
-
-    $pdo->exec("INSERT INTO team_members (name, position, status) VALUES ('Элёр Ганиев', 'Директор', 'published')");
-    $m1 = (int) $pdo->lastInsertId();
-    $pdo->exec("INSERT INTO team_members (name, position, status) VALUES ('Без перевода', 'Сотрудник', 'published')");
-    $m2 = (int) $pdo->lastInsertId();
-
-    // m1: узбекский перевод только имени (должность пустая → фолбэк).
-    \App\Models\TeamMemberTranslation::upsert($m1, 'uz', ['name' => 'Elyor Ganiev', 'position' => '']);
-
-    $map = \App\Models\TeamMember::availableLangsForIds([$m1, $m2]);
-    assert_true(in_array($default, $map[$m1], true), 'm1: основной язык не теряется при наличии перевода');
-    assert_true(in_array('uz', $map[$m1], true), 'm1: узбекский доступен');
-    assert_same([$default], $map[$m2], 'm2: только основной');
-
-    // Локализация списка: имя из перевода, должность — фолбэк к основному.
-    $rows = \App\Models\TeamMember::published('uz');
-    $byId = [];
-    foreach ($rows as $r) {
-        $byId[(int) $r['id']] = $r;
-    }
-    assert_same('Elyor Ganiev', $byId[$m1]['name']);
-    assert_same('Директор', $byId[$m1]['position'], 'пустой перевод должности откатывается к основному');
-    assert_true(!isset($byId[$m2]), 'm2 без перевода не попадает в список другого языка');
-
-    $pdo->exec("DELETE FROM team_members WHERE id IN ({$m1}, {$m2})");
-});
-
-test('Вью списка команды: колонка «Языки» и батч-запрос языков', function () {
-    $view = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Views/admin/team/index.php');
-    assert_contains('<th>Языки</th>', $view);
-    assert_contains('availableLangsForIds', $view);
-    assert_contains('admin/layout/lang_badges', $view);
-});
-
 test('PhotoAlbum::availableLangsForIds + localize: перевод с фолбэком (БД)', function () {
     ensure_test_db();
     $pdo = Database::pdo();

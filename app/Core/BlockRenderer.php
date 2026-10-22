@@ -827,7 +827,6 @@ final class BlockRenderer
             'form' => self::enrichForm($data),
             'hero' => self::enrichHero($data),
             'bio_education' => self::enrichBioEducation($data),
-            'team_list' => self::enrichTeamList($data),
             'projects_list' => self::enrichProjectsList($data),
             'news_latest' => self::enrichNewsLatest($data),
             'news_feature' => self::enrichNewsFeature($data),
@@ -876,25 +875,6 @@ final class BlockRenderer
         $lang = Locale::current();
         $data['_widgets_before_html'] = WidgetRenderer::renderSelection((array) ($data['widgets_before'] ?? []), $lang);
         $data['_widgets_after_html'] = WidgetRenderer::renderSelection((array) ($data['widgets_after'] ?? []), $lang);
-        return $data;
-    }
-
-    private static function enrichTeamList(array $data): array
-    {
-        $items = \App\Models\TeamMember::published(Locale::current());
-        $department = trim((string) ($data['department'] ?? ''));
-        if ($department !== '') {
-            $items = array_values(array_filter(
-                $items,
-                static fn (array $row): bool => \App\Models\TeamMember::departmentSlug($row) === $department
-            ));
-        }
-
-        $limit = (int) ($data['limit'] ?? 0);
-        $data['members'] = $limit > 0 ? array_slice($items, 0, $limit) : $items;
-        $data['groups'] = !empty($data['group_by_department'])
-            ? \App\Models\TeamMember::groupByDepartment($data['members'])
-            : [];
         return $data;
     }
 

@@ -93,10 +93,10 @@ test('Автоматический ритм: те же правила для с�
     // Демо-контент и импорт собирают страницы своим содержимым, но оформление
     // секций должно подчиняться тем же правилам, что и готовые сборки.
     $pages = [
-        ['hero', 'text', 'team_list', 'docs_list', 'contact_cards', 'cta'],
+        ['hero', 'text', 'projects_list', 'docs_list', 'contact_cards', 'cta'],
         ['text'],
-        ['org_structure', 'text', 'cta'],
-        ['hero', 'text', 'counters', 'advantages', 'timeline', 'team_list', 'faq', 'cta'],
+        ['table', 'text', 'cta'],
+        ['hero', 'text', 'counters', 'advantages', 'timeline', 'projects_list', 'faq', 'cta'],
     ];
 
     foreach ($pages as $types) {

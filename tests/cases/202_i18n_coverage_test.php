@@ -44,7 +44,6 @@ test('Все строки t() публичных шаблонов есть в у
         'app/Core/Captcha.php' => ['>Код с картинки<', '>Введите символы с картинки (регистр не важен).<'],
         'templates/widgets/latest_news.php' => ['>Нет новостей.</li>'],
         'templates/widgets/projects_list.php' => ['>Нет проектов.</li>'],
-        'templates/widgets/team_list.php' => ['>Список пуст.</li>'],
         'public/assets/js/consent.js' => ["textContent = 'Мы используем cookie", "textContent = 'Принять'"],
         'public/assets/js/forms.js' => ["textContent = 'Отправка", "showTopMessage(form, 'Сетевая ошибка"],
         'public/assets/js/news-share-gallery.js' => ["return 'Поделиться всеми фото'"],

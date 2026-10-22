@@ -31,15 +31,6 @@ test('Демо-пакет: вымышленного руководителя н�
     assert_false(isset($prototype['direktor']), 'демо-прототип не должен подменять страницу директора');
 });
 
-test('Демо-пакет: в команде реальное руководство', function () {
-    $seeder = (string) file_get_contents(APP_ROOT . '/app/Core/DemoSeeder.php');
-    $fixture = require APP_ROOT . '/database/content/agency_content.php';
-
-    foreach ($fixture['team'] as $member) {
-        assert_contains((string) $member['name'], $seeder, 'нет в демо-команде: ' . $member['name']);
-    }
-});
-
 test('Демо-пакет: мета и лид берутся из фикстуры, когда заданы', function () {
     $seeder = (string) file_get_contents(APP_ROOT . '/app/Core/DemoSeeder.php');
     // Лид и мета берутся из фикстуры ровно тогда, когда ключ в ней есть:

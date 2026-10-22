@@ -14,11 +14,11 @@
       "/assets/css/public-editorial-pages.css",
       "/assets/css/public-home.css"
     ],
-    "sourceSha256": "c1e874cf8c4f44234fd7e363dd96e308b387a0e9148199602daaccf2489eeac2",
-    "sha256": "3b346c1e258761c85d0dc85f7a95534890473f86420cdea524df4d1aec75b27b",
-    "raw": 407768,
-    "gzip": 68535,
-    "brotli": 53102
+    "sourceSha256": "1ce68f3b499449bc1d7d343f1b1a13dfc9d07cf2c4e5d94f98e7198cd7a4b048",
+    "sha256": "5c54d415b168df4565f5e44331339975637deda84cfd0d31aa8dfd41813ca595",
+    "raw": 406328,
+    "gzip": 68213,
+    "brotli": 52923
   },
   "js": {
     "path": "/assets/js/public.min.js",
@@ -27,11 +27,11 @@
       "/assets/js/frontend.js",
       "/assets/js/forms.js"
     ],
-    "sourceSha256": "e2abf1c1f51aa971e2eb140a45fbec43466a3e834255931d134cd44588336a9b",
-    "sha256": "937fed7dae9f464fe6174e6169efca3cabd305bfa3bd1c2ea2e3c858ebfca5b7",
-    "raw": 60386,
-    "gzip": 16066,
-    "brotli": 14093
+    "sourceSha256": "9bb7d2eda8aed7f07b66bd2b1cf1e3bd7fb6abf3523df2e7e154da4b2ef9b549",
+    "sha256": "6603efe45328bad3b8b3927fdab8709fb9109fff14831f7b28a23565bd4b9a74",
+    "raw": 59896,
+    "gzip": 15923,
+    "brotli": 13976
   },
   "blocks": {
     "/assets/css/blocks/buttons.css": {
@@ -130,14 +130,6 @@
       "gzip": 1442,
       "brotli": 1216
     },
-    "/assets/css/blocks/leader-card.css": {
-      "path": "/assets/css/blocks/leader-card.min.css",
-      "sourceSha256": "f7b76e833e5da248d330c45d136d1bbefcf2fabdb5ff8b6ea4521c2b5b2c450d",
-      "sha256": "6aa46e93affa395dbb4d9ca4df379502e0c48b9e0c5a2e42f15e717ca5b93be6",
-      "raw": 10833,
-      "gzip": 2442,
-      "brotli": 2103
-    },
     "/assets/css/blocks/media-gallery.css": {
       "path": "/assets/css/blocks/media-gallery.min.css",
       "sourceSha256": "136accc52441840fcc47980d05ed83592f80196c3552f53f30ab2b4140a7ec59",
@@ -161,14 +153,6 @@
       "raw": 7949,
       "gzip": 1994,
       "brotli": 1711
-    },
-    "/assets/css/blocks/org-structure.css": {
-      "path": "/assets/css/blocks/org-structure.min.css",
-      "sourceSha256": "b0b647d9dd752ee8f3d966732d954bbaa0a02bc5d3d0978906d04c7a85242900",
-      "sha256": "75ea0d335d515a8bc008f46ea7abb4df558b54a2d956dacfa741efd4ad94e9a1",
-      "raw": 17614,
-      "gzip": 3381,
-      "brotli": 2924
     },
     "/assets/css/blocks/table.css": {
       "path": "/assets/css/blocks/table.min.css",
@@ -210,14 +194,6 @@
       "gzip": 303,
       "brotli": 219
     },
-    "/assets/js/blocks/leader_card.js": {
-      "path": "/assets/js/blocks/leader_card.min.js",
-      "sourceSha256": "d5fdc835d38062cb029829aa13d930b7fe13a38ae1dc781ff3ddba71a122ddd2",
-      "sha256": "3b3ad291d1d0c485a25f78951678cbbb53a2629a8db8dbe1b3a07b96495485e6",
-      "raw": 1724,
-      "gzip": 744,
-      "brotli": 621
-    },
     "/assets/js/blocks/news_feature.js": {
       "path": "/assets/js/blocks/news_feature.min.js",
       "sourceSha256": "edbd227158e25b5cd571a146c81cf25a73d1c1cd8832a9e3f3e2fb3e57474b98",
@@ -225,14 +201,6 @@
       "raw": 783,
       "gzip": 435,
       "brotli": 356
-    },
-    "/assets/js/blocks/org_structure.js": {
-      "path": "/assets/js/blocks/org_structure.min.js",
-      "sourceSha256": "c8941037d91563e7935df3fb37e0a85ca11bc16b767c8ff07dfe4f909526b77e",
-      "sha256": "1d0a37107b19cdba6038496c2f1d9f3cd8d2b0c2b1a0866783cc4b97765308c7",
-      "raw": 2002,
-      "gzip": 859,
-      "brotli": 715
     },
     "/assets/js/blocks/slider.js": {
       "path": "/assets/js/blocks/slider.min.js",
@@ -313,11 +281,11 @@
         "/assets/js/admin-gallery-dropzone.js",
         "/assets/js/admin-media-loadmore.js"
       ],
-      "sourceSha256": "e26b1b8c0303e4ae15400eb6fff19ff37452bed4e6695dbdba01c93c49a870f8",
-      "sha256": "e0972f2905c5346e04d7c7b5546edff90174bfe9b6cccdc16182f5adf783c07e",
-      "raw": 135913,
-      "gzip": 36337,
-      "brotli": 30598
+      "sourceSha256": "7d5eef8377df5c5567a3b5f91fd49758800ae7439313e998a6de04fb1c67f539",
+      "sha256": "a3091e3e8a40cff7c69700bac3847a0db4d1d8854654f4b9a4da6f95e008ec36",
+      "raw": 135450,
+      "gzip": 36197,
+      "brotli": 30515
     }
   }
 }

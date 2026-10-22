@@ -18,7 +18,6 @@ $sectionLabels = [
     '/admin/pages' => 'Страницы',
     '/admin/news' => 'Новости',
     '/admin/projects' => 'Проекты',
-    '/admin/team' => 'Команда',
     '/admin/forms' => 'Формы',
     '/admin/files' => 'Файлы',
     '/admin/trash' => 'Корзина',

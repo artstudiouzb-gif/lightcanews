@@ -79,8 +79,8 @@ $currentType = $widget['type'] ?? 'latest_news';
 
         <?php $showType = static fn (string $t) => $isEdit ? ($currentType === $t) : true; ?>
 
-        <!-- Настройки: количество (latest_news / projects_list / team_list) -->
-        <?php foreach (['latest_news', 'projects_list', 'team_list', 'instagram_feed'] as $countType): ?>
+        <!-- Настройки: количество (latest_news / projects_list) -->
+        <?php foreach (['latest_news', 'projects_list', 'instagram_feed'] as $countType): ?>
             <?php if ($showType($countType)): ?>
                 <div class="form-field<?= (!$isEdit && $countType !== 'latest_news') ? ' is-hidden' : '' ?>" data-wtype="<?= $countType ?>">
                     <label>Сколько элементов показывать</label>

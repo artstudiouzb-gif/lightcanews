@@ -187,37 +187,6 @@ final class Search
             Logger::error('Site search (projects) failed: ' . $e->getMessage());
         }
 
-        // Team members: страница команды одна на сайт, поэтому ищем её слаг
-        // один раз и ведём на якорь сектора, если группировка включена.
-        try {
-            $teamPage = self::teamPageSlug($lang);
-            if ($teamPage !== null) {
-                $expr = "CONCAT_WS(' ', tm.name, tm.position, tm.department, tm.unit, t.name, t.position, t.department, t.unit)";
-                [$condition, $params] = self::condition($expr, $groups);
-                $stmt = $pdo->prepare(
-                    "SELECT COALESCE(NULLIF(t.name, ''), tm.name) AS title,
-                            COALESCE(NULLIF(t.position, ''), tm.position, '') AS excerpt,
-                            CONCAT_WS(', ', COALESCE(NULLIF(t.department, ''), tm.department),
-                                            COALESCE(NULLIF(t.unit, ''), tm.unit)) AS body,
-                            tm.department AS department_base, tm.created_at AS sort_date
-                     FROM team_members tm
-                     LEFT JOIN team_member_translations t ON t.member_id = tm.id AND t.lang = ?
-                     WHERE tm.status = 'published' AND {$condition}
-                     ORDER BY tm.sort_order ASC, tm.id ASC LIMIT ?"
-                );
-                self::bindSeq($stmt, [$lang, ...$params, $candidateLimit]);
-                $stmt->execute();
-                foreach ($stmt->fetchAll() as $row) {
-                    $anchor = trim((string) ($row['department_base'] ?? '')) !== ''
-                        ? '#team-' . Slug::make((string) $row['department_base'])
-                        : '';
-                    self::append($results, $term, Lang::t('Сотрудник'), $row, Locale::url($teamPage, $lang) . $anchor);
-                }
-            }
-        } catch (\Throwable $e) {
-            Logger::error('Site search (team) failed: ' . $e->getMessage());
-        }
-
         // Content entries
         try {
             $expr = "CONCAT_WS(' ', ce.title, ce.slug, ce.data, tr.title, tr.data)";
@@ -280,25 +249,6 @@ final class Search
             '_score' => SearchQuery::score($term, $title, $body, (string) ($row['slug'] ?? '')),
             '_date' => (string) ($row['sort_date'] ?? ''),
         ];
-    }
-
-    /**
-     * Слаг опубликованной страницы с блоком «Команда»: отдельного раздела
-     * сотрудников в CMS нет, поэтому результат поиска ведёт на страницу,
-     * где команда действительно выводится.
-     */
-    private static function teamPageSlug(string $lang): ?string
-    {
-        $stmt = Database::pdo()->prepare(
-            "SELECT p.slug FROM blocks b
-             INNER JOIN pages p ON p.id = b.page_id
-             WHERE b.type = 'team_list' AND p.status = 'published' AND p.deleted_at IS NULL
-             ORDER BY (p.lang = ?) DESC, p.id ASC LIMIT 1"
-        );
-        $stmt->execute([$lang]);
-        $slug = $stmt->fetchColumn();
-
-        return is_string($slug) && $slug !== '' ? $slug : null;
     }
 
     private static function bindSeq(\PDOStatement $stmt, array $params): void

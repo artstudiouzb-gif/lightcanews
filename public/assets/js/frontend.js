@@ -1610,7 +1610,7 @@
         // «остановка анимаций» в панели.
         if (typeof window.asdrStopMotion === 'function' && window.asdrStopMotion()) { return; }
         if (!('IntersectionObserver' in window)) { return; }
-        var GRIDS = '.imgcards-grid, .collage-comp--grid, .newslist-grid, .icon-text__grid, .mediagallery-grid, .albums-grid, .cards-grid, .cat-grid, .block-news__grid, .block-counters__grid, .docslist-grid, .docslist-acts, .contact-cards, .block-partners__grid, .block-team__grid, .block-projects__grid, .block-faq__list, .stages, .timeline-list, .featband, .media-list, .newsdocs-news, .newsdocs-docs';
+        var GRIDS = '.imgcards-grid, .collage-comp--grid, .newslist-grid, .icon-text__grid, .mediagallery-grid, .albums-grid, .cards-grid, .cat-grid, .block-news__grid, .block-counters__grid, .docslist-grid, .docslist-acts, .contact-cards, .block-partners__grid, .block-projects__grid, .block-faq__list, .stages, .timeline-list, .featband, .media-list, .newsdocs-news, .newsdocs-docs';
         var sections = Array.prototype.slice.call(document.querySelectorAll('[data-reveal-items]'));
         if (!sections.length) { return; }
         var grids = document.querySelectorAll('[data-reveal-items] ' + GRIDS.split(', ').join(', [data-reveal-items] '));
@@ -1943,7 +1943,7 @@
                 var e = lastEvent;
                 if (!e || !e.target || !e.target.closest) { return; }
                 var el = e.target.closest(
-                    '.cat-tile, .contact-card, .project-card, .team-card, .feature-card, .news-card, .album-card, .doc-card, .act-card, .catcard, .testimonial, .mediacard, .imgcard, .faq-item, .stage, .timeline-item, ' +
+                    '.cat-tile, .contact-card, .project-card, .feature-card, .news-card, .album-card, .doc-card, .act-card, .catcard, .testimonial, .mediacard, .imgcard, .faq-item, .stage, .timeline-item, ' +
                     '.block-icon-text--cards .icon-text__card, ' +
                     '.btn, .block-cta__button, .btn-cta, .block-hero__button, .timeline-card__button, .timeline-cta__button, ' +
                     '.a11y-toggle, .site-theme-toggle, .site-search-toggle'
@@ -2616,28 +2616,5 @@
                 copyWithFallback(value, done);
             }
         });
-    });
-
-    // Оргструктура остаётся полной на desktop и становится аккордеоном на
-    // узком экране. Если в блоке включено сворачивание, аккордеон работает на
-    // любой ширине. Без JavaScript все подразделения по-прежнему видны.
-    document.querySelectorAll('[data-org-branch]').forEach(function (branch, index) {
-        var button = branch.querySelector('[data-org-toggle]');
-        var units = branch.querySelector('[data-org-units]');
-        if (!button || !units) { return; }
-        var always = branch.closest('[data-org-collapsible]') !== null;
-        var mobile = window.matchMedia('(max-width: 700px)');
-        var expanded = index === 0;
-        var sync = function () {
-            var collapse = always || mobile.matches;
-            units.hidden = collapse && !expanded;
-            button.setAttribute('aria-expanded', String(!collapse || expanded));
-        };
-        button.addEventListener('click', function () {
-            expanded = !expanded;
-            sync();
-        });
-        if (mobile.addEventListener) { mobile.addEventListener('change', sync); }
-        sync();
     });
 })();
