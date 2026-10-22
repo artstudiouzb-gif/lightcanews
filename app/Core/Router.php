@@ -108,7 +108,7 @@ final class Router
      * Публичные приёмники (`/_vitals`, `/push/*`, формы сайта) сюда не входят:
      * анонимный маяк токена не несёт, у форм своя защита (honeypot, капча).
      */
-    private const CSRF_PREFIXES = ['/admin', '/repo'];
+    private const CSRF_PREFIXES = ['/admin'];
 
     public static function requiresCsrf(string $path): bool
     {
