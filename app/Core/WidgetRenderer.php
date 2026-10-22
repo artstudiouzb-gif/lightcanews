@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use App\Models\Goal;
 use App\Models\News;
 use App\Models\Project;
 use App\Models\Setting;
@@ -30,28 +29,13 @@ final class WidgetRenderer
         // случайный — виджет для того и заводился, чтобы показывать набор
         // снимков вперемешку.
         'photo_slider' => [
-            'source' => 'manual', 'slides' => [], 'shuffle' => true, 'autoplay' => 0, 'ratio' => '16-9',
-            // Заполняются только источником «случайная цель»: у своих снимков
-            // текста нет, виджет заводился как витрина кадров.
-            'goal_name' => '', 'goal_description' => '',
+            'slides' => [], 'shuffle' => true, 'autoplay' => 0, 'ratio' => '16-9',
         ],
         // Настроек нет: раздел определяется по открытой странице, а показывать
         // или нет — решает размещение виджета в колонке.
         'section_menu' => [],
         // Кадры последних публикаций из сохранённой копии ленты (InstagramFeed).
         'instagram_feed' => ['count' => 6],
-    ];
-
-    /**
-     * Откуда карусель берёт кадры.
-     *
-     * `manual` — снимки лежат в самом виджете. `goals` — виджет показывает
-     * одну случайную «Цель»: целей сотни, в JSON виджета они не помещаются, и
-     * набор кадров у каждой свой.
-     */
-    public const SLIDER_SOURCES = [
-        'manual' => 'Свои фотографии',
-        'goals' => 'Случайная цель',
     ];
 
 
@@ -201,30 +185,6 @@ final class WidgetRenderer
             case 'instagram_feed':
                 $data['posts'] = InstagramFeed::posts((int) ($data['count'] ?? 6));
                 $data['profile_url'] = InstagramFeed::profileUrl();
-                break;
-            case 'photo_slider':
-                // Случайная цель выбирается на сервере только ради запасного
-                // варианта: этот кадр уедет в кэш страницы и застынет для всех.
-                // Свежую цель у каждого посетителя запрашивает скрипт (см.
-                // /goals/random) — иначе «случайная» была бы случайной ровно
-                // один раз, до сброса кэша.
-                if (($data['source'] ?? 'manual') === 'goals') {
-                    $random = Goal::random($lang);
-                    $data['slides'] = $random === null ? [] : array_map(
-                        static fn (array $img): array => [
-                            'image' => (string) $img['image'],
-                            'alt' => (string) $img['alt'],
-                        ],
-                        $random['images']
-                    );
-                    // Название и описание цели идут над каруселью: набор снимков
-                    // без единого слова не сообщает, что за объект показан.
-                    $data['goal_name'] = $random === null ? '' : (string) ($random['goal']['name'] ?? '');
-                    $data['goal_description'] = $random === null ? '' : (string) ($random['goal']['description'] ?? '');
-                    // Порядок кадров внутри цели — авторский: случайной бывает
-                    // сама цель, а не история, которую рассказывают её слайды.
-                    $data['shuffle'] = false;
-                }
                 break;
             case 'section_menu':
                 // Ветка считается по адресу текущей страницы. Кэш блоков этому

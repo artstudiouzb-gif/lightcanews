@@ -10,7 +10,6 @@ use App\Core\Cache;
 use App\Core\Csrf;
 use App\Core\Flash;
 use App\Core\View;
-use App\Models\Goal;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PhotoAlbum;
@@ -27,7 +26,6 @@ final class BulkController
         'news' => News::class,
         'pages' => Page::class,
         'projects' => Project::class,
-        'goals' => Goal::class,
         'team' => TeamMember::class,
         'albums' => PhotoAlbum::class,
     ];
@@ -37,13 +35,10 @@ final class BulkController
      * которую видит редактор, и то, что действие реально делает, берутся из
      * одной записи. Второй список в шаблоне разъехался бы с этим молча (тот
      * же случай, ради которого настройка блока объявляется один раз в схеме
-     * полей). У «Целей» нет `draft`/`published` — только `is_active`
-     * («показывать в карусели»), поэтому там «Включить»/«Выключить», а не
-     * «Опубликовать»/«Снять с публикации»: называть чужое состояние своим
-     * именем — врать подписью. Дублирования нет ни у goals, ни у team, ни у
-     * albums — методов `duplicate()` у этих моделей никогда не было.
+     * полей). Дублирования нет ни у team, ни у albums — методов
+     * `duplicate()` у этих моделей никогда не было.
      * Удаление у News/Page/Project мягкое (уходит в корзину, `deleted_at`), у
-     * Goal/TeamMember/PhotoAlbum — настоящее (`DELETE FROM`), поэтому подпись
+     * TeamMember/PhotoAlbum — настоящее (`DELETE FROM`), поэтому подпись
      * у них честно «Удалить»: назвать необратимое действие «В корзину»
      * значило бы пообещать восстановление, которого не будет.
      *
@@ -138,34 +133,6 @@ final class BulkController
                         'label' => 'Удалить',
                         'run' => static function (int $id): bool {
                             PhotoAlbum::delete($id);
-
-                            return true;
-                        },
-                    ],
-                ];
-
-            case 'goals':
-                return [
-                    'activate' => [
-                        'label' => 'Включить',
-                        'run' => static function (int $id): bool {
-                            Goal::setActive($id, true);
-
-                            return true;
-                        },
-                    ],
-                    'deactivate' => [
-                        'label' => 'Выключить',
-                        'run' => static function (int $id): bool {
-                            Goal::setActive($id, false);
-
-                            return true;
-                        },
-                    ],
-                    'delete' => [
-                        'label' => 'Удалить',
-                        'run' => static function (int $id): bool {
-                            Goal::delete($id);
 
                             return true;
                         },

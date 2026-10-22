@@ -46,7 +46,6 @@ test('Упреждать нельзя приватные адреса, и спи
     // её без ведома посетителя.
     assert_true(in_array('/script/*', $patterns, true), '/script/{code} не упреждается');
     // Случайная цель отдаётся с no-store и меняется на каждый запрос.
-    assert_true(in_array('/goals/*', $patterns, true), '/goals/random не упреждается');
     // Машинные ответы и файлы: браузер по ним не «переходит».
     foreach (['/sitemap.xml', '/rss.xml', '/robots.txt', '/uploads/*', '/assets/*'] as $machine) {
         assert_true(in_array($machine, $patterns, true), $machine . ' не упреждается');

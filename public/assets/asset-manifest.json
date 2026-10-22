@@ -14,11 +14,11 @@
       "/assets/css/public-editorial-pages.css",
       "/assets/css/public-home.css"
     ],
-    "sourceSha256": "bdd84be3635cad54fc778cb9144485c09aaa8649ec7099a37b1754054ee506b0",
-    "sha256": "019d69d2e549febc97fc1332a04790a5934d4630d6f46a3f06c70d540948c826",
-    "raw": 408153,
-    "gzip": 68610,
-    "brotli": 53189
+    "sourceSha256": "c1e874cf8c4f44234fd7e363dd96e308b387a0e9148199602daaccf2489eeac2",
+    "sha256": "3b346c1e258761c85d0dc85f7a95534890473f86420cdea524df4d1aec75b27b",
+    "raw": 407768,
+    "gzip": 68535,
+    "brotli": 53102
   },
   "js": {
     "path": "/assets/js/public.min.js",
@@ -236,11 +236,11 @@
     },
     "/assets/js/blocks/slider.js": {
       "path": "/assets/js/blocks/slider.min.js",
-      "sourceSha256": "e89908a8518b47aed85f125b20ffc292b05b5e65d3419912524fb53394542d37",
-      "sha256": "7c3769e1627d3211be473fad82d536494b45d1db0045b191f287940eded0f4c2",
-      "raw": 4115,
-      "gzip": 1558,
-      "brotli": 1333
+      "sourceSha256": "025ec245a077ad3dcd63e0b0c5bd4bd4c55598b7f37f9674582f8477ce6f93c1",
+      "sha256": "9aa55f2f77adb1f77ca4d4cd903752161159fab585a9e8caef4b5390749233e7",
+      "raw": 2949,
+      "gzip": 1157,
+      "brotli": 992
     },
     "/assets/js/blocks/tabs.js": {
       "path": "/assets/js/blocks/tabs.min.js",
