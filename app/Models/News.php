@@ -620,7 +620,11 @@ final class News
         return "COALESCE(NULLIF({$alias}.translation_group_id, 0), {$alias}.id)";
     }
 
-    /** Ключ группы для строки новости (см. groupKey). @param array<string, mixed> $row */
+    /**
+     * Ключ группы для строки новости (см. groupKey).
+     *
+     * @param array<string, mixed> $row
+     */
     public static function groupKeyOf(array $row): int
     {
         $group = (int) ($row['translation_group_id'] ?? 0);

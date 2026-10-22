@@ -34,13 +34,21 @@ final class NewsController
         $this->listing(null);
     }
 
-    /** Лента рубрики: `/rubric/<slug>`. @param array<string, string> $params */
+    /**
+     * Лента рубрики: `/rubric/<slug>`.
+     *
+     * @param array<string, string> $params
+     */
     public function rubric(array $params): void
     {
         $this->section($params, NewsCategory::AXIS_RUBRIC);
     }
 
-    /** Лента страны: `/country/<slug>`. @param array<string, string> $params */
+    /**
+     * Лента страны: `/country/<slug>`.
+     *
+     * @param array<string, string> $params
+     */
     public function country(array $params): void
     {
         $this->section($params, NewsCategory::AXIS_COUNTRY);
