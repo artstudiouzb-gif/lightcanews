@@ -16,7 +16,6 @@ test('robots.txt: поиск закрыт на всех языках, сосед
     // Правило — префикс: голое «/health» закрыло бы и страницу /healthcare.
     assert_not_contains("Disallow: /health\n", $txt);
     assert_contains("Disallow: /health$\n", $txt);
-    assert_not_contains('/opendata', $txt, 'открытые данные — публичный раздел');
     assert_contains('Clean-param: utm_source&', $txt);
     assert_contains("Sitemap: https://example.uz/sitemap.xml\n", $txt);
 });

@@ -49,7 +49,7 @@ final class ContentType
      *
      * Единственное место, где это знание живёт. Прежде `'catalog/' . $slug`
      * было написано в десятке мест — списке, карточке, календаре, поиске,
-     * открытых данных и уведомлении о языке, — и переключатель у одного типа
+     * уведомлении о языке, — и переключатель у одного типа
      * пришлось бы вносить в каждое из них.
      *
      * @param array<string, mixed> $type
@@ -96,7 +96,7 @@ final class ContentType
      */
     public const RESERVED_ROOT = [
         'admin', 'api', 'assets', 'health', 'install', 'repo', 'uploads',
-        'catalog', 'news', 'projects', 'albums', 'opendata', 'search',
+        'catalog', 'news', 'projects', 'albums', 'search',
         'forms', 'push', 'subscribe', 'unsubscribe', 'script',
         'sitemap.xml', 'robots.txt', 'rss.xml', 'captcha.png',
     ];

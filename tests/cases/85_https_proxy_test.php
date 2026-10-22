@@ -82,7 +82,6 @@ test('Публичные SEO и машинные ответы использую
         '/app/Views/site/content_show.php',
         '/app/Views/site/news_show.php',
         '/app/Controllers/Site/NewsController.php',
-        '/app/Controllers/Site/OpenDataController.php',
         '/app/Controllers/Site/SitemapController.php',
         '/app/Core/SocialSettings.php',
         '/app/Controllers/Admin/PasswordResetController.php',

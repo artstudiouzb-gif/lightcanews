@@ -142,7 +142,7 @@ $fail = 0;
 // --- Публичный обход (BFS от главной + ключевые маршруты) ---
 $seed = [
     $base . '/', $base . '/news', $base . '/projects', $base . '/albums',
-    $base . '/search?q=test', $base . '/calendar', $base . '/opendata',
+    $base . '/search?q=test', $base . '/calendar',
     $base . '/sitemap.xml', $base . '/robots.txt', $base . '/health',
     $base . '/assets/css/system.css',
 ];

@@ -64,37 +64,6 @@ test('404-трекер: агрегирует хиты, хранит внешни
     $pdo->exec('DELETE FROM not_found_log');
 });
 
-test('Open Data: индекс и датасет news отдают валидный JSON, кэш пишется (БД)', function () {
-    ensure_test_db();
-    $cacheDir = APP_ROOT . '/storage/cache/opendata';
-    array_map('unlink', glob($cacheDir . '/*.json') ?: []);
-
-    $controller = new \App\Controllers\Site\OpenDataController();
-
-    ob_start();
-    $controller->index();
-    $index = json_decode((string) ob_get_clean(), true);
-    assert_true(is_array($index), 'индекс — валидный JSON');
-    $ids = array_column($index['datasets'], 'id');
-    assert_true(in_array('news', $ids, true), 'датасет news заявлен');
-    assert_true(in_array('documenty', $ids, true), 'публичные типы контента заявлены');
-
-    ob_start();
-    $controller->dataset(['dataset' => 'news.json']);
-    $news = json_decode((string) ob_get_clean(), true);
-    assert_same('news', (string) $news['dataset']);
-    assert_true(isset($news['count'], $news['items'], $news['generated_at']));
-    assert_true(is_file($cacheDir . '/news.json'), 'жёсткий кэш на диске создан');
-
-    // Неизвестный датасет — JSON с ошибкой.
-    ob_start();
-    $controller->dataset(['dataset' => 'nesuschestvuyuschiy.json']);
-    $err = json_decode((string) ob_get_clean(), true);
-    assert_true(isset($err['error']));
-
-    array_map('unlink', glob($cacheDir . '/*.json') ?: []);
-});
-
 test('Mailer::lastError содержит точную причину сбоя SMTP', function () {
     \App\Core\Config::merge(['mail' => [
         'host' => '127.0.0.1', 'port' => 1, 'timeout' => 1,

@@ -21,8 +21,8 @@ function cta_split_html(array $data): string
         'id' => 396,
         'type' => 'cta',
         'data' => json_encode($data + [
-            'variant' => 'media-light', 'title' => 'Открытые данные', 'text' => 'Показатели стратегии.',
-            'button_text' => 'Перейти', 'button_url' => '/opendata', 'image' => '/uploads/public/test.jpg',
+            'variant' => 'media-light', 'title' => 'Аналитика', 'text' => 'Обзоры рынка.',
+            'button_text' => 'Перейти', 'button_url' => '/analitika', 'image' => '/uploads/public/test.jpg',
         ], JSON_UNESCAPED_UNICODE),
         'custom_css' => '',
     ]);

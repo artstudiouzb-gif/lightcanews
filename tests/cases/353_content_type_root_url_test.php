@@ -35,7 +35,7 @@ test('Адрес раздела считается одним методом', f
     // с настройкой у одного из десятка мест, где адрес раздела печатается.
     $files = array_merge(
         glob(APP_ROOT . '/app/Views/site/*.php') ?: [],
-        [APP_ROOT . '/app/Core/Search.php', APP_ROOT . '/app/Controllers/Site/OpenDataController.php'],
+        [APP_ROOT . '/app/Core/Search.php'],
     );
     $strays = [];
     foreach ($files as $file) {
