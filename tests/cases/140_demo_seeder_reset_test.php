@@ -25,18 +25,18 @@ test('DemoSeeder RESET полностью заменяет контент эта
 
     assert_true($c['news'] > 0, 'Счётчик новостей > 0');
     assert_true($c['pages'] > 0, 'Счётчик страниц > 0');
-    assert_true($c['menu'] >= 40, 'Создано полное двухъязычное меню');
+    assert_true($c['menu'] >= 36, 'Создано полное двухъязычное меню');
     assert_true($c['meropriyatiya'] >= 3, 'Созданы мероприятия');
     assert_same([], DemoSeeder::verify($pdo), 'Встроенная проверка не обнаружила конфликтов');
 
-    $leadershipParent = $pdo->query(
+    $childParent = $pdo->query(
         "SELECT parent.slug
          FROM pages child
          INNER JOIN pages parent ON parent.id = child.parent_id
-         WHERE child.slug = 'rukovodstvo' AND child.lang = 'ru'
+         WHERE child.slug = 'antikorrupciya' AND child.lang = 'ru'
          LIMIT 1"
     )->fetchColumn();
-    assert_same('o-nas', (string) $leadershipParent, 'Демо-страницы имеют актуальную иерархию');
+    assert_same('o-nas', (string) $childParent, 'Демо-страницы имеют актуальную иерархию');
 
     $secondRun = DemoSeeder::run($pdo);
     assert_same(0, array_sum($secondRun), 'Повторный запуск полностью идемпотентен');
@@ -64,7 +64,7 @@ test('DemoSeeder RESET с дополнительным активным язык
     assert_same([], DemoSeeder::verify($pdo), 'Верификация проходит при активном английском языке без битых ссылок');
 
     $enMenuItems = (int) $pdo->query("SELECT COUNT(*) FROM menu_items WHERE lang = 'en'")->fetchColumn();
-    assert_true($enMenuItems >= 20, 'Созданы пункты меню на английском языке');
+    assert_true($enMenuItems >= 18, 'Созданы пункты меню на английском языке');
 
     // Проверяем, что все пункты меню с url_type = page на английском имеют страницу
     $brokenEn = (int) $pdo->query(

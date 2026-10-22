@@ -103,7 +103,7 @@ test('DemoSeeder создает демо-данные с многоязычны�
     ]);
     assert_same(0, (int) $mixedStacksStmt->fetchColumn(), 'Блоки языков не смешиваются между страницами');
 
-    foreach (['content_entry_translations', 'photo_album_translations', 'video_translations', 'team_member_translations'] as $table) {
+    foreach (['content_entry_translations', 'photo_album_translations', 'video_translations'] as $table) {
         $count = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}` WHERE lang = 'uz'")->fetchColumn();
         assert_true($count > 0, "{$table}: созданы узбекские переводы");
     }

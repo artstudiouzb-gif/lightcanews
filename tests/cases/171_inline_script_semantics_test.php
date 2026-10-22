@@ -62,7 +62,6 @@ test('dynamic block presentation is emitted as scoped CSS, not style attributes'
         'cta-media' => ['variant' => 'media-dark', 'title' => 'Banner', 'image' => '/uploads/public/banner.jpg'],
         'counters' => ['card_bg' => '#112233', 'items' => [['value' => 1, 'label' => 'Один']]],
         'docs_list' => ['title' => 'Docs', 'columns' => 3, 'items' => [['title' => 'Документ']]],
-        'org_structure' => ['head_title' => 'Директор', 'branches' => [['title' => 'Заместитель']]],
         'map_point' => ['title' => 'Карта', 'image' => '/uploads/public/map.jpg'],
         'timeline' => ['title' => 'Этапы', 'cta_title' => 'Подробнее', 'cta_image' => '/uploads/public/timeline.jpg'],
     ];

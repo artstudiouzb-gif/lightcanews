@@ -10,7 +10,6 @@ use App\Core\AssetCollector;
  */
 const THEME_PART_FAMILIES = [
     'news-detail.css' => '/newsdetail|relnews/',
-    'org-structure.css' => '/orgstruct|^(from|to|[\d.]+%)$/',
     // Обложка. `.hero` не пересекается с `.block-hero` старого блока: там
     // точка стоит перед «block», а не перед «hero». Шаги @keyframes своего
     // семейства не имеют — разрешены явно и только они.
@@ -112,9 +111,9 @@ test('Часть темы, названная типом блока, подкл�
     // PageController прогоняет через requireJs каждый тип блока страницы
     // (BlockRenderer::renderPage() отдаёт их списком), поэтому строки в
     // THEME_PART_MAP достаточно — правок в контроллерах не нужно.
-    AssetCollector::requireJs('org_structure');
+    AssetCollector::requireJs('media_gallery');
     assert_true(
-        preg_match('#/assets/css/blocks/org-structure(\.min)?\.css#', AssetCollector::renderThemeStyles()) === 1,
+        preg_match('#/assets/css/blocks/media-gallery(\.min)?\.css#', AssetCollector::renderThemeStyles()) === 1,
         'стили блока подключились по типу блока'
     );
     AssetCollector::reset();

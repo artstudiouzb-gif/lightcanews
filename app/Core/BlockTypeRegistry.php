@@ -39,7 +39,6 @@ final class BlockTypeRegistry
         'tabs' => [], // схема: BlockFieldSchema
         'testimonials' => [], // схема: BlockFieldSchema
         'counters' => [], // схема: BlockFieldSchema
-        'team_list' => [], // схема: BlockFieldSchema
         'projects_list' => [], // схема: BlockFieldSchema
         'news_latest' => [], // схема: BlockFieldSchema
         'partners' => [], // схема: BlockFieldSchema
@@ -61,8 +60,6 @@ final class BlockTypeRegistry
         'text_image' => [], // схема: BlockFieldSchema
         'docs_list' => [], // схема: BlockFieldSchema
         'map_point' => [], // схема: BlockFieldSchema
-        'org_structure' => [], // схема: BlockFieldSchema
-        'leader_card' => [], // схема: BlockFieldSchema
         'icon_text' => [], // схема: BlockFieldSchema
         'collage' => [], // схема: BlockFieldSchema
         'table' => [], // схема: BlockFieldSchema
@@ -79,7 +76,7 @@ final class BlockTypeRegistry
         'text' => 'Текст', 'html' => 'Произвольный HTML', 'cta' => 'Призыв к действию',
         'slider' => 'Слайдер',
         'form' => 'Форма', 'columns' => 'Колонки', 'tabs' => 'Вкладки', 'testimonials' => 'Отзывы',
-        'counters' => 'Счётчики', 'team_list' => 'Команда', 'projects_list' => 'Проекты',
+        'counters' => 'Счётчики', 'projects_list' => 'Проекты',
         'news_latest' => 'Последние новости', 'partners' => 'Партнёры',
         'subscribe' => 'Подписка', 'faq' => 'Вопросы и ответы', 'contact_cards' => 'Контакты',
         'hero' => 'Обложка',
@@ -89,8 +86,7 @@ final class BlockTypeRegistry
         'bio_education' => 'Биография и образование',
         'anchor_nav' => 'Якорная навигация', 'stages' => 'Хронология и этапы',
         'text_image' => 'Текст с фото',
-        'docs_list' => 'Список документов', 'map_point' => 'Карта', 'org_structure' => 'Оргструктура',
-        'leader_card' => 'Карточка руководителя',
+        'docs_list' => 'Список документов', 'map_point' => 'Карта',
         'icon_text' => 'Иконка и текст', 'collage' => 'Коллаж', 'table' => 'Таблица',
         'image' => 'Изображение', 'embed' => 'Внешняя врезка',
         'chart' => 'Диаграмма', 'divider' => 'Разделитель', 'buttons' => 'Кнопки',
@@ -104,7 +100,6 @@ final class BlockTypeRegistry
     private const EDITOR_LABEL_OVERRIDES = [
         'cta' => 'Призыв к действию (CTA)',
         'tabs' => 'Вкладки (любые блоки внутри)',
-        'team_list' => 'Список команды',
         'projects_list' => 'Список проектов',
         'partners' => 'Партнёры (логотипы)',
         'subscribe' => 'Подписка на дайджест',
@@ -122,8 +117,6 @@ final class BlockTypeRegistry
         'text_image' => 'Текст + фото (о проекте)',
         'docs_list' => 'Документы (сетка)',
         'map_point' => 'Карта с меткой',
-        'org_structure' => 'Структура организации (оргсхема)',
-        'leader_card' => 'Карточка руководителя (с вкладками)',
         'icon_text' => 'Иконка и текст (контакты, телефоны)',
         'collage' => 'Коллаж (фото внахлёст, плитки, печать)',
         'table' => 'Таблица (строки текстом, ячейки через |)',
@@ -158,7 +151,7 @@ final class BlockTypeRegistry
         'Первый экран и действия' => ['hero', 'cta', 'buttons', 'subscribe', 'form'],
         'Цифры и данные' => ['counters', 'chart', 'table', 'map_point'],
         'Новости и проекты' => ['news_latest', 'news_feature', 'news_docs', 'projects_list'],
-        'Люди и структура' => ['team_list', 'leader_card', 'bio_education', 'org_structure'],
+        'Люди' => ['bio_education'],
         'Раскладка страницы' => ['columns', 'tabs', 'anchor_nav', 'divider'],
     ];
 
@@ -194,10 +187,7 @@ final class BlockTypeRegistry
         'news_feature' => 'Главная новость крупно и список рядом',
         'news_docs' => 'Новости и документы в две колонки',
         'projects_list' => 'Карточки из раздела «Проекты»',
-        'team_list' => 'Сотрудники из раздела «Команда»',
-        'leader_card' => 'Один руководитель: фото, должность, вкладки',
         'bio_education' => 'Биография и образование человека',
-        'org_structure' => 'Схема подчинения подразделений',
         'columns' => 'Ряд из колонок, в них — любые блоки',
         'tabs' => 'Вкладки, в каждой — свои блоки',
         'anchor_nav' => 'Оглавление со ссылками на разделы страницы',

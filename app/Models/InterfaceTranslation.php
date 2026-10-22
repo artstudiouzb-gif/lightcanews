@@ -142,7 +142,7 @@ final class InterfaceTranslation
      * Без этого сброса редактор менял подпись, видел «сохранено» и не находил
      * её на сайте — до правки любого другого материала или ручного «Сброса
      * кэша». Перевод такой же публичный контент, как новость или проект, и
-     * зовёт тот же сброс, что News, Project, PhotoAlbum, TeamMember и Video.
+     * зовёт тот же сброс, что News, Project, PhotoAlbum и Video.
      */
     private static function bustPageCache(): void
     {

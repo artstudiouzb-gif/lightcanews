@@ -40,7 +40,6 @@ final class Translations
         'projects' => [null, null],
         'photo_albums' => ['photo_album_translations', 'album_id'],
         'videos' => ['video_translations', 'video_id'],
-        'team_members' => ['team_member_translations', 'member_id'],
         'content_entries' => ['content_entry_translations', 'entry_id'],
     ];
 
@@ -241,8 +240,7 @@ final class Translations
         if ($translationTable === null || $ownerKey === null) {
             return [];
         }
-        $headline = $table === 'team_members' ? 'name' : 'title';
-        $select = $narrow ? "{$ownerKey}, lang, {$headline}" : '*';
+        $select = $narrow ? "{$ownerKey}, lang, title" : '*';
 
         $result = [];
         foreach (array_chunk($ids, self::CHUNK, true) as $chunk) {

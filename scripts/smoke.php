@@ -227,7 +227,7 @@ if ($adminCreds !== null) {
     } else {
         $adminRoutes = [
             '/admin', '/admin/news', '/admin/news-categories', '/admin/pages', '/admin/heroes', '/admin/projects', '/admin/albums',
-            '/admin/videos', '/admin/team', '/admin/forms', '/admin/languages', '/admin/menu', '/admin/header',
+            '/admin/videos', '/admin/forms', '/admin/languages', '/admin/menu', '/admin/header',
             '/admin/footer', '/admin/performance', '/admin/widgets', '/admin/trash',
             '/admin/audit', '/admin/audit/errors', '/admin/subscribers', '/admin/redirects', '/admin/users',
             '/admin/design', '/admin/settings', '/admin/social', '/admin/webhooks',
@@ -235,7 +235,7 @@ if ($adminCreds !== null) {
             // Формы создания: именно здесь редактор проводит время, и именно
             // они падают от опечатки во вьюхе — списки такую ошибку не видят.
             '/admin/news/create', '/admin/pages/create', '/admin/projects/create',
-            '/admin/team/create', '/admin/forms/create', '/admin/widgets/create',
+            '/admin/forms/create', '/admin/widgets/create',
         ];
         echo "Обход админки:\n";
         foreach ($adminRoutes as $path) {

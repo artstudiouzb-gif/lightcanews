@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Реальный контент Агентства: страница «Об Агентстве» и записи раздела
- * «Команда».
+ * Реальный контент Агентства: страница «Об Агентстве».
  *
  * Страниц руководства здесь нет намеренно: владелец собирает их в админке
  * сам, а фикстура заменяет блоки страницы целиком — то есть повторный запуск
@@ -310,49 +309,6 @@ return [
                             ['title' => 'Establishment of mechanisms for the preparation, implementation, monitoring and evaluation of strategic planning documents', 'meta' => '', 'url' => '', 'number' => 'Presidential Resolution No. PQ-394', 'date' => '29 December 2025'],
                         ],
                     ]],
-                ],
-            ],
-        ],
-    ],
-
-    // -----------------------------------------------------------------------
-    // Раздел «Команда»: те же руководители как записи БД — их находит поиск по
-    // сайту и блок team_list.
-    // -----------------------------------------------------------------------
-    'team' => [
-        [
-            'name' => 'Умурзаков Сардор Уктамович',
-            'position' => 'Директор Агентства стратегического развития и реформ при Президенте Республики Узбекистан',
-            'department' => 'Руководство',
-            'unit' => '',
-            'sort_order' => 10,
-            'translations' => [
-                'uz' => [
-                    'name' => 'Umurzoqov Sardor O‘ktamovich',
-                    'position' => 'O‘zbekiston Respublikasi Prezidenti huzuridagi Strategik rivojlanish va islohotlar agentligi direktori',
-                    'department' => 'Rahbariyat',
-                    'unit' => '',
-                ],
-            ],
-        ],
-        [
-            'name' => 'Абдукодиров Абдулла Мамасаатович',
-            'position' => 'Первый заместитель директора Агентства стратегического развития и реформ при Президенте Республики Узбекистан',
-            'department' => 'Руководство',
-            'unit' => '',
-            'sort_order' => 20,
-            'translations' => [
-                'uz' => [
-                    'name' => 'Abduqodirov Abdulla Mamasaatovich',
-                    'position' => 'O‘zbekiston Respublikasi Prezidenti huzuridagi Strategik rivojlanish va islohotlar agentligi direktorining birinchi o‘rinbosari',
-                    'department' => 'Rahbariyat',
-                    'unit' => '',
-                ],
-                'en' => [
-                    'name' => 'Abdulla Abduqodirov',
-                    'position' => 'First Deputy Director of the Agency for Strategic Development and Reforms under the President of the Republic of Uzbekistan',
-                    'department' => 'Leadership',
-                    'unit' => '',
                 ],
             ],
         ],

@@ -112,15 +112,15 @@ test('Block presentation normalizer: поддерживает каскад ка�
 test('Block renderer: добавляет карточный контейнер только по настройке секции', function (): void {
     $card = \App\Core\BlockRenderer::render([
         'id' => 9137,
-        'type' => 'leader_card',
+        'type' => 'text',
         'custom_css' => '',
-        'data' => json_encode(['name' => 'Директор', '_surface' => 'card']),
+        'data' => json_encode(['content' => '<p>Текст</p>', '_surface' => 'card']),
     ]);
     $flat = \App\Core\BlockRenderer::render([
         'id' => 9138,
-        'type' => 'leader_card',
+        'type' => 'text',
         'custom_css' => '',
-        'data' => json_encode(['name' => 'Директор', '_surface' => 'flat']),
+        'data' => json_encode(['content' => '<p>Текст</p>', '_surface' => 'flat']),
     ]);
 
     assert_contains('cms-block--surface-card', (string) ($card['html'] ?? ''));

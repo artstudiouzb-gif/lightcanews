@@ -10,7 +10,6 @@ test('Все разделы боковой навигации админки и�
         'news',
         'pages',
         'projects',
-        'team',
         'albums',
         'videos',
         'forms',

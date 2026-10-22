@@ -85,7 +85,7 @@ test('Языковые батч-запросы используют реальн
         }
     }
 
-    assert_true(count($callers) >= 3, 'вызовы availableLangs не найдены (' . count($callers) . ')');
+    assert_true(count($callers) >= 2, 'вызовы availableLangs не найдены (' . count($callers) . ')');
 
     foreach ($callers as [$file, $table, $columns]) {
         $baseColumns = schema_columns($table);
@@ -101,7 +101,6 @@ test('Языковые батч-запросы используют реальн
         $translationTable = match ($table) {
             'photo_albums' => 'photo_album_translations',
             'videos' => 'video_translations',
-            'team_members' => 'team_member_translations',
             default => null,
         };
         assert_true($translationTable !== null, $file . ': не описана таблица переводов для ' . $table);

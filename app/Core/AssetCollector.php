@@ -25,9 +25,7 @@ final class AssetCollector
         'news_share_gallery' => '/assets/js/news-share-gallery.js',
         'news_gallery_thumbnails' => '/assets/js/news-gallery-thumbnails.js',
         'news_feature' => '/assets/js/blocks/news_feature.js',
-        'leader_card' => '/assets/js/blocks/leader_card.js',
         'tabs' => '/assets/js/blocks/tabs.js',
-        'org_structure' => '/assets/js/blocks/org_structure.js',
         'hero_slides' => '/assets/js/blocks/hero.js',
         // Нужен только случайному порядку, но файл крошечный, а узнать
         // настройку блока на попадании в кэш страницы было бы негде.
@@ -48,8 +46,6 @@ final class AssetCollector
         // Блок новостей в варианте «карточки» построен на тех же .relnews-card,
         // что и лента: стили лежат в этой же части темы.
         'news_feature' => '/assets/css/blocks/news-detail.css',
-        'org_structure' => '/assets/css/blocks/org-structure.css',
-        'leader_card' => '/assets/css/blocks/leader-card.css',
         'media_gallery' => '/assets/css/blocks/media-gallery.css',
         'tabs' => '/assets/css/blocks/tabs.css',
         'hero_slides' => '/assets/css/blocks/hero.css',

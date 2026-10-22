@@ -652,31 +652,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
             </div>
         <?php endif; ?>
 
-        <?php if ($type === 'team_list'): ?>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('team_list', $data) ?>
-            <?php $teamDepartments = $departments ?? []; ?>
-            <div class="form-field">
-                <label for="department">Показывать только сотрудников сектора</label>
-                <select id="department" name="department">
-                    <option value="">Все сотрудники</option>
-                    <?php foreach ($teamDepartments as $dep): ?>
-                        <option value="<?= htmlspecialchars((string) $dep['slug'], ENT_QUOTES) ?>" <?= ($data['department'] ?? '') === $dep['slug'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars((string) $dep['name'], ENT_QUOTES) ?> (<?= (int) $dep['count'] ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <span class="form-hint">Сектор задаётся в карточке сотрудника (раздел «Команда»).</span>
-            </div>
-            <?php if ($teamDepartments !== []): ?>
-                <p class="form-hint">
-                    Якори для ссылок из схемы оргструктуры (работают при включённой группировке):
-                    <?php foreach ($teamDepartments as $dep): ?>
-                        <code>#team-<?= htmlspecialchars((string) $dep['slug'], ENT_QUOTES) ?></code>
-                    <?php endforeach; ?>
-                </p>
-            <?php endif; ?>
-        <?php endif; ?>
-
         <?php if ($type === 'partners'): ?>
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('partners', $data) ?>
             <div>
@@ -1411,40 +1386,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
             </div>
         <?php endif; ?>
 
-        <?php if ($type === 'leader_card'): ?>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('leader_card', $data, ['layout', 'photo_shape', 'text_align', 'photo', 'department', 'name', 'name_tag', 'position', 'phone', 'email', 'hours', 'facebook', 'x', 'linkedin', 'instagram', 'telegram', 'show_facts', 'facts_title', 'facts_icon']) ?>
-            <div>
-                <label>Строки первой вкладки</label>
-                <div data-repeater="items">
-                    <?php foreach (($data['items'] ?? []) as $i => $item): ?>
-                        <div class="repeater-row">
-                            <?= \App\Core\AdminUi::iconField("items[{$i}][icon_svg]", $item['icon_svg'] ?? '', ['label' => 'Иконка Tabler']) ?>
-                            <div class="form-field"><label>Название</label><input type="text" name="items[<?= $i ?>][label]" value="<?= htmlspecialchars($item['label'] ?? '', ENT_QUOTES) ?>" placeholder="Образование"></div>
-                            <div class="form-field"><label>Значение</label><textarea name="items[<?= $i ?>][value]" rows="2"><?= htmlspecialchars($item['value'] ?? '', ENT_QUOTES) ?></textarea></div>
-                            <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
-                            <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
-                            <button type="button" class="btn btn--small btn--danger repeater-row__remove" data-repeater-remove><?= \App\Core\AdminUi::icon('trash') ?>Удалить</button>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                <template data-repeater-template="items">
-                    <?= \App\Core\AdminUi::iconField('items[__INDEX__][icon_svg]', '', ['label' => 'Иконка Tabler']) ?>
-                    <div class="form-field"><label>Название</label><input type="text" name="items[__INDEX__][label]"></div>
-                    <div class="form-field"><label>Значение</label><textarea name="items[__INDEX__][value]" rows="2"></textarea></div>
-                    <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
-                    <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
-                    <button type="button" class="btn btn--small btn--danger repeater-row__remove" data-repeater-remove><?= \App\Core\AdminUi::icon('trash') ?>Удалить</button>
-                </template>
-                <div class="repeater-actions"><button type="button" class="btn btn--small" data-repeater-add="items"><?= \App\Core\AdminUi::icon('plus') ?>Добавить строку</button></div>
-            </div>
-
-            <hr>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('leader_card', $data, ['bio_title', 'bio_icon', 'bio', 'duties_title', 'duties_icon', 'duties', 'mobile_icons_only']) ?>
-            <p class="form-hint">Экономит место, когда заголовки длинные. Работает, только если иконка задана у каждой показанной вкладки — иначе получилась бы пустая вкладка, и настройка молча не применится. Подписи остаются доступны скринридеру.</p>
-            <p class="form-hint">Вкладка без заголовка и без содержимого не показывается; в вертикальной раскладке вкладки становятся раскрывающимися разделами под должностью. Цвет активной вкладки берётся из акцента сайта («Дизайн сайта»), отдельной настройки у блока нет.</p>
-        <?php endif; ?>
-
-
         <?php if ($type === 'bio_education'): ?>
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('bio_education', $data, ['bio_title', 'bio_text', 'career_title']) ?>
             <div>
@@ -1732,78 +1673,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                 <small class="form-help">Поддерживаются Google Карты, Яндекс Карты и OSM. Можно вставить как ссылку встраивания, так и весь HTML-код &lt;iframe&gt;.</small>
             </div>
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('map_point', $data) ?>
-        <?php endif; ?>
-
-        <?php if ($type === 'org_structure'): ?>
-            <?php $orgLayout = ($data['layout'] ?? 'tree') === 'spine' ? 'spine' : 'tree'; ?>
-            <?php $orgColumns = (int) ($data['columns'] ?? 4); ?>
-            <p class="form-hint">
-                В списках подразделений и органов работает разметка строк:
-                <code>Название | /ссылка</code> — пункт-ссылка,
-                <code>* Название</code> — выделенный пункт (проектный офис),
-                <code>- Название</code> — вложенная группа внутри предыдущего пункта.
-            </p>
-            <?php if (($departments ?? []) !== []): ?>
-                <p class="form-hint">
-                    Ссылки на состав сектора в разделе «Команда» — скопируйте адрес страницы команды и добавьте якорь:
-                    <?php foreach ($departments as $dep): ?>
-                        <code><?= htmlspecialchars((string) $dep['name'], ENT_QUOTES) ?> | /komanda#team-<?= htmlspecialchars((string) $dep['slug'], ENT_QUOTES) ?></code>
-                    <?php endforeach; ?>
-                </p>
-            <?php endif; ?>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('org_structure', $data, ['title', 'layout', 'columns', 'font_size', 'council', 'head_title', 'head_name', 'head_url', 'side_items']) ?>
-            <?php
-            // Готовые ссылки на состав сектора: адрес собирается по данным
-            // команды, а не переписывается руками (переименование сектора
-            // раньше молча ломало ссылку).
-            $teamAnchors = \App\Core\TeamAnchors::options();
-            $sectorPicker = '';
-            if ($teamAnchors !== []) {
-                ob_start(); ?>
-                <div class="form-field">
-                    <label>Вставить ссылку на состав сектора</label>
-                    <select data-org-sector-insert>
-                        <option value="">— выберите сектор —</option>
-                        <?php foreach ($teamAnchors as $anchor): ?>
-                            <option value="<?= htmlspecialchars($anchor['name'] . ' | ' . $anchor['path'], ENT_QUOTES) ?>" <?= $anchor['path'] === '' ? 'disabled' : '' ?>>
-                                <?= htmlspecialchars($anchor['name'], ENT_QUOTES) ?> (<?= (int) $anchor['count'] ?>)<?= $anchor['path'] === '' ? ' — нет страницы с блоком «Команда»' : '' ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <span class="form-hint">Строка добавится в поле выше. Секторы берутся из карточек сотрудников, адрес — из страницы с блоком «Команда» и включённой группировкой.</span>
-                </div>
-                <?php $sectorPicker = (string) ob_get_clean();
-            }
-            ?>
-            <div>
-                <label>Ветки (заместители / блоки подразделений)</label>
-                <span class="form-hint">Ветку можно оставить без должности — тогда подразделения подчиняются руководителю напрямую.</span>
-                <div data-repeater="branches">
-                    <?php foreach (($data['branches'] ?? []) as $i => $branch): ?>
-                        <div class="repeater-row">
-                            <span class="menu-panel__eyebrow">Элемент <?= (int) $i + 1 ?></span>
-                            <div class="form-field"><label>Должность</label><input type="text" name="branches[<?= $i ?>][title]" value="<?= htmlspecialchars($branch['title'] ?? '', ENT_QUOTES) ?>" placeholder="Первый заместитель директора"></div>
-                            <div class="form-field"><label>Ф.И.О. (необязательно)</label><input type="text" name="branches[<?= $i ?>][name]" value="<?= htmlspecialchars($branch['name'] ?? '', ENT_QUOTES) ?>"></div>
-                            <div class="form-field"><label>Ссылка на профиль (необязательно)</label><input type="text" name="branches[<?= $i ?>][url]" value="<?= htmlspecialchars($branch['url'] ?? '', ENT_QUOTES) ?>" placeholder="/rukovodstvo/..."></div>
-                            <div class="form-field"><label>Подразделения (по одному на строку)</label><textarea name="branches[<?= $i ?>][units]" rows="5" placeholder="Отдел стратегического планирования&#10;  Сектор прогнозов&#10;Отдел анализа и мониторинга"><?= htmlspecialchars($branch['units'] ?? '', ENT_QUOTES) ?></textarea><?= $sectorPicker ?><span class="form-hint">Отступ в начале строки = уровень вложенности (до четырёх): «Департамент», под ним с отступом «Отдел», ещё глубже «Сектор». <code>| /адрес</code> — ссылка, <code>*</code> в начале — акцентный пункт.</span></div>
-                            <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
-                            <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
-                            <button type="button" class="btn btn--small btn--danger repeater-row__remove" data-repeater-remove>Удалить ветку</button>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                <template data-repeater-template="branches">
-                    <div class="form-field"><label>Должность</label><input type="text" name="branches[__INDEX__][title]" placeholder="Заместитель директора"></div>
-                    <div class="form-field"><label>Ф.И.О. (необязательно)</label><input type="text" name="branches[__INDEX__][name]"></div>
-                    <div class="form-field"><label>Ссылка на профиль (необязательно)</label><input type="text" name="branches[__INDEX__][url]" placeholder="/rukovodstvo/..."></div>
-                    <div class="form-field"><label>Подразделения (по одному на строку)</label><textarea name="branches[__INDEX__][units]" rows="5" placeholder="Отдел стратегического планирования&#10;  Сектор прогнозов"></textarea><?= $sectorPicker ?><span class="form-hint">Отступ в начале строки = уровень вложенности (до четырёх): «Департамент», под ним с отступом «Отдел», ещё глубже «Сектор». <code>| /адрес</code> — ссылка, <code>*</code> в начале — акцентный пункт.</span></div>
-                    <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
-                    <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
-                    <button type="button" class="btn btn--small btn--danger repeater-row__remove" data-repeater-remove>Удалить ветку</button>
-                </template>
-                <div class="repeater-actions"><button type="button" class="btn btn--small" data-repeater-add="branches"><?= \App\Core\AdminUi::icon('plus') ?>Добавить ветку</button></div>
-            </div>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('org_structure', $data, ['collapsible', 'search', 'notes', 'footnote']) ?>
         <?php endif; ?>
 
         <?php // Общие поля оформления свёрнуты: контент-поля — основная задача,

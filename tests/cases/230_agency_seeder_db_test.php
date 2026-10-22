@@ -8,16 +8,13 @@ use App\Core\AgencyContentSeeder;
 // переводов, иерархия для хлебных крошек, переводы сотрудников и повторный
 // запуск. Раньше эту логику можно было проверить только руками на сервере.
 
-test('Контент Агентства: загрузка создаёт страницы, блоки и руководителей (БД)', function () {
+test('Контент Агентства: загрузка создаёт страницы и блоки (БД)', function () {
     ensure_test_db();
     $pdo = \App\Core\Database::pdo();
 
     $fixture = AgencyContentSeeder::fixture();
     foreach (array_keys($fixture['pages']) as $slug) {
         $pdo->prepare('DELETE FROM pages WHERE slug = ?')->execute([$slug]);
-    }
-    foreach ($fixture['team'] as $member) {
-        $pdo->prepare('DELETE FROM team_members WHERE name = ?')->execute([$member['name']]);
     }
 
     $report = AgencyContentSeeder::run($pdo, false, $fixture);
@@ -32,7 +29,6 @@ test('Контент Агентства: загрузка создаёт стр�
     }
     assert_same($expectedPages, $report['pages_created'], 'создано страниц');
     assert_same($expectedBlocks, $report['blocks'], 'записано блоков');
-    assert_same(count($fixture['team']), $report['team_created'], 'создано сотрудников');
 
     // Языковые версии одной страницы делят группу переводов и slug.
     $stmt = $pdo->prepare('SELECT lang, translation_group_id, `lead` FROM pages WHERE slug = ? ORDER BY lang');
@@ -46,15 +42,6 @@ test('Контент Агентства: загрузка создаёт стр�
     // сверять это по базе нечем: демо-посев в той же базе заводит свою
     // «Руководство». Достаточно того, что выше сошлись число страниц и
     // блоков с фикстурой, а её состав стережёт тест 227.
-
-    // Переводы сотрудников доехали.
-    $langs = $pdo->query(
-        'SELECT t.lang FROM team_member_translations t JOIN team_members m ON m.id = t.member_id
-          WHERE m.name = ' . $pdo->quote((string) $fixture['team'][1]['name']) . ' ORDER BY t.lang'
-    )->fetchAll(PDO::FETCH_COLUMN);
-    $expectedLangs = array_keys($fixture['team'][1]['translations']);
-    sort($expectedLangs);
-    assert_same($expectedLangs, $langs, 'языки перевода сотрудника');
 });
 
 test('Контент Агентства: повторный запуск ничего не дублирует, dry-run не пишет (БД)', function () {

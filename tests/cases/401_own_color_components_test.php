@@ -83,7 +83,7 @@ test('Цвет текста поверхностей не ссылается н�
     // --section-fg пустым, и белая карточка наследовала белый текст секции.
     $theme = preg_replace('#/\*.*?\*/#s', '', own_colors_css('gov-theme.css'));
     $surfaces = implode(', ', SectionColors::SURFACES);
-    $pos = strpos((string) $theme, '.social-embed-card, .team-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {');
+    $pos = strpos((string) $theme, '.social-embed-card, .testimonial, .textimage__info--card, .timeline-card, .widget--style-card) {');
     assert_true($pos !== false, 'правило поверхностей найдено');
     $rule = substr((string) $theme, (int) $pos, 300);
     assert_contains('--section-fg: var(--gov-ink)', $rule);

@@ -9,14 +9,13 @@ use App\Core\WidgetRenderer;
 
 final class Widget
 {
-    public const TYPES = ['latest_news', 'contacts', 'custom_html', 'projects_list', 'team_list', 'subscribe', 'photo_slider', 'section_menu', 'instagram_feed'];
+    public const TYPES = ['latest_news', 'contacts', 'custom_html', 'projects_list', 'subscribe', 'photo_slider', 'section_menu', 'instagram_feed'];
 
     public const TYPE_LABELS = [
         'latest_news' => 'Последние новости',
         'contacts' => 'Контакты и соцсети',
         'custom_html' => 'Произвольный HTML / баннер',
         'projects_list' => 'Список проектов',
-        'team_list' => 'Список команды',
         'subscribe' => 'Форма подписки на новости',
         'photo_slider' => 'Фотокарусель',
         'section_menu' => 'Меню раздела',

@@ -201,7 +201,7 @@ final class SettingsController
             Cache::forgetPrefix('page:');
             $added = array_sum($c);
             Flash::success($added > 0
-                ? sprintf('Демо-контент загружен: новости +%d, документы +%d, проекты +%d, медиа +%d, формы +%d, вакансии +%d, тендеры +%d, мероприятия +%d, руководство +%d, страницы +%d, меню +%d.', $c['news'], $c['documenty'], $c['projects'], $c['albums'] + $c['videos'], $c['forms'], $c['vakansii'], $c['tendery'], $c['meropriyatiya'], $c['team'], $c['pages'], $c['menu'])
+                ? sprintf('Демо-контент загружен: новости +%d, документы +%d, проекты +%d, медиа +%d, формы +%d, вакансии +%d, тендеры +%d, мероприятия +%d, страницы +%d, меню +%d.', $c['news'], $c['documenty'], $c['projects'], $c['albums'] + $c['videos'], $c['forms'], $c['vakansii'], $c['tendery'], $c['meropriyatiya'], $c['pages'], $c['menu'])
                 : 'Демо-контент уже загружен — новых записей не добавлено.');
         } catch (\Throwable $e) {
             Flash::error('Не удалось загрузить демо-контент: ' . $e->getMessage());
@@ -232,7 +232,7 @@ final class SettingsController
             $backupPath = Backup::create();
             $c = DemoSeeder::resetAndRun(Database::pdo(), $modules);
             Cache::forgetPrefix('page:');
-            Flash::success(sprintf('Резервная копия %s создана. Выполнен полный сброс, загрузка и проверка нового демо-комплекта! Создано: новости %d, документы %d, проекты %d, медиа %d, формы %d, вакансии %d, тендеры %d, мероприятия %d, руководство %d, страницы %d, меню %d.', basename($backupPath), $c['news'], $c['documenty'], $c['projects'], $c['albums'] + $c['videos'], $c['forms'], $c['vakansii'], $c['tendery'], $c['meropriyatiya'], $c['team'], $c['pages'], $c['menu']));
+            Flash::success(sprintf('Резервная копия %s создана. Выполнен полный сброс, загрузка и проверка нового демо-комплекта! Создано: новости %d, документы %d, проекты %d, медиа %d, формы %d, вакансии %d, тендеры %d, мероприятия %d, страницы %d, меню %d.', basename($backupPath), $c['news'], $c['documenty'], $c['projects'], $c['albums'] + $c['videos'], $c['forms'], $c['vakansii'], $c['tendery'], $c['meropriyatiya'], $c['pages'], $c['menu']));
         } catch (\Throwable $e) {
             Flash::error('Не удалось сбросить и загрузить демо-контент: ' . $e->getMessage());
         }

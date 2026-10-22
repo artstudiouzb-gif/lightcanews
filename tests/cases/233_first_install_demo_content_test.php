@@ -32,7 +32,6 @@ test('Первая установка: цифры главной подтвер�
             count($findAgencyBlock('cards_grid')['items'] ?? []),
             count($findAgencyBlock('stages')['items'] ?? []),
             count($findAgencyBlock('docs_list')['items'] ?? []),
-            count($agency['team'] ?? []),
         ];
 
         $counterValues = [];

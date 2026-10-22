@@ -6,7 +6,6 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
 use App\Models\PhotoAlbum;
-use App\Models\TeamMember;
 use App\Models\Video;
 use App\Core\Database;
 
