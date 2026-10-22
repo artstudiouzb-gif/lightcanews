@@ -2065,7 +2065,7 @@ final class DemoSeeder
                     ['Фотоальбомы', 'custom', '/albums'],
                     ['Видеоматериалы', 'page', 'media'],
                 ]],
-                ['title' => 'Открытые данные', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
+                ['title' => 'Документы', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
                     ['Документы', 'custom', '/catalog/documenty'],
                     ['Тендеры', 'custom', '/catalog/tendery'],
                     ['Вакансии', 'custom', '/catalog/vakansii'],
@@ -2090,7 +2090,7 @@ final class DemoSeeder
                     ['Fotoalbomlar', 'custom', '/albums'],
                     ['Videomateriallar', 'page', 'media'],
                 ]],
-                ['title' => 'Ochiq ma’lumotlar', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
+                ['title' => 'Hujjatlar', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
                     ['Hujjatlar', 'custom', '/catalog/documenty'],
                     ['Tenderlar', 'custom', '/catalog/tendery'],
                     ['Bo‘sh ish o‘rinlari', 'custom', '/catalog/vakansii'],
@@ -2115,7 +2115,7 @@ final class DemoSeeder
                     ['Photo Albums', 'custom', '/albums'],
                     ['Media Library', 'page', 'media'],
                 ]],
-                ['title' => 'Open Data', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
+                ['title' => 'Documents', 'type' => 'custom', 'value' => '/catalog/documenty', 'mega' => 0, 'children' => [
                     ['Documents', 'custom', '/catalog/documenty'],
                     ['Tenders', 'custom', '/catalog/tendery'],
                     ['Vacancies', 'custom', '/catalog/vakansii'],
