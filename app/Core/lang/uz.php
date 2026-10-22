@@ -434,7 +434,6 @@ return [
     'Контакты' => 'Kontaktlar',
     'Запустить автопрокрутку' => 'Avtomatik aylanishni yoqish',
     'Остановить автопрокрутку' => 'Avtomatik aylanishni to‘xtatish',
-    'Нет ни одной цели со снимками.' => 'Suratli maqsad topilmadi.',
     'Фотографии не добавлены.' => 'Suratlar qo‘shilmagan.',
     'Официальные новости и аналитические материалы Агентства.' => 'Agentlikning rasmiy yangiliklari va tahliliy materiallari.',
     'Будьте в курсе главных событий! Подпишитесь на мгновенные push-уведомления о новых публикациях.' => 'Asosiy voqealardan xabardor bo‘ling! Yangi e’lonlar haqida tezkor push-bildirishnomalarga obuna bo‘ling.',

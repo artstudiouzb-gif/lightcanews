@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Controllers\Admin\BulkController;
-use App\Models\Goal;
 use App\Models\PhotoAlbum;
 use App\Models\TeamMember;
 
@@ -49,27 +48,16 @@ test('BulkController: у каждого типа свой набор дейст�
     assert_same(['publish', 'unpublish', 'delete'], array_keys($albums));
     assert_same('Удалить', $albums['delete']);
 
-    $goals = BulkController::labels('goals');
-    // У цели нет статуса draft/published — только is_active («показывать в
-    // карусели»), поэтому действия называются иначе, а не «Опубликовать» /
-    // «Снять с публикации»: это и есть главное, что стережёт тест.
-    assert_same(['activate', 'deactivate', 'delete'], array_keys($goals));
-    assert_false(isset($goals['unpublish']), 'у целей нет черновика — снимать с публикации в этом смысле нечего');
-    assert_false(isset($goals['publish']), 'у целей нет публикации статьи — только показ в карусели');
-    assert_same('Удалить', $goals['delete']);
-
-    // Дублирования нет ни у одного из трёх новых типов — методов duplicate()
+    // Дублирования нет ни у одного из двух типов — методов duplicate()
     // у их моделей никогда не было.
     assert_false(isset($team['duplicate']), 'дублирования у сотрудников нет');
     assert_false(isset($albums['duplicate']), 'дублирования у альбомов нет');
-    assert_false(isset($goals['duplicate']), 'дублирования у целей нет');
 
     assert_same([], BulkController::labels('unknown'), 'неизвестный тип не должен получать чужой набор действий');
 });
 
-test('BulkController: списки трёх разделов спрашивают действия у контроллера, а не заводят свой', function (): void {
+test('BulkController: списки разделов спрашивают действия у контроллера, а не заводят свой', function (): void {
     $views = [
-        'goals' => 'app/Views/admin/goals/index.php',
         'team' => 'app/Views/admin/team/index.php',
         'albums' => 'app/Views/admin/albums/index.php',
     ];
@@ -82,24 +70,6 @@ test('BulkController: списки трёх разделов спрашиваю�
         // молча при следующей правке — как со схемой полей блока.
         assert_not_contains('<option value="publish">Опубликовать</option>', (string) $src, $relative . ': опция не должна быть записана в шаблоне буквально');
     }
-});
-
-test('Goal::setActive переключает показ в карусели, а не статус; удаление настоящее (БД)', function (): void {
-    ensure_test_db();
-    $id = Goal::create('Bulk-тест цели', '', true);
-    try {
-        assert_same(1, (int) Goal::find($id)['is_active']);
-
-        Goal::setActive($id, false);
-        assert_same(0, (int) Goal::find($id)['is_active']);
-
-        Goal::setActive($id, true);
-        assert_same(1, (int) Goal::find($id)['is_active']);
-    } finally {
-        Goal::delete($id);
-    }
-    // Удаление настоящее: строки не остаётся вовсе, никакого deleted_at.
-    assert_true(Goal::find($id) === null, 'после Goal::delete() запись не должна находиться');
 });
 
 test('TeamMember::setStatus меняет статус точечно, недопустимое значение игнорируется; удаление настоящее (БД)', function (): void {

@@ -188,7 +188,6 @@ final class AdminUi
             'videos' => 'movie',
             'subscribers' => 'mail',
             'design' => 'palette',
-            'goals' => 'target',
             'widgets' => 'layout-grid',
             'header' => 'layout-navbar',
             'footer' => 'layout-bottombar',

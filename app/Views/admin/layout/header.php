@@ -23,7 +23,6 @@ $navContent = [
     'heroes' => ['/admin/heroes', t('Обложки')],
     'projects' => ['/admin/projects', t('Проекты')],
     'team' => ['/admin/team', t('Команда')],
-    'goals' => ['/admin/goals', t('Цели')],
     'albums' => ['/admin/albums', t('Фотоальбомы')],
     'videos' => ['/admin/videos', t('Видео')],
 ];

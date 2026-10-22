@@ -141,20 +141,6 @@ $currentType = $widget['type'] ?? 'latest_news';
         <!-- Настройки: photo_slider -->
         <?php if ($showType('photo_slider')): ?>
             <?php $sliderSlides = (array) ($data['slides'] ?? []); ?>
-            <?php $sliderSource = (string) ($data['source'] ?? 'manual'); ?>
-            <div class="form-field<?= (!$isEdit) ? ' is-hidden' : '' ?>" data-wtype="photo_slider">
-                <label for="source">Откуда брать фотографии</label>
-                <select id="source" name="source">
-                    <?php foreach (\App\Core\WidgetRenderer::SLIDER_SOURCES as $val => $label): ?>
-                        <option value="<?= htmlspecialchars((string) $val, ENT_QUOTES) ?>" <?= $sliderSource === (string) $val ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <span class="form-hint">
-                    «Случайная цель» — виджет берёт одну цель из раздела «Цели» и листает
-                    её снимки; у каждого посетителя цель своя. Список ниже тогда не
-                    используется.
-                </span>
-            </div>
             <div class="form-field<?= (!$isEdit) ? ' is-hidden' : '' ?>" data-wtype="photo_slider">
                 <label>Фотографии карусели</label>
                 <span class="form-hint">

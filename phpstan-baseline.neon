@@ -1795,12 +1795,6 @@ parameters:
 			path: app/Views/admin/footer/index.php
 
 		-
-			message: '#^PHPDoc tag @var for variable \$filters has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Views/admin/goals/index.php
-
-		-
 			message: '#^PHPDoc tag @var for variable \$config has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1

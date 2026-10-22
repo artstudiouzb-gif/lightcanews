@@ -433,7 +433,6 @@ return [
     'Контакты' => 'Contacts',
     'Запустить автопрокрутку' => 'Start autoplay',
     'Остановить автопрокрутку' => 'Stop autoplay',
-    'Нет ни одной цели со снимками.' => 'No goal has photos yet.',
     'Фотографии не добавлены.' => 'No photos added.',
     'Официальные новости и аналитические материалы Агентства.' => 'Official news and analytical materials of the Agency.',
     'Будьте в курсе главных событий! Подпишитесь на мгновенные push-уведомления о новых публикациях.' => 'Stay on top of the news: subscribe to instant push notifications about new publications.',

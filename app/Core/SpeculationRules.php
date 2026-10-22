@@ -54,7 +54,6 @@ final class SpeculationRules
      */
     private const EXTRA_EXCLUDED = [
         '/script',
-        '/goals',
         '/sitemap.xml',
         '/robots.txt',
         '/manifest.webmanifest',
