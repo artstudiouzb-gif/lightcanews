@@ -29,7 +29,7 @@ test('Редакционные варианты страницы Агентст�
     $editor = block_editor_markup();
     // «indexed» больше не вариант: нумерация карточек стала настройкой, потому
     // что вариант ничего не менял — номер печатался во всех.
-    foreach (['intro', 'system', 'spotlight', 'history', 'acts-editorial', 'media_image', 'media_video', 'media_youtube'] as $variant) {
+    foreach (['intro', 'system', 'spotlight', 'history', 'media_image', 'media_video', 'media_youtube'] as $variant) {
         assert_contains($variant, $editor, "вариант {$variant} недоступен в редакторе");
     }
     $form = (string) file_get_contents(APP_ROOT . '/app/Views/admin/pages/block_form.php');
@@ -74,7 +74,6 @@ test('Редакционные стили не меняют шапку и под
     assert_contains('.block-text--system', $css);
     assert_contains('.cards-grid', $css);
     assert_contains('.block-stages--history', $css);
-    assert_contains('.block-docslist--acts-editorial', $css);
     assert_contains('.block-stages--history .stage::after', $css, 'в истории должна быть отключена дублирующая линия');
     assert_not_contains('.site-header', $css);
     assert_not_contains('.site-footer', $css);
@@ -201,32 +200,19 @@ test('Карточки, контакты и правовые акты испол
     // ушла вместе с типом.
     $cards = (string) file_get_contents(APP_ROOT . '/templates/blocks/cards_grid.php');
     $contacts = (string) file_get_contents(APP_ROOT . '/templates/blocks/contact_cards.php');
-    $acts = (string) file_get_contents(APP_ROOT . '/templates/blocks/partials/act_card.php');
     assert_false(is_file(APP_ROOT . '/templates/blocks/advantages.php'), 'шаблона «Преимуществ» не осталось');
     assert_contains('feature-card__icon', $cards);
     assert_contains('feature-card contact-card', $contacts);
-    assert_contains('feature-card act-card', $acts);
     assert_contains('feature-card__num', $cards);
     assert_contains('feature-card__num', $contacts);
-    assert_contains('feature-card__title act-card__number', $acts);
-    assert_contains('<p class="feature-card__text act-card__desc">', $acts);
-    assert_not_contains('act-card__title', $acts);
-
-    $cardTextSelectors = DesignSettings::TYPO_SIZES['fs_card_text'][1];
-    $cardTitleSelectors = DesignSettings::TYPO_SIZES['fs_card_title'][1];
-    assert_contains('.act-card__desc', $cardTextSelectors);
-    assert_not_contains('.act-card__desc', $cardTitleSelectors);
 
     $css = theme_css();
     assert_contains('.feature-card.contact-card', $css);
-    assert_contains('.feature-card.act-card', $css);
-    assert_contains('.feature-card.act-card .act-card__desc', $css);
     assert_contains('font-size: var(--font-size-card-text, var(--step--1))', $css);
     assert_contains('--feature-card-motion-duration: .62s', $css);
 
     $editorial = (string) file_get_contents(APP_ROOT . '/public/assets/css/public-editorial-pages.css');
     assert_contains('.anim-card:not(.feature-card)', $editorial);
-    assert_contains('.block-docslist--acts-editorial .act-card__desc', $editorial);
 
     // Мёртвых правил «карточка без класса feature-card» не осталось: класс
     // висел на ней всегда, и такое правило не срабатывало ни разу.

@@ -75,7 +75,7 @@ test('Карточки: «своя схема» — умолчание и не �
 
 test('Карточки: светлая и тёмная схемы перекрывают поверхность явно', function () {
     $lightCards = SectionColors::build(['_bg_card_scheme' => 'light'], 5);
-    assert_contains('#block-5 :is(.act-card,', $lightCards);
+    assert_contains('#block-5 :is(.album-card,', $lightCards);
     assert_contains('background:#fff', $lightCards);
     assert_contains('--section-title-fg:var(--gov-title)', $lightCards);
 

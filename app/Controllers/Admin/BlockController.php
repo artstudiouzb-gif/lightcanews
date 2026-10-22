@@ -899,10 +899,6 @@ final class BlockController
                         'title' => TextProcessor::typographPlain($itemTitle, $locale),
                         'meta' => trim((string) ($item['meta'] ?? '')),
                         'url' => $url,
-                        // Реквизиты акта: показываются только в варианте
-                        // «Правовые акты», в остальных лежат про запас.
-                        'number' => trim((string) ($item['number'] ?? '')),
-                        'date' => trim((string) ($item['date'] ?? '')),
                     ];
                 }
                 return array_merge(

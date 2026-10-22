@@ -1631,8 +1631,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                         <div class="repeater-row">
                             <div class="form-field"><label>Название</label><input type="text" name="items[<?= $i ?>][title]" value="<?= htmlspecialchars($item['title'] ?? '', ENT_QUOTES) ?>"></div>
                             <div class="form-field"><label>Мета (необязательно)</label><input type="text" name="items[<?= $i ?>][meta]" value="<?= htmlspecialchars($item['meta'] ?? '', ENT_QUOTES) ?>"><span class="form-hint">Формат и размер локального файла определяются автоматически.</span></div>
-                            <div class="form-field"><label>Номер акта</label><input type="text" name="items[<?= $i ?>][number]" value="<?= htmlspecialchars($item['number'] ?? '', ENT_QUOTES) ?>" placeholder="ПФ-6079"><span class="form-hint">Показывается в варианте «Правовые акты».</span></div>
-                            <div class="form-field"><label>Дата акта</label><input type="text" name="items[<?= $i ?>][date]" value="<?= htmlspecialchars($item['date'] ?? '', ENT_QUOTES) ?>" placeholder="12 марта 2026 г."></div>
                             <div class="form-field">
                                 <label>Ссылка на файл</label>
                                 <div class="u-inline-b9bbe540d3">
@@ -1649,8 +1647,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                 <template data-repeater-template="items">
                     <div class="form-field"><label>Название</label><input type="text" name="items[__INDEX__][title]"></div>
                     <div class="form-field"><label>Мета</label><input type="text" name="items[__INDEX__][meta]"></div>
-                    <div class="form-field"><label>Номер акта</label><input type="text" name="items[__INDEX__][number]" placeholder="ПФ-6079"></div>
-                    <div class="form-field"><label>Дата акта</label><input type="text" name="items[__INDEX__][date]" placeholder="12 марта 2026 г."></div>
                     <div class="form-field">
                         <label>Ссылка на файл</label>
                         <div class="u-inline-b9bbe540d3">

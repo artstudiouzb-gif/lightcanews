@@ -24,45 +24,17 @@ function brand_html(int $id, string $type, array $data): string
     return (string) BlockRenderer::render(brand_block($id, $type, $data))['html'];
 }
 
-test('Акты: номер и дата выводятся отдельной карточкой', function () {
+test('Документы: прежний вариант «Правовые акты» выводится обычными карточками', function () {
+    // Варианта больше нет, а сохранённые блоки остались: схема заменяет
+    // значение вне набора умолчанием, и блок не пропадает со страницы.
     $html = brand_html(940, 'docs_list', [
         'variant' => 'acts',
-        'title' => 'Правовая основа',
-        'items' => [
-            ['title' => 'Об утверждении Стратегии', 'number' => 'УП-6079', 'date' => '12 марта 2026 г.', 'url' => '/uploads/public/act.pdf'],
-        ],
+        'items' => [['title' => 'Об утверждении Стратегии', 'number' => 'УП-6079', 'url' => '/uploads/public/act.pdf']],
     ]);
 
-    assert_contains('act-card', $html);
-    assert_contains('УП-6079', $html);
-    assert_contains('12 марта 2026 г.', $html);
-    // Реквизиты ищутся вместе с названием: акт находят как раз по номеру.
-    assert_contains('data-document-search', $html);
-    assert_true(str_contains($html, 'уп-6079'), 'номер попадает в строку поиска');
-});
-
-test('Акты: обычные варианты списка не меняются', function () {
-    $items = [['title' => 'Отчёт', 'number' => 'УП-1', 'url' => '/uploads/public/act.pdf']];
-
-    $grid = brand_html(941, 'docs_list', ['variant' => 'grid', 'items' => $items]);
-    assert_contains('doc-card', $grid);
-    assert_not_contains('act-card', $grid);
-    // Номер сохраняется в данных, но в карточке документа его не показывают.
-    assert_not_contains('УП-1', $grid);
-
-    $links = brand_html(942, 'docs_list', ['variant' => 'links', 'items' => $items]);
-    assert_contains('doc-card--compact', $links);
-    assert_not_contains('act-card', $links);
-});
-
-test('Акты: карточка без ссылки не притворяется ссылкой', function () {
-    $html = brand_html(943, 'docs_list', [
-        'variant' => 'acts',
-        'items' => [['title' => 'Готовится к публикации', 'number' => 'ПП-2']],
-    ]);
-
-    assert_contains('<div', $html);
-    assert_not_contains('<a class="act-card"', $html);
+    assert_contains('doc-card', $html);
+    assert_contains('Об утверждении Стратегии', $html);
+    assert_not_contains('act-card', $html);
 });
 
 test('Оглавление: собирается из заголовков блоков страницы', function () {
@@ -120,9 +92,6 @@ test('Эмблема агентства подключена файлом и л�
     // Маска берёт форму из путей: заливка и размеры внутри файла не нужны,
     // а вот viewBox обязателен — без него маска схлопывается.
     assert_contains('viewBox=', (string) file_get_contents($svg));
-    // Тонкую линейную эмблему легко перекрыть текстом — водяной знак уходит
-    // под содержимое карточки.
-    assert_contains('.act-card__head, .act-card__desc, .act-card__foot { position: relative; z-index: 1; }', $css);
 });
 
 test('Оглавление: закреплённая полоса не перекрывает якоря', function () {

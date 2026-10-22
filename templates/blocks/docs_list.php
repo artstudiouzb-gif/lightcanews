@@ -7,17 +7,12 @@ $items = $data['items'] ?? [];
 // Значения проверены схемой полей (BlockFieldSchema) — читаем как есть.
 $cols = (int) $data['columns'];
 $variant = (string) $data['variant'];
-$actsVariant = in_array($variant, ['acts', 'acts-editorial'], true);
 $searchEnabled = !empty($data['search_enabled']);
-// Фирменный знак на карточке акта. У блоков, сохранённых до появления
-// настройки, ключа нет — умолчание схемы подставляет включённое состояние.
-$showEmblem = !empty($data['emblem']);
 $prepared = array_map([\App\Core\DocumentPresenter::class, 'prepare'], is_array($items) ? $items : []);
 $kinds = array_values(array_unique(array_filter(array_column($prepared, 'extension'), static fn (string $kind): bool => $kind !== 'other')));
-// Хвост последнего ряда растягивается на всю ширину: пять актов в три
+// Хвост последнего ряда растягивается на всю ширину: пять документов в три
 // колонки иначе оставляют справа пустую ячейку.
-$templateCss = \App\Core\GridBalance::css($blockId, '.docslist-grid', '.doc-card', count($prepared), $cols)
-    . \App\Core\GridBalance::css($blockId, '.docslist-acts', '.act-card', count($prepared), $cols);
+$templateCss = \App\Core\GridBalance::css($blockId, '.docslist-grid', '.doc-card', count($prepared), $cols);
 ?>
 <div class="block-docslist block-docslist--<?= $variant ?>" data-document-list>
     <div class="section-head">
@@ -48,14 +43,9 @@ $templateCss = \App\Core\GridBalance::css($blockId, '.docslist-grid', '.doc-card
                 <span class="document-tools__count" data-document-count aria-live="polite"></span>
             </div>
         <?php endif; ?>
-        <div class="<?= $variant === 'links' ? 'media-list docslist-links' : ($actsVariant ? 'docslist-acts' : 'docslist-grid') ?>">
-            <?php foreach ($items as $docIndex => $doc): ?>
-                <?php if ($actsVariant): ?>
-                    <?php $editorialAct = $variant === 'acts-editorial'; ?>
-                    <?php include __DIR__ . '/partials/act_card.php'; ?>
-                <?php else: ?>
-                    <?php $compact = $variant === 'links'; include __DIR__ . '/partials/document_card.php'; ?>
-                <?php endif; ?>
+        <div class="<?= $variant === 'links' ? 'media-list docslist-links' : 'docslist-grid' ?>">
+            <?php foreach ($items as $doc): ?>
+                <?php $compact = $variant === 'links'; include __DIR__ . '/partials/document_card.php'; ?>
             <?php endforeach; ?>
         </div>
         <p class="block-docslist__empty" data-document-empty hidden><?= htmlspecialchars(t('Ничего не найдено.'), ENT_QUOTES) ?></p>

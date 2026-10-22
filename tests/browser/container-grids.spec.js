@@ -26,8 +26,8 @@ const TILE_GRIDS = ['block-partners__grid'];
 
 const GRIDS = [
     '.imgcards-grid', '.newslist-grid', '.icon-text__grid', '.mediagallery-grid', '.albums-grid', '.cards-grid',
-    '.cat-grid', '.block-news__grid', '.block-counters__grid', '.docslist-grid', '.docslist-acts', '.contact-cards',
-    '.block-partners__grid', '.block-team__grid', '.block-projects__grid', '.stages', '.newsdocs-news', '.newsdocs-docs',
+    '.cat-grid', '.block-news__grid', '.block-counters__grid', '.docslist-grid', '.contact-cards',
+    '.block-partners__grid', '.block-projects__grid', '.stages', '.newsdocs-news', '.newsdocs-docs',
 ].join(', ');
 
 for (const width of [1440, 1100]) {

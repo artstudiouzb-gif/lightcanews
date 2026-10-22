@@ -41,14 +41,11 @@ const PROBES = [
     ['.counter__value', ['color', 'fontSize', 'fontWeight', 'lineHeight']],
     ['.counter__label', ['color', 'fontSize', 'lineHeight']],
     ['.cms-block--cards_grid .feature-card', ['backgroundColor', 'borderRadius', 'borderTopWidth', 'borderTopColor', 'boxShadow', 'padding']],
-    ['.act-card', ['backgroundColor', 'borderRadius', 'padding', 'minHeight']],
-    ['.act-card__emblem', ['display', 'width', 'height', 'opacity', 'insetBlockEnd']],
     ['.faq-item', ['backgroundColor', 'borderRadius', 'borderTopColor']],
     ['.faq-item__q', ['color', 'fontSize', 'fontWeight', 'padding']],
     ['.stage', ['gap', 'paddingTop', 'display']],
     ['.contact-card', ['backgroundColor', 'borderRadius', 'padding']],
     ['.cms-block--cta', ['backgroundColor', 'paddingTop', 'paddingBottom']],
-    ['.act-card__number', ['color', 'fontSize', 'fontWeight']],
     ['.site-footer', ['backgroundColor', 'color', 'paddingTop']],
 ];
 

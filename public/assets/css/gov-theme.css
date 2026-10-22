@@ -1648,7 +1648,7 @@ body .site-header--borders-container.site-header--transparent:not(.is-scrolled) 
  * переменные себе, карточка — себе, и её поддерево видит уже свои значения.
  */
 
-:is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
+:is(.album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
     .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
@@ -1670,7 +1670,7 @@ body .site-header--borders-container.site-header--transparent:not(.is-scrolled) 
     color: var(--section-fg);
 }
 
-:root[data-theme="dark"] :is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
+:root[data-theme="dark"] :is(.album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
     .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
@@ -4403,7 +4403,7 @@ h4.section-head__title { font-size: var(--font-size-card-title, var(--step-2)); 
    контраст. На тёмной секции делаем её непрозрачной: читаемость важнее
    эффекта. То же самое для своего тёмного фона — App\Core\SectionColors. */
 
-.cms-block--bg-navy :is(.act-card, .album-card, .block-testimonials__item, .cat-tile,
+.cms-block--bg-navy :is(.album-card, .block-testimonials__item, .cat-tile,
     .catcard, .catdetail__card, .contact-card, .content-card, .doc-card, .faq-item,
     .feature-card, .mediacard, .news-card, .news-poll-card, .newsdetail-card,
     .newslist-lead, .project-card, .relnews-card, .site-search-results__item,
@@ -6143,95 +6143,9 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
 
 .cms-block[id],
 .cms-block__anchor { scroll-margin-top: var(--anchornav-top, 0px); }
-.cms-block__anchor { display: block; inline-size: 0; block-size: 0; }/* ==========================================================================
-   Карточка правового акта
-   ========================================================================== *//* Колонок столько же, сколько выбрано в блоке: у актов длинные названия,
-   и четыре колонки режут их на «лесенку» из двух слов. *//* Дорожки считает App\Core\GridBalance: пять актов в три колонки раньше
-   оставляли пустую ячейку справа, теперь последний ряд занимает всю ширину. */
+.cms-block__anchor { display: block; inline-size: 0; block-size: 0; }
 
-.docslist-acts { display: grid; grid-template-columns: repeat(var(--grid-track, 2), minmax(0, 1fr)); gap: 16px; }
-.docslist-acts > .act-card { grid-column: span var(--grid-span, 1); }
-@media (max-width: 1000px) {
-    .docslist-acts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .docslist-acts > .act-card { grid-column: auto; }
-}
-@media (max-width: 640px) {
-    .docslist-acts { grid-template-columns: 1fr; }
-    .docslist-acts > .act-card { grid-column: auto; }
-}
-.act-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 22px 24px;
-    overflow: hidden;
-    text-decoration: none;
-    background: var(--gov-surface);
-    border: 1px solid var(--gov-border);
-    border-radius: var(--radius);
-    /* Слева — акцентная грань: по ней карточка акта отличается от обычного
-       документа даже боковым зрением. */
-    border-inline-start: 4px solid var(--gov-teal);
-    transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
-}
-.act-card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-}/* Эмблема-звезда как водяной знак: фирменный слой, который не мешает
-   читать. Цвет — от акцента, поэтому меняется вместе с темой. */
-
-.act-card__emblem {
-    position: absolute;
-    inset-block-start: -14px;
-    inset-inline-end: -14px;
-    width: 96px;
-    height: 96px;
-    z-index: 0;
-    background: var(--gov-teal);
-    opacity: .16;
-    -webkit-mask: var(--gov-emblem) center / contain no-repeat;
-    mask: var(--gov-emblem) center / contain no-repeat;
-    pointer-events: none;
-}/* Текст всегда поверх водяного знака: длинное название иначе
-   наезжает на орнамент и оба становятся нечитаемыми. */
-
-.act-card__head, .act-card__desc, .act-card__foot { position: relative; z-index: 1; }
-.act-card__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
-.act-card__number {
-    font-family: var(--font-family, 'Noto Sans', sans-serif);
-    font-weight: 700;
-    font-size: var(--font-size-meta, var(--step--3));
-    letter-spacing: var(--meta-letter-spacing, .08em);
-    text-transform: uppercase;
-    /* Тёмный текст, а не акцентный: контрастный оттенок акцента рассчитан на
-       чистую поверхность, а на подложке плашки давал 4.18:1 — ниже нормы
-       WCAG AA для мелкого текста. Акцент остаётся в заливке и левой грани. */
-    color: var(--gov-title);
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--gov-teal) 14%, transparent);
-}
-.act-card__date { color: var(--gov-muted); font-size: var(--font-size-meta, var(--step--2)); }
-.act-card__foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid var(--gov-border);
-}/* Длинное описание источника не должно выдавливать кнопку за карточку. */
-
-.act-card__meta { display: inline-flex; align-items: center; gap: 6px; min-width: 0; flex: 1 1 auto; color: var(--gov-muted); font-size: var(--font-size-meta, var(--step--3)); text-transform: uppercase; letter-spacing: var(--meta-letter-spacing, .04em); }
-.act-card__meta-icon { flex: none; }
-.act-card__action { display: inline-flex; align-items: center; gap: 6px; flex: none; color: var(--gov-teal-text); font-weight: 700; font-size: var(--font-size-btn, var(--step--2)); }
-.act-card:hover .act-card__action { gap: 9px; }
-@media (prefers-reduced-motion: reduce) {
-    .act-card, .act-card__action { transition: none; }
-    .act-card:hover { transform: none; }
-}/* ==========================================================================
+/* ==========================================================================
    Подпись к фотографии — один компонент на галерею новости, фотоленту и
    альбом. Раньше в каждом месте были свои размеры и капслок: на кириллице
    «ФОТО: ПРЕСС-СЛУЖБА» кричит и спорит с самой подписью.
@@ -6534,8 +6448,7 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
    Legacy type selectors remain for content fields only and must not fork the
    card shell, hover elevation or timing. */
 
-.feature-card.contact-card,
-.feature-card.act-card {
+.feature-card.contact-card {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -6553,8 +6466,7 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
         background-color .46s ease;
 }
 
-.feature-card.contact-card:hover,
-.feature-card.act-card:hover {
+.feature-card.contact-card:hover {
     transform: translateY(var(--feature-card-hover-lift, -4px));
     border-color: var(--gov-teal);
     border-bottom-color: var(--gov-teal);
@@ -6562,8 +6474,7 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
     box-shadow: var(--shadow-hover);
 }
 
-.feature-card .contact-card__icon,
-.feature-card .act-card__editorial-icon {
+.feature-card .contact-card__icon {
     width: 44px;
     height: 44px;
     margin: 0;
@@ -6572,15 +6483,13 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
     color: var(--gov-teal-text);
 }
 
-.feature-card:hover .contact-card__icon,
-.feature-card:hover .act-card__editorial-icon {
+.feature-card:hover .contact-card__icon {
     transform: scale(1.06);
     background-color: var(--gov-navy);
     color: #fff;
 }
 
-.feature-card.contact-card .feature-card__title,
-.feature-card.act-card .feature-card__title {
+.feature-card.contact-card .feature-card__title {
     margin: 0;
     color: var(--gov-title);
     font-family: var(--font-heading, 'Noto Serif', serif);
@@ -6589,8 +6498,7 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
     line-height: 1.3;
 }
 
-.feature-card.contact-card .feature-card__text,
-.feature-card.act-card .feature-card__text {
+.feature-card.contact-card .feature-card__text {
     margin: 0;
     color: var(--gov-muted, #475569);
     font-size: var(--font-size-card-text, var(--step--1));
@@ -6603,20 +6511,6 @@ body .site-header--transparent:not(.is-scrolled) .site-menu__overflow-panel > .s
 
 .feature-card.contact-card .feature-card__text { flex: 0 0 auto; }
 .feature-card.contact-card .contact-card__link { margin-top: auto; }
-
-.feature-card.act-card .act-card__desc {
-    font-family: var(--font-family, 'Noto Sans', sans-serif);
-    font-weight: 400;
-    line-height: var(--base-line-height, 1.6);
-}/* Водяной знак у карточки-акта: в верхнем правом углу он садился под номер
-   («01»), и его просто выключали — вместе с ним пропадал фирменный слой.
-   Переносим вниз, где карточка пуста: знак виден, номер читается. */
-
-.feature-card.act-card .act-card__emblem {
-    inset-block-start: auto;
-    inset-block-end: -12px;
-    inset-inline-end: -12px;
-}
 
 @media (prefers-reduced-motion: reduce) {
     .feature-card,
