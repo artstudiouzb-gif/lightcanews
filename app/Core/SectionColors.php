@@ -39,7 +39,6 @@ final class SectionColors
      * @var list<string>
      */
     public const SURFACES = [
-        '.act-card',
         '.album-card',
         '.block-testimonials__item',
         '.cat-tile',

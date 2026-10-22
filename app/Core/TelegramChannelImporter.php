@@ -57,6 +57,9 @@ final class TelegramChannelImporter
 
     private const NOT_EXPORTED = '(File not included';
 
+    /** Предел одного файла выгрузки: снимок или ролик из канала. */
+    private const MAX_FILE_BYTES = 256 * 1024 * 1024;
+
     /**
      * Сообщения выгрузки → посты. Служебные сообщения и посты без текста
      * (одиночное фото, опрос) новостью не становятся и перечисляются в
@@ -661,7 +664,7 @@ final class TelegramChannelImporter
         foreach ($photos as $photo) {
             $path = $base . '/' . $photo;
             $name = 'telegram-' . $post['id'] . '-' . (count($urls) + 1) . '.' . strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $urls[] = FileEntry::publicUrl(LegacyDocumentImporter::store($path, $name, $userId));
+            $urls[] = FileEntry::publicUrl(self::store($path, $name, $userId));
         }
         $slug = Slug::unique(
             $mapped['title'] !== '' ? $mapped['title'] : 'telegram-' . $post['id'],
@@ -714,5 +717,32 @@ final class TelegramChannelImporter
         if (file_put_contents($path . '.tmp', $json) === false || !rename($path . '.tmp', $path)) {
             throw new \RuntimeException('Не удалось записать состояние импорта в ' . self::INBOX . '.');
         }
+    }
+
+    /**
+     * Uploader переносит файл (`rename`) до записи в медиатеку, поэтому ему
+     * отдаётся копия, а исходник удаляется только после успеха: иначе сбой
+     * записи (база, проверка содержимого) уносил бы файл из папки приёма, и
+     * повторный запуск его уже не нашёл бы. Копия лежит рядом — на том же
+     * диске, и `rename` внутри Uploader остаётся мгновенным.
+     *
+     * @return array<string, mixed>
+     */
+    private static function store(string $path, string $originalName, ?int $userId): array
+    {
+        $tmp = dirname($path) . '/.import-' . bin2hex(random_bytes(6)) . '.' . strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!@copy($path, $tmp)) {
+            throw new \RuntimeException('Не удалось прочитать файл в папке приёма.');
+        }
+        try {
+            $stored = Uploader::storeFromPath($tmp, $originalName, (int) filesize($tmp), 'public', $userId, false, self::MAX_FILE_BYTES, null);
+        } finally {
+            if (is_file($tmp)) {
+                @unlink($tmp);
+            }
+        }
+        @unlink($path);
+
+        return $stored;
     }
 }
