@@ -90,22 +90,21 @@ test('Контент Агентства: разметка текстовых б�
     }
 });
 
-test('Контент Агентства: правовые акты с реквизитами, у каждой страницы есть русская версия', function () {
-    $acts = 0;
+test('Контент Агентства: документы с реквизитами, у каждой страницы есть русская версия', function () {
+    $docs = 0;
     foreach (agency_blocks() as [$slug, $lang, $type, $data]) {
-        if ($type !== 'docs_list' || !in_array($data['variant'] ?? '', ['acts', 'acts-editorial'], true)) {
+        if ($type !== 'docs_list') {
             continue;
         }
         foreach ($data['items'] as $item) {
-            $acts++;
-            // Карточка акта без номера и даты выглядит как обычный документ —
-            // именно по реквизитам акт и ищут.
-            assert_true(trim((string) $item['number']) !== '', "акт без номера в {$slug} [{$lang}]");
-            assert_true(trim((string) $item['date']) !== '', "акт без даты в {$slug} [{$lang}]");
-            assert_true(trim((string) $item['title']) !== '', "акт без названия в {$slug} [{$lang}]");
+            $docs++;
+            // Номер и дата документа идут подписью карточки: по ним документ
+            // и ищут, а поиск блока читает подпись вместе с названием.
+            assert_true(trim((string) $item['meta']) !== '', "документ без реквизитов в {$slug} [{$lang}]");
+            assert_true(trim((string) $item['title']) !== '', "документ без названия в {$slug} [{$lang}]");
         }
     }
-    assert_true($acts >= 15, 'ожидались акты на трёх языках, найдено записей: ' . $acts);
+    assert_true($docs >= 15, 'ожидались документы на трёх языках, найдено записей: ' . $docs);
 
     foreach (agency_fixture()['pages'] as $slug => $langData) {
         assert_true(isset($langData['ru']), "у страницы {$slug} нет русской версии — она корень группы переводов");
@@ -155,7 +154,7 @@ test('Контент Агентства: все блоки рендерятся 
     assert_contains('Чем занимается Агентство', $renderedPages['o-nas|ru']);
     assert_contains('Мониторинг и оценка', $renderedPages['o-nas|ru']);
     assert_contains('Указ Президента № ПФ-6264', $renderedPages['o-nas|ru']);
-    assert_contains('act-card', $renderedPages['o-nas|ru']);
+    assert_contains('doc-card', $renderedPages['o-nas|ru']);
     assert_contains('block-text--intro', $renderedPages['o-nas|ru']);
     assert_contains('block-text__principles', $renderedPages['o-nas|ru']);
     // «Преимущества» переехали в «Карточки»: карточка и поля у них были те же,
@@ -166,7 +165,6 @@ test('Контент Агентства: все блоки рендерятся 
     assert_contains('block-text--system', $renderedPages['o-nas|ru']);
     assert_contains('block-stages--history', $renderedPages['o-nas|ru']);
     assert_contains('block-text--spotlight', $renderedPages['o-nas|ru']);
-    assert_contains('block-docslist--acts-editorial', $renderedPages['o-nas|ru']);
     assert_contains('Agentlik nima bilan shug‘ullanadi?', $renderedPages['o-nas|uz']);
     assert_contains('What the Agency Does', $renderedPages['o-nas|en']);
 

@@ -65,20 +65,20 @@ test('Карточки: до пяти в один ряд, дальше хвос�
     assert_not_contains('nth-last-child', $even);
 });
 
-test('Правовые акты: пятая карточка не оставляет дыру справа', function () {
+test('Документы: пятая карточка не оставляет дыру справа', function () {
     $items = [];
     for ($i = 1; $i <= 5; $i++) {
-        $items[] = ['title' => 'Акт ' . $i, 'number' => '№ ' . $i, 'date' => '2025', 'url' => '', 'meta' => ''];
+        $items[] = ['title' => 'Документ ' . $i, 'url' => '', 'meta' => ''];
     }
     $rendered = BlockRenderer::render([
         'id' => 700,
         'type' => 'docs_list',
-        'data' => json_encode(['variant' => 'acts', 'columns' => 3, 'items' => $items], JSON_UNESCAPED_UNICODE),
+        'data' => json_encode(['variant' => 'grid', 'columns' => 3, 'items' => $items], JSON_UNESCAPED_UNICODE),
         'custom_css' => '',
     ]);
     $css = (string) $rendered['css'];
-    assert_contains('.docslist-acts{--grid-track:6;--grid-span:2}', $css);
-    assert_contains('.act-card:nth-last-child(-n+2){grid-column:span 3}', $css);
+    assert_contains('.docslist-grid{--grid-track:6;--grid-span:2}', $css);
+    assert_contains('.doc-card:nth-last-child(-n+2){grid-column:span 3}', $css);
 });
 
 test('Этапы: колонок ровно по числу этапов, дальше карусель', function () {

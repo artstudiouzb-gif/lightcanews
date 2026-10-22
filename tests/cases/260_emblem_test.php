@@ -124,21 +124,3 @@ test('Знак в шапке не гасится глобальным прави
     }
 });
 
-test('Водяной знак карточки-акта не выключен вариантами оформления', function () {
-    // Регрессия: варианты «feature-card» и «editorial» гасили .act-card__emblem
-    // через display:none, и фирменный слой пропадал со всех страниц с актами.
-    foreach ([
-        '/public/assets/css/gov-theme.css',
-        '/public/assets/css/public-editorial-pages.css',
-    ] as $file) {
-        $css = (string) file_get_contents(APP_ROOT . $file);
-        foreach (explode('}', $css) as $rule) {
-            $parts = explode('{', $rule, 2);
-            if (count($parts) !== 2 || !str_contains($parts[0], '.act-card__emblem')) {
-                continue;
-            }
-            assert_not_contains('display: none', $parts[1], 'знак прячут в ' . $file . ': ' . trim($parts[0]));
-            assert_not_contains('display:none', $parts[1], 'знак прячут в ' . $file . ': ' . trim($parts[0]));
-        }
-    }
-});

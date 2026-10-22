@@ -699,10 +699,10 @@
    карточка шириной в три дорожки создала бы лишнюю колонку за краем. */
 @container cms-col (max-width: 720px) {
     .cms-columns .cms-columns__col > .cms-block :is(.cards-grid, .imgcards-grid, .block-news__grid, .block-projects__grid,
-        .block-testimonials__grid, .icon-text__grid, .docslist-grid, .docslist-acts, .mediagallery-grid,
+        .block-testimonials__grid, .icon-text__grid, .docslist-grid, .mediagallery-grid,
         .albums-grid, .newslist-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cms-columns .cms-columns__col > .cms-block :is(.cards-grid, .block-news__grid, .block-projects__grid,
-        .block-testimonials__grid, .docslist-grid, .docslist-acts) > * { grid-column: auto; }
+        .block-testimonials__grid, .docslist-grid) > * { grid-column: auto; }
     /* Две колонки блока (новости рядом с документами, текст рядом с
        боковиной биографии) в узкой колонке не помещаются ни на каком экране. */
     .cms-columns .cms-columns__col > .cms-block :is(.block-newsdocs, .block-bio) { grid-template-columns: minmax(0, 1fr); }
@@ -720,7 +720,7 @@
 
 @container cms-col (max-width: 480px) {
     .cms-columns .cms-columns__col > .cms-block :is(.cards-grid, .imgcards-grid, .cat-grid, .block-news__grid,
-        .block-projects__grid, .block-testimonials__grid, .icon-text__grid, .docslist-grid, .docslist-acts,
+        .block-projects__grid, .block-testimonials__grid, .icon-text__grid, .docslist-grid,
         .mediagallery-grid, .albums-grid, .newslist-grid) { grid-template-columns: minmax(0, 1fr); }
     /* Крупные карточки ленты занимают две ячейки — в одной колонке это
        вторая колонка за краем, как и у мобильной раскладки ленты. */
@@ -1084,7 +1084,7 @@ body.design-surface-interactive .block-contact-cards--panel-auto .feature-card.c
    узор «эмблема» выбираются своими настройками и остаются. Режимный класс
    добавляет вес намеренно: правила знака лежат и в частях, которые
    подключаются после бандла. Заглушка карточки без фото остаётся заливкой. */
-.design-emblem-off :is(.content-pagehead__emblem, .act-card__emblem, .block-text__media-emblem) { display: none; }
+.design-emblem-off :is(.content-pagehead__emblem, .block-text__media-emblem) { display: none; }
 .design-emblem-off :is(
     .block-text__quote--card,
     span.imgcard__media,

@@ -96,15 +96,6 @@ test('Варианты объединённых блоков сохраняют 
     assert_contains('block-stages--history', $history['html']);
     assert_contains('section-head__description', $history['html']);
     assert_contains('Ключевые этапы развития.', $history['html']);
-
-    $editorialActs = BlockRenderer::render([
-        'id' => 1771,
-        'type' => 'docs_list',
-        'data' => json_encode(['variant' => 'acts-editorial', 'items' => [['title' => 'Указ', 'number' => 'ПФ-1', 'date' => '2026']]], JSON_UNESCAPED_UNICODE),
-    ]);
-    assert_contains('block-docslist--acts-editorial', $editorialActs['html']);
-    assert_contains('feature-card act-card', $editorialActs['html']);
-    assert_contains('act-card__editorial-head', $editorialActs['html']);
 });
 
 test('Документы определяют формат, действие и поддерживают поиск', function (): void {
