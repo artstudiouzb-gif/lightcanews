@@ -52,7 +52,7 @@ final class SitemapController
      */
     public const ROBOTS_DISALLOW = [
         '/admin/', '/api/', '/push/', '/script/',
-        '/install', '/search', '/captcha.png', '/unsubscribe', '/goals/random',
+        '/install', '/search', '/captcha.png', '/unsubscribe',
         '/health', '/_vitals',
     ];
 
@@ -61,7 +61,7 @@ final class SitemapController
      * (`/uz/search`). Остальные — машинные: префикса у них не бывает, и
      * строка на каждый язык только раздувала бы файл.
      */
-    private const ROBOTS_LOCALIZED = ['/search', '/goals/random'];
+    private const ROBOTS_LOCALIZED = ['/search'];
 
     /**
      * Метки рекламных кампаний и счётчиков. Для Яндекса — директива
