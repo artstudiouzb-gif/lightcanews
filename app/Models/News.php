@@ -279,8 +279,7 @@ final class News
         if ($categoryFilter === 'none') {
             $where[] = 'n.category_id IS NULL';
         } elseif ((int) $categoryFilter > 0) {
-            $where[] = 'n.category_id = :category';
-            $params[':category'] = (int) $categoryFilter;
+            $where[] = self::sectionCondition('n', (int) $categoryFilter, $params);
         }
         if (($filters['q'] ?? '') !== '') {
             $where[] = '(n.title LIKE :q_title OR n.slug LIKE :q_slug'
@@ -531,8 +530,7 @@ final class News
         $where = "n.status = 'published' AND n.published_at <= NOW() AND n.deleted_at IS NULL
                   AND {$parts['where']}";
         if ($categoryId !== null && $categoryId > 0) {
-            $where .= ' AND n.category_id = :category';
-            $params['category'] = $categoryId;
+            $where .= ' AND ' . self::sectionCondition('n', $categoryId, $params);
         }
         $stmt = Database::pdo()->prepare(
             "SELECT " . self::listColumns('n') . ",
@@ -562,8 +560,7 @@ final class News
         $where = "n.status = 'published' AND n.published_at <= NOW() AND n.deleted_at IS NULL
                   AND {$parts['where']}";
         if ($categoryId !== null && $categoryId > 0) {
-            $where .= ' AND n.category_id = :category';
-            $params[':category'] = $categoryId;
+            $where .= ' AND ' . self::sectionCondition('n', $categoryId, $params);
         }
 
         $stmt = Database::pdo()->prepare(
@@ -584,15 +581,20 @@ final class News
      *
      * @return list<array<string, mixed>>
      */
-    public static function publishedCategories(?string $lang = null): array
+    public static function publishedCategories(?string $lang = null, string $axis = NewsCategory::AXIS_RUBRIC): array
     {
         $lang = $lang ?? Language::defaultCode();
+        $axis = NewsCategory::axis($axis);
         $parts = self::publicLanguageParts($lang, 'n', 'cats');
+        $select = $axis === NewsCategory::AXIS_COUNTRY
+            ? "SELECT DISTINCT nc.category_id
+               FROM news n{$parts['join']}
+               JOIN news_countries nc ON nc.news_id = " . self::groupKey('n')
+            : "SELECT DISTINCT n.category_id FROM news n{$parts['join']}";
         $stmt = Database::pdo()->prepare(
-            "SELECT DISTINCT n.category_id
-             FROM news n{$parts['join']}
+            "{$select}
              WHERE n.status = 'published' AND n.published_at <= NOW() AND n.deleted_at IS NULL
-               AND n.category_id IS NOT NULL
+               " . ($axis === NewsCategory::AXIS_COUNTRY ? '' : 'AND n.category_id IS NOT NULL') . "
                AND {$parts['where']}"
         );
         $stmt->execute($parts['params']);
@@ -602,9 +604,52 @@ final class News
         }
 
         return array_values(array_filter(
-            NewsCategory::all($lang, true),
+            NewsCategory::all($lang, true, $axis),
             static fn (array $category): bool => in_array((int) $category['id'], $ids, true)
         ));
+    }
+
+    /**
+     * Ключ группы перевода — запись, от имени которой действует группа.
+     * Страны принадлежат группе, а не языковой версии: у материала о
+     * Казахстане страна одна на все языки, и правка её в русской версии
+     * обязана доезжать до узбекской.
+     */
+    public static function groupKey(string $alias): string
+    {
+        return "COALESCE(NULLIF({$alias}.translation_group_id, 0), {$alias}.id)";
+    }
+
+    /**
+     * Ключ группы для строки новости (см. groupKey).
+     *
+     * @param array<string, mixed> $row
+     */
+    public static function groupKeyOf(array $row): int
+    {
+        $group = (int) ($row['translation_group_id'] ?? 0);
+
+        return $group > 0 ? $group : (int) ($row['id'] ?? 0);
+    }
+
+    /**
+     * Условие «новость в разделе»: рубрика сравнивается с `category_id`,
+     * страна ищется в `news_countries` по ключу группы. Ось берётся у самой
+     * категории, поэтому блоки и лента фильтруют обе оси одним параметром.
+     *
+     * @param array<string, mixed> $params
+     */
+    private static function sectionCondition(string $alias, int $categoryId, array &$params): string
+    {
+        if (NewsCategory::axisOf($categoryId) === NewsCategory::AXIS_COUNTRY) {
+            $params[':section_country'] = $categoryId;
+
+            return 'EXISTS (SELECT 1 FROM news_countries nsc WHERE nsc.category_id = :section_country AND nsc.news_id = '
+                . self::groupKey($alias) . ')';
+        }
+        $params[':category'] = $categoryId;
+
+        return "{$alias}.category_id = :category";
     }
 
     /**

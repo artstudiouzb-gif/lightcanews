@@ -18,22 +18,46 @@ use App\Core\Slug;
  */
 final class NewsCategory
 {
+    /**
+     * Оси разделов портала. Рубрика у новости одна (`news.category_id`),
+     * стран может быть несколько (`news_countries`): материал о торговле двух
+     * соседей принадлежит обеим лентам. Запись при этом одна и та же — slug,
+     * переводимое название, порядок, — поэтому и раздел админки общий.
+     */
+    public const AXIS_RUBRIC = 'rubric';
+    public const AXIS_COUNTRY = 'country';
+    public const AXES = [
+        self::AXIS_RUBRIC => 'Рубрика',
+        self::AXIS_COUNTRY => 'Страна',
+    ];
+
     /** @var array<string, array<int, array<string, mixed>>> */
     private static array $requestCache = [];
+
+    /** @var array<int, string>|null ось каждой категории за запрос */
+    private static ?array $axisMemo = null;
 
     /**
      * @return array<int, array<string, mixed>>
      */
-    public static function all(?string $lang = null, bool $activeOnly = false): array
+    public static function all(?string $lang = null, bool $activeOnly = false, ?string $axis = null): array
     {
-        $key = ($lang ?? '') . '|' . ($activeOnly ? '1' : '0');
+        $axis = $axis !== null ? self::axis($axis) : null;
+        $key = ($lang ?? '') . '|' . ($activeOnly ? '1' : '0') . '|' . ($axis ?? '');
         if (isset(self::$requestCache[$key])) {
             return self::$requestCache[$key];
         }
 
         $sql = 'SELECT * FROM news_categories';
+        $where = [];
         if ($activeOnly) {
-            $sql .= ' WHERE is_active = 1';
+            $where[] = 'is_active = 1';
+        }
+        if ($axis !== null) {
+            $where[] = "axis = '" . $axis . "'";
+        }
+        if ($where !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
         $sql .= ' ORDER BY sort_order ASC, name ASC, id ASC';
 
@@ -43,12 +67,100 @@ final class NewsCategory
         return self::$requestCache[$key] = $rows;
     }
 
-    /** Активные категории, у которых есть хотя бы одна опубликованная новость. */
+    /** Значение оси из присланного: чужое — рубрика. */
+    public static function axis(string $value): string
+    {
+        return isset(self::AXES[$value]) ? $value : self::AXIS_RUBRIC;
+    }
+
+    /**
+     * Ось категории по id (одним запросом на весь запрос страницы): по ней
+     * выборка новостей решает, сравнивать `category_id` или искать в
+     * `news_countries`. Неизвестный id — null.
+     */
+    public static function axisOf(int $id): ?string
+    {
+        if (self::$axisMemo === null) {
+            self::$axisMemo = [];
+            foreach (Database::pdo()->query('SELECT id, axis FROM news_categories')->fetchAll() as $row) {
+                self::$axisMemo[(int) $row['id']] = self::axis((string) $row['axis']);
+            }
+        }
+
+        return self::$axisMemo[$id] ?? null;
+    }
+
+    /**
+     * Адрес раздела без языкового префикса: `rubric/<slug>` или
+     * `country/<slug>`. Префикс оси нужен, потому что `/news/<slug>` уже
+     * занят самой новостью, а корневой `/<slug>` — страницами.
+     *
+     * @param array<string, mixed> $category
+     */
+    public static function path(array $category): string
+    {
+        return self::axis((string) ($category['axis'] ?? '')) . '/' . rawurlencode((string) ($category['slug'] ?? ''));
+    }
+
+    /**
+     * Страны набора новостей одним запросом.
+     *
+     * @param array<int|string> $newsIds
+     * @return array<int, list<int>> id новости → id стран в порядке разделов
+     */
+    public static function countryIdsFor(array $newsIds): array
+    {
+        $newsIds = array_values(array_unique(array_filter(array_map('intval', $newsIds), static fn (int $id): bool => $id > 0)));
+        if ($newsIds === []) {
+            return [];
+        }
+        $in = implode(',', array_fill(0, count($newsIds), '?'));
+        $stmt = Database::pdo()->prepare(
+            "SELECT nc.news_id, nc.category_id FROM news_countries nc
+             JOIN news_categories c ON c.id = nc.category_id
+             WHERE nc.news_id IN ({$in})
+             ORDER BY c.sort_order ASC, c.name ASC, c.id ASC"
+        );
+        $stmt->execute($newsIds);
+        $map = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $map[(int) $row['news_id']][] = (int) $row['category_id'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * Заменяет страны новости. Принимаются только записи оси «страна»:
+     * рубрика в этой таблице дала бы новости вторую рубрику мимо формы.
+     *
+     * @param array<int|string> $categoryIds
+     */
+    public static function setCountries(int $newsId, array $categoryIds): void
+    {
+        if ($newsId <= 0) {
+            return;
+        }
+        $ids = array_values(array_filter(
+            array_unique(array_map('intval', $categoryIds)),
+            static fn (int $id): bool => self::axisOf($id) === self::AXIS_COUNTRY
+        ));
+        $pdo = Database::pdo();
+        $pdo->prepare('DELETE FROM news_countries WHERE news_id = :id')->execute([':id' => $newsId]);
+        if ($ids !== []) {
+            $insert = $pdo->prepare('INSERT INTO news_countries (news_id, category_id) VALUES (:n, :c)');
+            foreach ($ids as $id) {
+                $insert->execute([':n' => $newsId, ':c' => $id]);
+            }
+        }
+    }
+
+    /** Активные рубрики, у которых есть хотя бы одна опубликованная новость. */
     public static function withPublishedNews(?string $lang = null): array
     {
         $rows = Database::pdo()->query(
             'SELECT c.* FROM news_categories c
-             WHERE c.is_active = 1
+             WHERE c.is_active = 1 AND c.axis = \'rubric\'
                AND EXISTS (
                    SELECT 1 FROM news n
                    WHERE n.category_id = c.id AND n.status = \'published\' AND n.deleted_at IS NULL
@@ -67,14 +179,19 @@ final class NewsCategory
         return $stmt->fetch() ?: null;
     }
 
-    public static function findBySlug(string $slug, bool $activeOnly = false): ?array
+    public static function findBySlug(string $slug, bool $activeOnly = false, ?string $axis = null): ?array
     {
         $sql = 'SELECT * FROM news_categories WHERE slug = :slug';
+        $params = [':slug' => $slug];
         if ($activeOnly) {
             $sql .= ' AND is_active = 1';
         }
+        if ($axis !== null) {
+            $sql .= ' AND axis = :axis';
+            $params[':axis'] = self::axis($axis);
+        }
         $stmt = Database::pdo()->prepare($sql . ' LIMIT 1');
-        $stmt->execute([':slug' => $slug]);
+        $stmt->execute($params);
 
         return $stmt->fetch() ?: null;
     }
@@ -156,7 +273,7 @@ final class NewsCategory
         return $names;
     }
 
-    public static function create(string $name, string $slug = '', bool $active = true, int $sortOrder = 0, string $icon = ''): ?int
+    public static function create(string $name, string $slug = '', bool $active = true, int $sortOrder = 0, string $icon = '', string $axis = self::AXIS_RUBRIC): ?int
     {
         $name = trim($name);
         if ($name === '') {
@@ -168,11 +285,12 @@ final class NewsCategory
             static fn (string $s, ?int $exclude): bool => self::slugExists($s, $exclude)
         );
         $stmt = Database::pdo()->prepare(
-            'INSERT INTO news_categories (name, slug, icon, is_active, sort_order) VALUES (:n, :s, :i, :a, :o)'
+            'INSERT INTO news_categories (name, slug, axis, icon, is_active, sort_order) VALUES (:n, :s, :x, :i, :a, :o)'
         );
         $stmt->execute([
             ':n' => mb_substr($name, 0, 150),
             ':s' => mb_substr($slug, 0, 150),
+            ':x' => self::axis($axis),
             ':i' => \App\Core\Icon::cleanName($icon),
             ':a' => $active ? 1 : 0,
             ':o' => $sortOrder,
@@ -185,7 +303,7 @@ final class NewsCategory
         return $id;
     }
 
-    public static function update(int $id, string $name, string $slug, bool $active, int $sortOrder, string $icon = ''): void
+    public static function update(int $id, string $name, string $slug, bool $active, int $sortOrder, string $icon = '', string $axis = self::AXIS_RUBRIC): void
     {
         $name = trim($name);
         if ($name === '') {
@@ -198,11 +316,12 @@ final class NewsCategory
             $id
         );
         $stmt = Database::pdo()->prepare(
-            'UPDATE news_categories SET name = :n, slug = :s, icon = :i, is_active = :a, sort_order = :o WHERE id = :id'
+            'UPDATE news_categories SET name = :n, slug = :s, axis = :x, icon = :i, is_active = :a, sort_order = :o WHERE id = :id'
         );
         $stmt->execute([
             ':n' => mb_substr($name, 0, 150),
             ':s' => mb_substr($slug, 0, 150),
+            ':x' => self::axis($axis),
             ':i' => \App\Core\Icon::cleanName($icon),
             ':a' => $active ? 1 : 0,
             ':o' => $sortOrder,
@@ -252,13 +371,29 @@ final class NewsCategory
         foreach ($rows as $row) {
             $counts[(int) $row['category_id']] = (int) $row['total'];
         }
+        $countries = Database::pdo()->query(
+            'SELECT nc.category_id, COUNT(*) AS total FROM news_countries nc
+             JOIN news n ON n.id = nc.news_id AND n.deleted_at IS NULL
+             GROUP BY nc.category_id'
+        )->fetchAll();
+        foreach ($countries as $row) {
+            $counts[(int) $row['category_id']] = (int) $row['total'];
+        }
 
         return $counts;
+    }
+
+    /** Забыть запомненное за запрос (тесты откатывают базу под процессом). */
+    public static function forgetCache(): void
+    {
+        self::$requestCache = [];
+        self::$axisMemo = null;
     }
 
     private static function bustCache(): void
     {
         self::$requestCache = [];
+        self::$axisMemo = null;
         Cache::forgetPrefix('page:');
     }
 }

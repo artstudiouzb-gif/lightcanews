@@ -516,6 +516,8 @@ $router->get('/script/{code}', [\App\Controllers\Site\ScriptController::class, '
 // --- Публичный сайт ---
 $router->get('/', [SitePageController::class, 'home']);
 $router->get('/news', [SiteNewsController::class, 'index']);
+$router->get('/rubric/{slug}', [SiteNewsController::class, 'rubric']);
+$router->get('/country/{slug}', [SiteNewsController::class, 'country']);
 $router->get('/projects', [\App\Controllers\Site\ProjectController::class, 'index']);
 $router->get('/projects/{slug}', [\App\Controllers\Site\ProjectController::class, 'show']);
 $router->get('/news/rss.xml', [SiteNewsController::class, 'feed']);

@@ -14,7 +14,7 @@ require __DIR__ . '/../layout/header.php';
 
 $siteLangs = array_map(static fn (array $l): string => (string) $l['code'], Language::active());
 ?>
-<p class="form-hint">Рубрики ленты новостей. Категория выбирается в форме новости, по ней работают фильтр в списке и выборка в блоке «Новости» на страницах. Название переводится на языки сайта; адрес (slug) один для всех языков.</p>
+<p class="form-hint">Разделы портала по двум осям. <strong>Рубрика</strong> у новости одна, <strong>стран</strong> может быть несколько — обе выбираются в форме новости, и у каждой записи своя лента на сайте (<code>/rubric/…</code>, <code>/country/…</code>). Название переводится на языки сайта; адрес (slug) один для всех языков.</p>
 
 <div class="form-card u-inline-7dde5e56b3">
     <h2 class="u-inline-291b7bbb01">Новая категория</h2>
@@ -28,6 +28,14 @@ $siteLangs = array_map(static fn (array $l): string => (string) $l['code'], Lang
             <label for="slug">Адрес (необязательно)</label>
             <input type="text" id="slug" name="slug" placeholder="оставьте пустым — составится из названия">
         </div>
+        <div class="form-field">
+            <label for="axis">Ось</label>
+            <select id="axis" name="axis">
+                <?php foreach (\App\Models\NewsCategory::AXES as $axisValue => $axisLabel): ?>
+                    <option value="<?= $axisValue ?>"><?= $axisLabel ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <div class="form-actions">
             <button type="submit" class="btn btn--primary">Создать</button>
         </div>
@@ -39,13 +47,14 @@ $siteLangs = array_map(static fn (array $l): string => (string) $l['code'], Lang
 <?php else: ?>
     <table class="data-table">
         <thead>
-            <tr><th>Название</th><th>Языки</th><th>Адрес</th><th>Новостей</th><th>Порядок</th><th>Статус</th><th></th></tr>
+            <tr><th>Название</th><th>Ось</th><th>Языки</th><th>Адрес</th><th>Новостей</th><th>Порядок</th><th>Статус</th><th></th></tr>
         </thead>
         <tbody>
             <?php foreach ($items as $item): ?>
                 <?php $categoryId = (int) $item['id']; ?>
                 <tr>
                     <td><a href="/admin/news-categories/<?= $categoryId ?>/edit"><?= htmlspecialchars((string) $item['name'], ENT_QUOTES) ?></a></td>
+                    <td><?= \App\Models\NewsCategory::AXES[\App\Models\NewsCategory::axis((string) ($item['axis'] ?? ''))] ?></td>
                     <td class="u-inline-a9efa5449f"><?= \App\Core\View::renderPartial('admin/layout/lang_badges', [
                         'siteLangs' => $siteLangs,
                         'has' => $langMap[$categoryId] ?? [],

@@ -50,7 +50,7 @@ test('Партиал списка новостей: карточки, пагин
         'items' => $items,
         'page' => 1,
         'pages' => 2,
-        'category' => 'ekonomika',
+        'basePath' => 'rubric/ekonomika',
     ]);
     assert_contains('Первая новость', $html);
     assert_contains('Вторая новость', $html);
@@ -58,7 +58,7 @@ test('Партиал списка новостей: карточки, пагин
     assert_contains('relnews-card--hero', $html, 'лента открывается обложкой');
     assert_contains('relnews-card--wide', $html, 'цикл замыкает широкая карточка');
     assert_contains('listing-pager', $html, 'при двух страницах нужна пагинация');
-    assert_contains('category=', $html, 'пагинация сохраняет выбранную рубрику');
+    assert_contains('/rubric/ekonomika?page=2', $html, 'пагинация остаётся в адресе раздела');
     // Фрагмент — только результаты, без обвязки страницы.
     assert_not_contains('<html', $html);
     assert_not_contains('listing-filter', $html);

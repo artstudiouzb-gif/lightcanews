@@ -818,7 +818,7 @@ final class BlockRenderer
             return $url;
         }
 
-        return $url . '?category=' . rawurlencode((string) $category['slug']);
+        return Locale::url(\App\Models\NewsCategory::path($category), $lang);
     }
 
     private static function enrichData(string $type, array $data): array

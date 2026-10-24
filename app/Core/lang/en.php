@@ -143,6 +143,7 @@ return [
     'Официальные сообщения, события и аналитические материалы Агентства.' => 'Official announcements, events and analytical materials of the Agency.',
     'Проекты и инициативы' => 'Projects and initiatives',
     'Стратегические проекты, которые Агентство реализует для устойчивого развития страны.' => 'Strategic projects the Agency implements for the country’s sustainable development.',
+    'Страны' => 'Countries',
     'Рубрики' => 'Categories',
     'Страницы' => 'Pages',
     'Пока нет опубликованных новостей.' => 'No published news yet.',

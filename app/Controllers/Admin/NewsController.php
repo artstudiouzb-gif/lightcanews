@@ -88,6 +88,25 @@ final class NewsController
         View::render('admin/news/form', ['news' => null, 'translations' => [], 'error' => null]);
     }
 
+    /**
+     * Страны новости. Принадлежат группе перевода (News::groupKeyOf), поэтому
+     * правка в любой языковой версии видна во всех. Форма без поля стран
+     * (метка `countries_present`) их не трогает — иначе сохранение из места,
+     * где выбора нет, молча сняло бы страны.
+     */
+    private function saveCountries(int $id): void
+    {
+        if (!isset($_POST['countries_present'])) {
+            return;
+        }
+        $row = News::findById($id);
+        if ($row === null) {
+            return;
+        }
+        $raw = $_POST['countries'] ?? [];
+        \App\Models\NewsCategory::setCountries(News::groupKeyOf($row), is_array($raw) ? $raw : []);
+    }
+
     public function store(): void
     {
         Auth::requireLogin();
@@ -105,6 +124,7 @@ final class NewsController
             $id = News::create($data);
             News::updateExtras($id, $extras);
             $this->saveTranslations($id);
+            $this->saveCountries($id);
             $purge = $this->handleGallery($id);
             $this->handlePollAndTimeline($id);
 
@@ -281,6 +301,7 @@ final class NewsController
                 News::update($id, $data, $expectedVersion);
                 News::updateExtras($id, $extras);
                 $this->saveTranslations($id);
+                $this->saveCountries($id);
                 $this->handlePollAndTimeline($id);
 
                 return $this->handleGallery($id);
