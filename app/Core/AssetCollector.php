@@ -25,6 +25,7 @@ final class AssetCollector
         'news_share_gallery' => '/assets/js/news-share-gallery.js',
         'news_gallery_thumbnails' => '/assets/js/news-gallery-thumbnails.js',
         'news_feature' => '/assets/js/blocks/news_feature.js',
+        'news_front' => '/assets/js/blocks/news_front.js',
         'tabs' => '/assets/js/blocks/tabs.js',
         'hero_slides' => '/assets/js/blocks/hero.js',
         // Нужен только случайному порядку, но файл крошечный, а узнать
@@ -76,6 +77,7 @@ final class AssetCollector
         // Тот же файл берёт и виджет сайдбара «Лента Instagram».
         'instagram_feed' => '/assets/css/blocks/instagram-feed.css',
         'news_feature' => '/assets/css/blocks/news-feature.css',
+        'news_front' => '/assets/css/blocks/news-front.css',
         'hero_slides' => '/assets/css/blocks/hero-art-layout.css',
     ];
 

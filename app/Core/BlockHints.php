@@ -189,7 +189,7 @@ final class BlockHints
      */
     private static function fillsSectionLink(string $type, array $data): bool
     {
-        if (in_array($type, ['news_latest', 'news_feature', 'news_docs'], true)) {
+        if (in_array($type, ['news_latest', 'news_feature', 'news_front', 'news_docs'], true)) {
             return true;
         }
         // Лента Instagram ведёт на профиль из своих настроек — если имя

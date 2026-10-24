@@ -749,6 +749,11 @@ final class BlockController
                     BlockFieldSchema::normalize('news_feature', $_POST, $locale),
                     ['category' => max(0, (int) ($_POST['category'] ?? 0))]
                 );
+            case 'news_front':
+                return array_merge(
+                    BlockFieldSchema::normalize('news_front', $_POST, $locale),
+                    ['category' => max(0, (int) ($_POST['category'] ?? 0))]
+                );
             case 'news_docs':
                 $docs = [];
                 foreach ((array) ($_POST['docs'] ?? []) as $doc) {
