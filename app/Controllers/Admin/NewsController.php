@@ -89,7 +89,7 @@ final class NewsController
     }
 
     /**
-     * Страны новости. Принадлежат группе перевода (News::groupKeyOf), поэтому
+     * Страны новости и отметка «Выбор редакции». Обе принадлежат группе перевода (News::groupKeyOf), поэтому
      * правка в любой языковой версии видна во всех. Форма без поля стран
      * (метка `countries_present`) их не трогает — иначе сохранение из места,
      * где выбора нет, молча сняло бы страны.
@@ -105,6 +105,7 @@ final class NewsController
         }
         $raw = $_POST['countries'] ?? [];
         \App\Models\NewsCategory::setCountries(News::groupKeyOf($row), is_array($raw) ? $raw : []);
+        News::setEditorPick($id, !empty($_POST['is_editor_pick']));
     }
 
     public function store(): void

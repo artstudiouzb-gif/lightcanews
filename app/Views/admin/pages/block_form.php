@@ -628,7 +628,7 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('projects_list', $data) ?>
         <?php endif; ?>
 
-        <?php if (in_array($type, ['news_latest', 'news_feature', 'news_docs'], true)): ?>
+        <?php if (in_array($type, ['news_latest', 'news_feature', 'news_front', 'news_docs'], true)): ?>
             <?php
             // Выборка по рубрике: один и тот же список для всех трёх блоков
             // новостей — иначе редактор искал бы поле в разных местах формы.
@@ -1224,6 +1224,10 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
 
         <?php if ($type === 'news_feature'): ?>
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('news_feature', $data) ?>
+        <?php endif; ?>
+
+        <?php if ($type === 'news_front'): ?>
+            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('news_front', $data) ?>
         <?php endif; ?>
 
         <?php if ($type === 'cards_grid'): ?>

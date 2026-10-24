@@ -28,7 +28,7 @@ final class SectionHead
     public const DECORATED_TYPES = [
         'cards_grid', 'chart', 'collage', 'contact_cards', 'counters', 'docs_list', 'embed', 'faq',
         'icon_text', 'image', 'instagram_feed', 'map_point', 'media_gallery', 'news_docs',
-        'news_feature', 'news_latest', 'partners', 'projects_list', 'slider',
+        'news_feature', 'news_front', 'news_latest', 'partners', 'projects_list', 'slider',
         'stages', 'table', 'testimonials',
     ];
 

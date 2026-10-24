@@ -830,6 +830,7 @@ final class BlockRenderer
             'projects_list' => self::enrichProjectsList($data),
             'news_latest' => self::enrichNewsLatest($data),
             'news_feature' => self::enrichNewsFeature($data),
+            'news_front' => self::enrichNewsFront($data),
             'news_docs' => self::enrichNewsDocs($data),
             'cards_grid' => self::enrichCardsGrid($data),
             'media_gallery' => self::enrichMediaGallery($data),
@@ -980,6 +981,85 @@ final class BlockRenderer
         if (($data['all_url'] ?? '') === '') {
             $data['all_url'] = self::newsAllUrl($lang, $category);
         }
+        return $data;
+    }
+
+    /**
+     * «Новостная витрина» — разделы главной портала. Карточке нужна не только
+     * рубрика, но и страна: метка над заголовком называет обе оси
+     * («Аналитика · Казахстан»), поэтому страны набора берутся одним запросом.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function enrichNewsFront(array $data): array
+    {
+        self::noteBoundary(\App\Models\News::nextScheduledAt());
+        $lang = Locale::current();
+        $layout = (string) ($data['layout'] ?? 'main');
+        $category = (int) ($data['category'] ?? 0);
+        $section = $category > 0 ? $category : null;
+
+        $rows = [];
+        $panels = [];
+        if ($layout === 'main') {
+            $count = 4 + max(0, (int) ($data['limit'] ?? 8)) + max(0, (int) ($data['latest_limit'] ?? 6));
+            $rows = \App\Models\News::published($count, 0, $lang, $section);
+        } elseif ($layout === 'picks') {
+            $rows = \App\Models\News::editorPicks(6, $lang);
+        } elseif ($layout === 'popular') {
+            $rows = \App\Models\News::mostViewed((int) ($data['days'] ?? 7), 5, $lang);
+        } elseif ($layout === 'countries') {
+            foreach (\App\Models\News::publishedCategories($lang, \App\Models\NewsCategory::AXIS_COUNTRY) as $country) {
+                $countryRows = \App\Models\News::published(6, 0, $lang, (int) $country['id']);
+                if ($countryRows === []) {
+                    continue;
+                }
+                $panels[] = [
+                    'name' => (string) $country['name'],
+                    'slug' => (string) $country['slug'],
+                    'url' => Locale::url(\App\Models\NewsCategory::path($country), $lang),
+                    'rows' => $countryRows,
+                ];
+                $rows = array_merge($rows, $countryRows);
+            }
+        }
+
+        $categoryNames = self::newsCategoryNames($rows, $lang);
+        $groups = array_map(static fn (array $row): int => \App\Models\News::groupKeyOf($row), $rows);
+        $countryIds = \App\Models\NewsCategory::countryIdsFor($groups);
+        $countryNames = \App\Models\NewsCategory::namesForIds(array_merge([], ...array_values($countryIds)), $lang);
+        $item = static function (array $row) use ($lang, $categoryNames, $countryIds, $countryNames): array {
+            $rubric = (int) ($row['category_id'] ?? 0);
+            $countries = $countryIds[\App\Models\News::groupKeyOf($row)] ?? [];
+            $country = $countries !== [] ? (string) ($countryNames[$countries[0]] ?? '') : '';
+
+            return [
+                'title' => (string) $row['title'],
+                'excerpt' => (string) ($row['excerpt'] ?? ''),
+                'published_at' => (string) ($row['published_at'] ?? ''),
+                'rubric' => $rubric > 0 ? (string) ($categoryNames[$rubric] ?? '') : '',
+                'country' => $country,
+                'cover' => \App\Models\News::getCoverImage($row),
+                'url' => Locale::url('news/' . $row['slug'], $lang),
+            ];
+        };
+
+        if ($layout === 'countries') {
+            foreach ($panels as &$panel) {
+                $panel['news'] = array_map($item, $panel['rows']);
+                unset($panel['rows']);
+            }
+            unset($panel);
+            $data['panels'] = $panels;
+            $data['news'] = [];
+        } else {
+            $data['news'] = array_map($item, $rows);
+        }
+        if (trim((string) ($data['all_url'] ?? '')) === '') {
+            $data['all_url'] = self::newsAllUrl($lang, $category);
+        }
+
         return $data;
     }
 

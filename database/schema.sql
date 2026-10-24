@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS news (
     docs            TEXT NULL COMMENT 'JSON-список документов [{title, meta, url}]',
     source_note     VARCHAR(255) NULL COMMENT 'подпись источника (пресс-служба)',
     views           INT UNSIGNED NOT NULL DEFAULT 0,
+    is_editor_pick  TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'выбор редакции, общий для группы перевода',
     layout_type     ENUM('standard','gallery','video','side_image','premium','card') NOT NULL DEFAULT 'standard',
     sidebar_layout  ENUM('no_sidebar','left_sidebar','right_sidebar') NOT NULL DEFAULT 'right_sidebar',
     focal_x         TINYINT UNSIGNED NULL COMMENT 'фокальная точка обложки X, %',
@@ -165,6 +166,7 @@ CREATE TABLE IF NOT EXISTS news (
     UNIQUE KEY uq_news_slug_lang (slug, lang),
     KEY idx_news_listing (status, deleted_at, published_at),
     KEY idx_news_category_listing (category_id, status, deleted_at, published_at),
+    KEY idx_news_editor_pick (is_editor_pick, status, published_at),
     KEY idx_news_lang_group (translation_group_id, lang),
     CONSTRAINT fk_news_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT fk_news_category FOREIGN KEY (category_id) REFERENCES news_categories(id) ON DELETE SET NULL
@@ -1249,7 +1251,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_22_drop_file_repository.sql'),
     ('2026_10_22_drop_goals.sql'),
     ('2026_10_22_drop_team_and_org_structure.sql'),
-    ('2026_10_23_news_country_axis.sql')
+    ('2026_10_23_news_country_axis.sql'),
+    ('2026_10_24_news_editor_pick.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

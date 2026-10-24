@@ -53,6 +53,7 @@ final class BlockTypeRegistry
         'cards_grid' => [], // схема: BlockFieldSchema
         'media_gallery' => [], // схема: BlockFieldSchema
         'news_feature' => [], // схема: BlockFieldSchema
+        'news_front' => [], // схема: BlockFieldSchema
         'news_docs' => [], // схема: BlockFieldSchema
         'bio_education' => [], // схема: BlockFieldSchema
         'anchor_nav' => [], // схема: BlockFieldSchema
@@ -82,6 +83,7 @@ final class BlockTypeRegistry
         'hero' => 'Обложка',
         'cards_grid' => 'Карточки', 'media_gallery' => 'Медиагалерея',
         'news_feature' => 'Новости и аналитика',
+        'news_front' => 'Новостная витрина',
         'news_docs' => 'Новости и документы',
         'bio_education' => 'Биография и образование',
         'anchor_nav' => 'Якорная навигация', 'stages' => 'Хронология и этапы',
@@ -108,6 +110,7 @@ final class BlockTypeRegistry
         'cards_grid' => 'Карточки (иконки / фото / категории)',
         'media_gallery' => 'Медиа-галерея (видео/фото)',
         'news_feature' => 'Новости и аналитика (крупная + список)',
+        'news_front' => 'Новостная витрина (главное, страны, читаемое, выбор редакции)',
         'news_docs' => 'Новости + документы (2 колонки)',
         'bio_education' => 'Биография + образование',
         'anchor_nav' => 'Якорная навигация (вкладки)',
@@ -150,7 +153,7 @@ final class BlockTypeRegistry
         ],
         'Первый экран и действия' => ['hero', 'cta', 'buttons', 'subscribe', 'form'],
         'Цифры и данные' => ['counters', 'chart', 'table', 'map_point'],
-        'Новости и проекты' => ['news_latest', 'news_feature', 'news_docs', 'projects_list'],
+        'Новости и проекты' => ['news_latest', 'news_feature', 'news_front', 'news_docs', 'projects_list'],
         'Люди' => ['bio_education'],
         'Раскладка страницы' => ['columns', 'tabs', 'anchor_nav', 'divider'],
     ];
@@ -185,6 +188,7 @@ final class BlockTypeRegistry
         'map_point' => 'Карта с отметкой адреса',
         'news_latest' => 'Свежие новости, обновляются сами',
         'news_feature' => 'Главная новость крупно и список рядом',
+        'news_front' => 'Разделы главной портала: главное, страны, самое читаемое',
         'news_docs' => 'Новости и документы в две колонки',
         'projects_list' => 'Карточки из раздела «Проекты»',
         'bio_education' => 'Биография и образование человека',

@@ -418,10 +418,18 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                     </span>
                 </div>
 
+                <?php // Метка присутствия общая с полем стран: без неё сохранение
+                      // молча снимало бы обе отметки (NewsController::saveCountries). ?>
+                <input type="hidden" name="countries_present" value="1">
+                <label class="form-check">
+                    <input type="checkbox" name="is_editor_pick" value="1" <?= !empty($news['is_editor_pick']) ? 'checked' : '' ?>>
+                    Выбор редакции
+                </label>
+                <span class="form-hint">Новость попадёт в подборку «Выбор редакции» на главной. Отметка общая для всех языковых версий.</span>
+
                 <?php if ($newsCountries !== []): ?>
                     <fieldset class="form-field">
                         <legend>Страны</legend>
-                        <input type="hidden" name="countries_present" value="1">
                         <?php foreach ($newsCountries as $newsCountry): ?>
                             <?php $countryId = (int) $newsCountry['id']; ?>
                             <label class="form-check">
