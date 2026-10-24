@@ -61,7 +61,7 @@ final class AdminUi
             'hero' => 'presentation', 'cta' => 'speakerphone', 'buttons' => 'hand-click',
             'subscribe' => 'mail', 'form' => 'forms',
             'counters' => 'number-123', 'chart' => 'chart-bar', 'table' => 'table', 'map_point' => 'map-pin',
-            'news_latest' => 'news', 'news_feature' => 'layout-list', 'news_docs' => 'file-text',
+            'news_latest' => 'news', 'news_feature' => 'layout-list', 'news_front' => 'layout-dashboard', 'news_docs' => 'file-text',
             'projects_list' => 'briefcase',
             'bio_education' => 'school',
             'columns' => 'columns', 'tabs' => 'folders', 'anchor_nav' => 'list-numbers',

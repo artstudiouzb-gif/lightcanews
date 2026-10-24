@@ -24,7 +24,7 @@ const EXPECTED_BLOCK_TYPES = [
     'slider', 'form', 'columns', 'tabs', 'testimonials',
     'counters', 'projects_list', 'news_latest',
     'partners', 'subscribe', 'faq', 'contact_cards',
-    'hero', 'cards_grid', 'media_gallery', 'news_feature',
+    'hero', 'cards_grid', 'media_gallery', 'news_feature', 'news_front',
     'news_docs',
     'bio_education', 'anchor_nav', 'stages', 'text_image',
     'docs_list', 'map_point', 'icon_text',

@@ -78,6 +78,7 @@ final class BlockSamples
             'projects_list' => ['title' => 'Проекты', 'limit' => 3],
             'news_latest' => ['title' => 'Последние новости', 'limit' => 3],
             'news_feature' => ['title' => 'Новости и аналитика', 'all_text' => 'Все новости', 'limit' => 6],
+            'news_front' => ['layout' => 'main'],
             'news_docs' => [
                 'news_title' => 'Актуальные новости', 'news_all_text' => 'Все новости', 'limit' => 3,
                 'docs_title' => 'Документы', 'docs_all_text' => '',
