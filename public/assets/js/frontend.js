@@ -1776,6 +1776,9 @@
                 if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) { return; }
                 var link = e.target.closest ? e.target.closest('.listing-filter__item, .listing-pager__item, [data-listing-reset]') : null;
                 if (!link || link.tagName !== 'A' || !link.getAttribute('href')) { return; }
+                // Разделы ленты — свои страницы со своим заголовком: подмена
+                // одного списка оставила бы шапку прежнего раздела.
+                if (link.closest('.listing-filter--sections')) { return; }
                 e.preventDefault();
                 load(link.getAttribute('href'), true, true);
                 // Пагинация уводит взгляд наверх списка, фильтры — нет.
