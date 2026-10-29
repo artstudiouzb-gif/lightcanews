@@ -35,12 +35,12 @@ test('По умолчанию: цвета и шрифты фирменные', f
     // Палитра из утверждённой концепции дизайна: тёмно-синий и бирюзовый.
     assert_contains("Setting::get('color_primary', '#0F2B46')", $theme);
     assert_contains("Setting::get('color_accent', '#009BBE')", $theme);
-    // Пара по умолчанию: Noto Sans — текст, Noto Serif — заголовки. Только
-    // они и лежат локально. Умолчания объявлены ровно в одном месте: раньше
+    // По умолчанию Medeo Sans — и текст, и заголовки; семейство лежит
+    // локально, как Noto Sans и Noto Serif. Умолчания объявлены ровно в одном месте: раньше
     // SiteThemeCss и шапка задавали разные семейства, и сайт предзагружал
     // шрифты, которыми ничего не набрано.
-    assert_contains("DEFAULT_BODY_FONT = \"'Noto Sans'", $theme);
-    assert_contains("DEFAULT_HEADING_FONT = \"'Noto Serif'", $theme);
+    assert_contains("DEFAULT_BODY_FONT = \"'Medeo Sans'", $theme);
+    assert_contains("DEFAULT_HEADING_FONT = \"'Medeo Sans'", $theme);
 
     $header = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Views/site/_header.php');
     $assets = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Core/FrontendAssets.php');

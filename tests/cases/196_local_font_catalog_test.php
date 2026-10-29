@@ -6,13 +6,14 @@ use App\Core\DesignSettings;
 use App\Core\LocalGoogleFonts;
 use App\Models\Setting;
 
-test('в поставке ровно два семейства, оба со всеми узбекскими подмножествами', function (): void {
+test('в поставке ровно три семейства, все со всеми узбекскими подмножествами', function (): void {
     $root = dirname(__DIR__, 2);
 
     // Поставка намеренно узкая: каждое семейство — около 90 КБ в репозитории,
     // и лишнее там лежит мёртвым грузом. Остальной каталог скачивается на
     // сервер по выбору в «Дизайне».
-    $bundled = ['noto-sans' => 'Noto Sans', 'noto-serif' => 'Noto Serif'];
+    // Medeo Sans — шрифт сайта по умолчанию, Noto Sans — админки.
+    $bundled = ['medeo-sans' => 'Medeo Sans', 'noto-sans' => 'Noto Sans', 'noto-serif' => 'Noto Serif'];
     $present = glob($root . '/public/assets/fonts/*', GLOB_ONLYDIR) ?: [];
     assert_same(
         array_keys($bundled),

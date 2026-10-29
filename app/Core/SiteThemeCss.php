@@ -266,11 +266,15 @@ final class SiteThemeCss
      * макет дёргается. Без правки расхождение доходит до 9,4 % по ширине,
      * с ней — 0,6 % (замерено в браузере).
      */
-    private const METRIC_FALLBACKS = ['PT Sans', 'PT Serif', 'Manrope', 'Montserrat', 'Inter Tight', 'Inter', 'Noto Serif'];
+    private const METRIC_FALLBACKS = ['PT Sans', 'PT Serif', 'Manrope', 'Montserrat', 'Inter Tight', 'Inter', 'Noto Serif', 'Medeo Sans'];
 
-    /** Пара по умолчанию: Inter — текст, Noto Serif — заголовки. Обе в поставке. */
-    public const DEFAULT_BODY_FONT = "'Noto Sans', 'Noto Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
-    public const DEFAULT_HEADING_FONT = "'Noto Serif', 'Noto Serif Fallback', Georgia, 'Times New Roman', serif";
+    /**
+     * Шрифт по умолчанию — Medeo Sans и для текста, и для заголовков: язык
+     * новостного портала гротесковый, антиква в заголовках читалась бы
+     * ведомственной. Семейство в поставке (fonts/medeo-sans, OFL 1.1).
+     */
+    public const DEFAULT_BODY_FONT = "'Medeo Sans', 'Medeo Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+    public const DEFAULT_HEADING_FONT = "'Medeo Sans', 'Medeo Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
     /**
      * Единственный источник шрифтовых стеков сайта.

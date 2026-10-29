@@ -34,6 +34,9 @@ final class FontCatalog
         'roboto' => ['Roboto', "'Roboto', system-ui, sans-serif", 'Roboto:wght@400;500;700'],
         'open-sans' => ['Open Sans', "'Open Sans', system-ui, sans-serif", 'Open+Sans:wght@400;600;700'],
         'noto-sans' => ['Noto Sans', "'Noto Sans', 'Noto Sans Fallback', system-ui, sans-serif", 'Noto+Sans:wght@400;600;700'],
+        // Не из Google Fonts: лежит в поставке (LocalGoogleFonts::BUNDLED),
+        // поэтому скачивать его не нужно. Описание веса — для проверки покрытия.
+        'medeo-sans' => ['Medeo Sans', "'Medeo Sans', system-ui, sans-serif", 'Medeo+Sans:wght@400;500;600;700'],
         'source-sans' => ['Source Sans 3', "'Source Sans 3', system-ui, sans-serif", 'Source+Sans+3:wght@400;600;700'],
         'ibm-plex-sans' => ['IBM Plex Sans', "'IBM Plex Sans', system-ui, sans-serif", 'IBM+Plex+Sans:wght@400;600;700'],
         'manrope' => ['Manrope', "'Manrope', 'Manrope Fallback', system-ui, sans-serif", 'Manrope:wght@400;600;700'],
@@ -148,12 +151,13 @@ final class FontCatalog
      * Шрифтовые пресеты: значение опции font_style => [подпись, CSS-стек].
      *
      * В админке этот список подписан «Локальные — без внешних запросов»,
-     * поэтому называть здесь можно только семейства из поставки (Noto Sans,
-     * Noto Serif) и системные стеки. Пресет с чужим семейством выглядел бы
+     * поэтому называть здесь можно только семейства из поставки (Medeo Sans,
+     * Noto Sans, Noto Serif) и системные стеки. Пресет с чужим семейством выглядел бы
      * рабочим, а рисовался бы Arial: файла нет, скачать его через font_style
      * нечем — слуга каталога у пресета не бывает.
      */
     public const FONTS = [
+        'medeo' => ['Medeo Sans', "'Medeo Sans', 'Medeo Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"],
         'noto' => ['Noto Sans', "'Noto Sans', 'Noto Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"],
         'system' => ['Системный', "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"],
         'serif' => ['С засечками', "Georgia, 'Times New Roman', serif"],
