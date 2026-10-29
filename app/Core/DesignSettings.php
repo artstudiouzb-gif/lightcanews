@@ -49,7 +49,7 @@ final class DesignSettings
             'label' => 'Шрифт сайта',
             'hint' => 'Основной шрифт выбирается в едином списке базовых, внешних и собственных шрифтов ниже.',
             'group' => 'Цвета и шрифт',
-            'choices' => ['noto' => 'Noto Sans', 'system' => 'Системный', 'serif' => 'С засечками', 'custom' => 'Свой шрифт'],
+            'choices' => ['medeo' => 'Medeo Sans', 'noto' => 'Noto Sans', 'system' => 'Системный', 'serif' => 'С засечками', 'custom' => 'Свой шрифт'],
             'default' => 'custom',
         ],
         'container' => [

@@ -87,6 +87,7 @@ shared-хостинге обычно `localhost`. Установщик подк�
 0 9 * * 1  php /path/to/app/Console/digest_worker.php    >> /path/to/storage/logs/digest_worker.log 2>&1
 17 * * * * php /path/to/app/Console/integrity_check.php >> /path/to/storage/logs/integrity.log 2>&1
 0 * * * *  php /path/to/app/Console/youtube_worker.php   >> /path/to/storage/logs/youtube_worker.log 2>&1
+15 * * * * php /path/to/app/Console/rates_worker.php     >> /path/to/storage/logs/rates_worker.log 2>&1
 */15 * * * * php /path/to/app/Console/watchdog.php       >> /path/to/storage/logs/watchdog.log 2>&1
 25 4 * * * php /path/to/app/Console/seo_worker.php       >> /path/to/storage/logs/seo_worker.log 2>&1
 */15 * * * * php /path/to/app/Console/indexnow_worker.php  >> /path/to/storage/logs/indexnow_worker.log 2>&1
@@ -130,6 +131,10 @@ crontab необязательна**: сохранение новости, ст�
 поддерживает, ему хватает карты сайта.
 
 `/health` возвращает `degraded` и шлёт алерт, если воркер перестал запускаться.
+
+`rates_worker.php` забирает курсы валют ЦБ Узбекистана для элемента шапки
+«Курсы валют»: публичная страница в сеть не ходит и показывает сохранённую
+копию (старше недели — не показывает вовсе).
 
 `youtube_worker.php` нужен только тем сайтам, где включена автозагрузка роликов
 с YouTube-канала («Видео» → «Автозагрузка с YouTube-канала»). Пока галочка снята,

@@ -522,6 +522,23 @@ $emailHtml = $emailVal !== ''
     : '';
 $snippetHtml = (string) ($hcfg['snippet'] ?? ''); // очищен санитайзером при сохранении
 
+// Страны — вторая ось разделов портала: чипы ведут в ленту страны.
+// Список берётся из категорий, а не набирается в конструкторе, поэтому
+// новая страна появляется в шапке сама.
+$countriesHtml = '';
+$countryRows = \App\Models\NewsCategory::all(Locale::current(), true, \App\Models\NewsCategory::AXIS_COUNTRY);
+if ($countryRows !== []) {
+    $countriesHtml = '<nav class="hdr-countries" aria-label="' . htmlspecialchars(t('Страны'), ENT_QUOTES) . '">'
+        . '<span class="hdr-countries__label">' . htmlspecialchars(t('Страны'), ENT_QUOTES) . '</span>';
+    foreach ($countryRows as $countryRow) {
+        $countryUrl = Locale::url(\App\Models\NewsCategory::path($countryRow));
+        $isCurrent = rtrim($currentReqUri, '/') === rtrim((string) parse_url($countryUrl, PHP_URL_PATH), '/');
+        $countriesHtml .= '<a class="hdr-countries__chip" href="' . htmlspecialchars($countryUrl, ENT_QUOTES) . '"'
+            . ($isCurrent ? ' aria-current="page"' : '') . '>' . htmlspecialchars((string) $countryRow['name'], ENT_QUOTES) . '</a>';
+    }
+    $countriesHtml .= '</nav>';
+}
+
 $fragments = [
     'logo' => $logoHtml,
     'menu' => $priorityMenuHtml,
@@ -534,6 +551,8 @@ $fragments = [
     'phone' => $phoneHtml,
     'email' => $emailHtml,
     'snippet' => $snippetHtml !== '' ? '<span class="hdr-snippet">' . $snippetHtml . '</span>' : '',
+    'countries' => $countriesHtml,
+    'rates' => \App\Core\CurrencyRates::html(),
     'divider' => '<span class="site-header__divider" aria-hidden="true"></span>',
     'spacer' => '<span class="site-header__spacer" aria-hidden="true"></span>',
     'space' => '<span class="site-header__space" aria-hidden="true"></span>',

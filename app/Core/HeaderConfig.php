@@ -31,6 +31,8 @@ final class HeaderConfig
         'phone' => 'Телефон',
         'email' => 'E-mail',
         'snippet' => 'Сниппет (текст/HTML)',
+        'countries' => 'Страны (разделы портала)',
+        'rates' => 'Курсы валют',
         'divider' => 'Разделитель',
         'spacer' => 'Гибкий отступ',
         'space' => 'Пробел',

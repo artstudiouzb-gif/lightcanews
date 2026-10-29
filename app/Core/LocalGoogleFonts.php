@@ -32,6 +32,7 @@ final class LocalGoogleFonts
     private const BUNDLED = [
         'noto-sans' => 'noto-sans',
         'noto-serif' => 'noto-serif',
+        'medeo-sans' => 'medeo-sans',
     ];
 
     /** @param list<string> $slugs @return array{ok:bool,error:string} */

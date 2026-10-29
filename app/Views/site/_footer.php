@@ -98,6 +98,19 @@ $renderFooterWidget = function (array $col) use ($footerLogo, $siteName, $addres
                 $h .= '<li><a href="' . htmlspecialchars(\App\Models\MenuItem::resolveUrl($mi, $footerLang), ENT_QUOTES) . '">' . htmlspecialchars((string) $mi['title'], ENT_QUOTES) . '</a></li>';
             }
             return $h . '</ul>';
+        case 'rubrics':
+        case 'countries':
+            // Разделы портала собираются из категорий: новая рубрика или
+            // страна появляется в подвале сама, без правки колонки.
+            $axis = $col['widget'] === 'countries' ? \App\Models\NewsCategory::AXIS_COUNTRY : \App\Models\NewsCategory::AXIS_RUBRIC;
+            $sections = \App\Models\NewsCategory::all($footerLang, true, $axis);
+            if ($sections === []) { return ''; }
+            $h = '<ul>';
+            foreach ($sections as $section) {
+                $h .= '<li><a href="' . htmlspecialchars(\App\Core\Locale::url(\App\Models\NewsCategory::path($section), $footerLang), ENT_QUOTES) . '">'
+                    . htmlspecialchars((string) $section['name'], ENT_QUOTES) . '</a></li>';
+            }
+            return $h . '</ul>';
         case 'contacts':
             // Иконка + значение: контакты в подвале ищут глазами, а не читают
             // подряд, и знак у строки находится быстрее самой строки.
