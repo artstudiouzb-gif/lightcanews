@@ -1,7 +1,7 @@
 /* Запасные начертания с подогнанными метриками.
 
-   Самих файлов шрифтов здесь нет: в поставке лежат только Noto Sans и Noto
-   Serif (`noto-sans.css` / `noto-serif.css`, собирает npm run sync:fonts),
+   Самих файлов шрифтов здесь нет: в поставке лежат Medeo Sans, Noto Sans и
+   Noto Serif (`noto-sans.css` / `noto-serif.css`, собирает npm run sync:fonts),
    остальные семейства каталога «Дизайн» скачивает на сервер
    App\Core\LocalGoogleFonts. Метрики ниже нужны и тем, и другим: они
    действуют независимо от того, откуда приехал файл.
@@ -43,6 +43,17 @@
     size-adjust: 119.12%;
     ascent-override: 89.74%;
     descent-override: 24.60%;
+    line-gap-override: 0%;
+}
+
+/* Medeo Sans — шрифт сайта по умолчанию. Замер: строка на 6,93 % уже
+   Arial; hhea 1005/−295 при unitsPerEm 1000. */
+@font-face {
+    font-family: 'Medeo Sans Fallback';
+    src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+    size-adjust: 93.07%;
+    ascent-override: 107.98%;
+    descent-override: 31.70%;
     line-gap-override: 0%;
 }
 

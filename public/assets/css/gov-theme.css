@@ -761,7 +761,11 @@ body .site-header--container-floating.site-header--sticky-full.is-scrolled {
 
 .site-topbar { font-size: var(--step--3); }
 .site-topbar__inner { max-width: var(--container-max); margin: 0 auto; padding: 7px 20px; display: flex; align-items: center; gap: 18px; }
-.site-topbar__zone { display: flex; align-items: center; gap: 14px; }
+.site-topbar__zone { display: flex; align-items: center; gap: 14px; min-width: 0; }
+/* Курсы в полосе прокручиваются внутри своей зоны: без этого на телефоне
+   языки и пять курсов растягивали страницу вдвое шире экрана. */
+.site-topbar__zone:has(.hdr-rates) { flex: 0 1 auto; }
+.site-topbar__zone:not(:has(.hdr-rates)) { flex-shrink: 0; }
 .site-topbar__zone--left { margin-right: auto; }
 .site-topbar__zone--center { margin: 0 auto; }
 .site-topbar__zone--right { margin-left: auto; }
@@ -794,6 +798,14 @@ body .site-header--container-floating.site-header--sticky-full.is-scrolled {
 @media (max-width: 720px) { .site-topbar { display: none; } .site-topbar--mobile-on { display: block; } .site-topbar--mobile-on .site-topbar__zone--center { display: none; } }
 
 .hdr-contact { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
+.hdr-rates { display: flex; align-items: center; gap: 14px; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap; font-size: var(--step--3); font-variant-numeric: tabular-nums; color: var(--gov-muted); }
+.hdr-rates__item b { margin-left: 4px; color: var(--gov-ink); font-weight: 600; }
+.site-topbar .hdr-rates, .site-topbar .hdr-rates__item b { color: inherit; }
+.hdr-countries { display: flex; align-items: center; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap; font-size: var(--step--3); }
+.hdr-countries__label { margin-right: 4px; color: var(--gov-muted); }
+.hdr-countries__chip { display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--gov-navy) 6%, var(--gov-surface)); color: var(--gov-title); font-weight: 600; text-decoration: none; transition: background-color .2s ease; }
+.hdr-countries__chip:hover { background: color-mix(in srgb, var(--gov-navy) 12%, var(--gov-surface)); }
+.hdr-countries__chip[aria-current="page"] { background: var(--gov-navy); color: #fff; }
 .hdr-snippet { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: var(--step--2); }
 .hdr-snippet a { color: var(--gov-teal); text-decoration: none; border-bottom: 1px dotted currentColor; transition: color .2s ease; }
 .hdr-snippet a:hover { color: var(--gov-teal-text); }
