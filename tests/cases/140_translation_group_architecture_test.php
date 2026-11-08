@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Core\TranslationGroupHelper;
 use App\Core\TranslationGroupMigration;
 use App\Models\News;
-use App\Models\Project;
 
 test('Мультиязычная архитектура: создание отдельной записи перевода и связывание через translation_group_id', function (): void {
     ensure_test_db();
@@ -105,30 +104,3 @@ test('Мультиязычная архитектура: создание отд
     News::forceDelete($origId);
 });
 
-test('Публичные языки проекта учитывают публикацию независимой версии', function (): void {
-    ensure_test_db();
-
-    $origId = Project::create([
-        'title' => 'Проект RU',
-        'slug' => 'translation-project',
-        'description' => 'Описание проекта',
-        'cover_image' => null,
-        'status' => 'published',
-        'is_featured' => 0,
-        'sort_order' => 0,
-    ]);
-    $uzId = TranslationGroupHelper::createTranslation('projects', $origId, 'uz');
-
-    assert_false(in_array('uz', Project::availableLangs($origId), true), 'Черновик проекта не объявляется на сайте');
-    \App\Core\Database::pdo()
-        ->prepare("UPDATE pages SET status = 'published' WHERE id = :id AND entity_type = 'project'")
-        ->execute([':id' => $uzId]);
-    assert_true(in_array('uz', Project::availableLangs($origId), true), 'Опубликованный перевод доступен от оригинала');
-    assert_true(in_array('uz', Project::availableLangs($uzId), true), 'Опубликованный перевод доступен от языковой версии');
-
-    $controller = (string) file_get_contents(APP_ROOT . '/app/Controllers/Site/ProjectController.php');
-    assert_contains('Project::availableLangs(', $controller, 'публичный контроллер фильтрует черновики');
-
-    Project::forceDelete($uzId);
-    Project::forceDelete($origId);
-});

@@ -84,43 +84,6 @@ test('Вью списка страниц: колонка «Языки» и ба�
     assert_contains('admin/layout/lang_badges', $view);
 });
 
-test('Проекты: языки записи считаются по группе переводов (БД)', function () {
-    ensure_test_db();
-    $pdo = Database::pdo();
-    $default = \App\Models\Language::defaultCode();
-
-    $pdo->exec("INSERT INTO pages (title, slug, entity_type, `lead`, status, lang) VALUES ('Проект RU', 'proj-langs-1', 'project', 'Описание RU', 'published', '{$default}')");
-    $p1 = (int) $pdo->lastInsertId();
-    $pdo->exec("UPDATE pages SET translation_group_id = {$p1} WHERE id = {$p1}");
-    $pdo->exec("INSERT INTO pages (title, slug, entity_type, `lead`, status, lang) VALUES ('Без перевода', 'proj-langs-2', 'project', 'Только RU', 'published', '{$default}')");
-    $p2 = (int) $pdo->lastInsertId();
-    $pdo->exec("UPDATE pages SET translation_group_id = {$p2} WHERE id = {$p2}");
-
-    // Узбекская версия — отдельная запись той же группы с тем же адресом.
-    $pdo->exec("INSERT INTO pages (title, slug, entity_type, `lead`, status, lang, translation_group_id) VALUES ('Loyiha UZ', 'proj-langs-1', 'project', 'UZ anons', 'published', 'uz', {$p1})");
-    $uz = (int) $pdo->lastInsertId();
-
-    $map = \App\Models\Project::availableLangsForIds([$p1, $p2]);
-    assert_true(in_array('uz', $map[$p1], true), 'p1: узбекский доступен');
-    assert_same([$default], $map[$p2], 'p2: только основной');
-
-    $row = \App\Models\Project::findPublishedBySlug('proj-langs-1', 'uz');
-    assert_same('Loyiha UZ', $row['title']);
-    assert_same('UZ anons', $row['description'], 'анонс берётся у записи своего языка');
-
-    $base = \App\Models\Project::findPublishedBySlug('proj-langs-1', $default);
-    assert_same('Проект RU', $base['title']);
-
-    $pdo->exec("DELETE FROM pages WHERE id IN ({$p1}, {$p2}, {$uz})");
-});
-
-test('Вью списка проектов: колонка «Языки» и батч-запрос языков', function () {
-    $view = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Views/admin/projects/index.php');
-    assert_contains('<th>Языки</th>', $view);
-    assert_contains('availableLangsForIds', $view);
-    assert_contains('admin/layout/lang_badges', $view);
-});
-
 test('PhotoAlbum::availableLangsForIds + localize: перевод с фолбэком (БД)', function () {
     ensure_test_db();
     $pdo = Database::pdo();

@@ -11,7 +11,6 @@ use App\Core\Translations;
 use App\Models\Language;
 use App\Models\Page;
 use App\Models\News;
-use App\Models\Project;
 
 final class SitemapController
 {
@@ -23,7 +22,6 @@ final class SitemapController
      */
     private const PAGE_COLUMNS = ['id', 'slug', 'lang', 'translation_group_id', 'is_home', 'updated_at'];
     private const NEWS_COLUMNS = ['id', 'slug', 'lang', 'translation_group_id', 'image', 'published_at', 'created_at', 'updated_at'];
-    private const PROJECT_COLUMNS = ['id', 'slug', 'lang', 'translation_group_id', 'cover_image', 'updated_at'];
     private const RSS_COLUMNS = ['id', 'slug', 'lang', 'title', 'excerpt', 'image', 'published_at'];
 
     /** @param list<string> $columns */
@@ -149,7 +147,7 @@ final class SitemapController
      *   Один и тот же адрес при этом не повторяется — версии группы приходят
      *   и строкой оригинала, и строкой перевода.
      * - **Адресов с редиректом в карте нет.** Страница-шапка раздела отвечает
-     *   301 на `/news` или `/projects` (вся группа перевода — Page::sectionOf),
+     *   301 на `/news` (вся группа перевода — Page::sectionOf),
      *   а редирект в карте поисковик считает ошибкой карты. Вместо неё в карту
      *   идёт сам раздел.
      * - **lastmod — последняя правка**, а не дата публикации: по нему поисковик
@@ -176,7 +174,6 @@ final class SitemapController
             }
         ));
         $news = $pdo->query("SELECT " . self::columns(self::NEWS_COLUMNS) . " FROM news WHERE status = 'published' AND published_at <= NOW() AND deleted_at IS NULL ORDER BY published_at DESC LIMIT 1000")->fetchAll();
-        $projects = $pdo->query("SELECT " . self::columns(self::PROJECT_COLUMNS) . " FROM pages WHERE entity_type = 'project' AND status = 'published' AND deleted_at IS NULL ORDER BY updated_at DESC")->fetchAll();
 
         // Языковые версии читаются пакетом на каждый тип: поштучный запрос давал
         // по два обращения к базе на запись. Спрашиваем App\Core\Translations —
@@ -187,11 +184,10 @@ final class SitemapController
         $groups = [
             'pages' => Translations::rowsBatch('pages', array_column($pages, 'id'), false, self::PAGE_COLUMNS),
             'news' => Translations::rowsBatch('news', array_column($news, 'id'), false, self::NEWS_COLUMNS),
-            'projects' => Translations::rowsBatch('projects', array_column($projects, 'id'), false, self::PROJECT_COLUMNS),
         ];
 
         $entries = [];
-        $newest = ['news' => '', 'projects' => ''];
+        $newest = ['news' => ''];
 
         foreach ($pages as $p) {
             $entries[] = self::recordEntry($baseUrl, 'pages', $p, $groups['pages'][(int) $p['id']] ?? [], 'weekly', !empty($p['is_home']) ? '1.0' : '0.8');
@@ -199,10 +195,6 @@ final class SitemapController
         foreach ($news as $n) {
             $entries[] = self::recordEntry($baseUrl, 'news', $n, $groups['news'][(int) $n['id']] ?? [], 'daily', '0.7');
             $newest['news'] = max($newest['news'], self::lastModified('news', $n));
-        }
-        foreach ($projects as $pr) {
-            $entries[] = self::recordEntry($baseUrl, 'projects', $pr, $groups['projects'][(int) $pr['id']] ?? [], 'monthly', '0.6');
-            $newest['projects'] = max($newest['projects'], self::lastModified('projects', $pr));
         }
 
         $langs = Language::publicCodes();
@@ -218,9 +210,6 @@ final class SitemapController
                     $sections[] = ['path' => \App\Models\NewsCategory::path($category), 'lastmod' => '', 'changefreq' => 'daily', 'priority' => '0.8'];
                 }
             }
-        }
-        if ($projects !== []) {
-            $sections[] = ['path' => 'projects', 'lastmod' => $newest['projects'], 'changefreq' => 'weekly', 'priority' => '0.8'];
         }
         $albumEntries = self::albumEntries($baseUrl);
         if ($albumEntries !== []) {
@@ -282,7 +271,7 @@ final class SitemapController
     }
 
     /**
-     * Раздел-список (`/news`, `/projects`, `/albums`, каталоги) на каждом
+     * Раздел-список (`/news`, `/albums`, каталоги) на каждом
      * активном языке: список существует на всех языках сразу.
      *
      * @param array{path: string, lastmod: string, changefreq: string, priority: string} $section
@@ -487,7 +476,6 @@ final class SitemapController
     {
         $field = match ($type) {
             'news' => 'image',
-            'projects' => 'cover_image',
             default => '',
         };
         $url = $field !== '' ? self::absoluteUrl($baseUrl, (string) ($row[$field] ?? '')) : '';
@@ -528,7 +516,6 @@ final class SitemapController
         $slug = ltrim((string) ($row['slug'] ?? ''), '/');
         $path = match ($type) {
             'news' => 'news/' . $slug,
-            'projects' => 'projects/' . $slug,
             default => !empty($row['is_home']) ? '' : $slug,
         };
 

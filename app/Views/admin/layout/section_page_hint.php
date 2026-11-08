@@ -19,7 +19,7 @@ if (!isset(Page::SECTIONS[$sectionKey])) {
 }
 
 $sectionPage = Page::forSection($sectionKey, \App\Models\Language::defaultCode());
-$publicPath = $sectionKey === 'news' ? '/news' : '/projects';
+$publicPath = '/' . $sectionKey;
 ?>
 <p class="form-hint">
     <?= \App\Core\AdminUi::icon('info-circle', 14) ?>

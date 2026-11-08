@@ -10,7 +10,7 @@ test('Материал без перевода не подменяется ба�
     assert_contains("http_response_code(404)", $notice);
     assert_contains("View::render('site/translation_unavailable'", $notice);
 
-    foreach (['PageController.php', 'ProjectController.php', 'NewsController.php', 'AlbumController.php', 'ContentController.php'] as $controller) {
+    foreach (['PageController.php', 'NewsController.php', 'AlbumController.php', 'ContentController.php'] as $controller) {
         $source = (string) file_get_contents(APP_ROOT . '/app/Controllers/Site/' . $controller);
         assert_contains('ContentLanguageNotice::renderIfMissing', $source, $controller);
     }

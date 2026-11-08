@@ -827,12 +827,10 @@ final class BlockRenderer
             'form' => self::enrichForm($data),
             'hero' => self::enrichHero($data),
             'bio_education' => self::enrichBioEducation($data),
-            'projects_list' => self::enrichProjectsList($data),
             'news_latest' => self::enrichNewsLatest($data),
             'news_feature' => self::enrichNewsFeature($data),
             'news_front' => self::enrichNewsFront($data),
             'news_docs' => self::enrichNewsDocs($data),
-            'cards_grid' => self::enrichCardsGrid($data),
             'media_gallery' => self::enrichMediaGallery($data),
             'instagram_feed' => self::enrichInstagramFeed($data),
             default => $data,
@@ -876,18 +874,6 @@ final class BlockRenderer
         $lang = Locale::current();
         $data['_widgets_before_html'] = WidgetRenderer::renderSelection((array) ($data['widgets_before'] ?? []), $lang);
         $data['_widgets_after_html'] = WidgetRenderer::renderSelection((array) ($data['widgets_after'] ?? []), $lang);
-        return $data;
-    }
-
-    private static function enrichProjectsList(array $data): array
-    {
-        $lang = Locale::current();
-        $items = \App\Models\Project::published($lang);
-        $limit = (int) ($data['limit'] ?? 0);
-        $data['projects'] = $limit > 0 ? array_slice($items, 0, $limit) : $items;
-        if (trim((string) ($data['all_url'] ?? '')) === '') {
-            $data['all_url'] = Locale::url('projects', $lang);
-        }
         return $data;
     }
 
@@ -1084,28 +1070,6 @@ final class BlockRenderer
         $data['news'] = $items;
         if (($data['news_all_url'] ?? '') === '') {
             $data['news_all_url'] = self::newsAllUrl($lang, $category);
-        }
-        return $data;
-    }
-
-    private static function enrichCardsGrid(array $data): array
-    {
-        if (($data['variant'] ?? 'icon') === 'image' && ($data['source'] ?? 'manual') === 'projects') {
-            $lang = Locale::current();
-            $limit = (int) ($data['limit'] ?? 6);
-            $items = [];
-            foreach (\App\Models\Project::forHome($limit, $lang) as $p) {
-                $items[] = [
-                    'image' => (string) ($p['cover_image'] ?? ''),
-                    'title' => (string) $p['title'],
-                    'text' => '',
-                    'url' => Locale::url('projects/' . $p['slug'], $lang),
-                ];
-            }
-            $data['items'] = $items;
-            if (($data['all_url'] ?? '') === '') {
-                $data['all_url'] = Locale::url('projects', $lang);
-            }
         }
         return $data;
     }

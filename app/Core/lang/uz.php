@@ -67,7 +67,6 @@ return [
     'Описание не заполнено.' => 'Tavsif kiritilmagan.',
     'Сведения' => 'Ma’lumotlar',
     'Ко всем записям раздела' => 'Bo‘limdagi barcha yozuvlarga',
-    'Проект' => 'Loyiha',
     'Другие проекты' => 'Boshqa loyihalar',
     'Все проекты' => 'Barcha loyihalar',
     'Сортировка' => 'Saralash',

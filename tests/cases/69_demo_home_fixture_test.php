@@ -11,19 +11,12 @@ test('Демо: фикстура главной валидна и содержи
         assert_true(is_file($path), "фикстура главной {$lang} существует");
 
         $blocks = json_decode((string) file_get_contents($path), true);
-        assert_true(is_array($blocks) && count($blocks) >= 6, "минимум 6 блоков главной {$lang}");
+        assert_true(is_array($blocks) && count($blocks) >= 5, "минимум 5 блоков главной {$lang}");
 
         $types = array_map(static fn ($b) => $b['type'] ?? '', $blocks);
         foreach (['hero', 'counters', 'cards_grid', 'news_feature', 'media_gallery'] as $need) {
             assert_true(in_array($need, $types, true), "в {$lang} есть блок {$need}");
         }
-        assert_true(
-            count(array_filter($blocks, static fn (array $block): bool =>
-                ($block['type'] ?? '') === 'cards_grid' && ($block['data']['variant'] ?? '') === 'image'
-            )) >= 1,
-            "в {$lang} есть карточки с изображениями"
-        );
-
         foreach ($blocks as $block) {
             if (($block['type'] ?? '') !== 'hero') {
                 continue;

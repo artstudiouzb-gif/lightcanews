@@ -42,8 +42,8 @@ final class Page
     /**
      * Список страниц для выпадающих списков (меню, выбор родителя).
      *
-     * $entityType: 'page' — обычные страницы (по умолчанию), 'project' — только
-     * проекты, 'all' — и то и другое (конструктор меню предлагает оба раздела).
+     * $entityType: 'page' — обычные страницы (по умолчанию), 'all' — без
+     * фильтра по типу записи.
      * @return list<array<string, mixed>>
      */
     public static function filter(?string $status = null, ?string $lang = null, string $entityType = 'page'): array
@@ -55,7 +55,7 @@ final class Page
             $params[':lang'] = $lang;
         }
         $sql .= ' WHERE p.deleted_at IS NULL';
-        if ($entityType === 'page' || $entityType === 'project') {
+        if ($entityType === 'page') {
             $sql .= ' AND p.entity_type = :entity_type';
             $params[':entity_type'] = $entityType;
         }
@@ -305,8 +305,6 @@ final class Page
     /**
      * Цель пункта меню по адресу из формы.
      *
-     * Проект адресуется как `projects/<slug>` — тем же значением, каким пункт
-     * меню и хранится, поэтому публичная ссылка собирается без особых случаев.
      * @return array<string, mixed>|null
      */
     public static function findPublishedMenuTarget(string $slug, string $lang): ?array
@@ -330,10 +328,6 @@ final class Page
     {
         $slug = ltrim(trim($slug), '/');
         $entityType = 'page';
-        if (str_starts_with($slug, 'projects/')) {
-            $entityType = 'project';
-            $slug = substr($slug, strlen('projects/'));
-        }
         if ($slug === '' || !Language::isActive($lang)) {
             return null;
         }
@@ -412,10 +406,6 @@ final class Page
             $value = (string) $value;
             $slug = ltrim(trim($value), '/');
             $entityType = 'page';
-            if (str_starts_with($slug, 'projects/')) {
-                $entityType = 'project';
-                $slug = substr($slug, strlen('projects/'));
-            }
             if ($slug !== '') {
                 $wanted[$entityType][$slug][] = $value;
             }
@@ -461,17 +451,13 @@ final class Page
     }
 
     /**
-     * Значение пункта меню для найденной цели: у проекта адрес с префиксом.
+     * Значение пункта меню для найденной цели — slug страницы.
      *
      * @param array<string, mixed> $target
      */
     public static function menuTargetValue(array $target): string
     {
-        $slug = (string) ($target['slug'] ?? '');
-
-        return (string) ($target['entity_type'] ?? 'page') === 'project'
-            ? 'projects/' . $slug
-            : $slug;
+        return (string) ($target['slug'] ?? '');
     }
 
     /** Ключ раздела из формы: чужое значение — обычная страница. */
@@ -483,10 +469,10 @@ final class Page
     }
 
     /** Разделы, у которых может быть своя страница-шапка. */
-    public const SECTIONS = ['news' => 'Новости', 'projects' => 'Проекты'];
+    public const SECTIONS = ['news' => 'Новости'];
 
     /**
-     * Страница-шапка раздела (`/news`, `/projects`): заголовок, лид, SEO и
+     * Страница-шапка раздела (`/news`): заголовок, лид, SEO и
      * блоки под списком.
      *
      * Язык разрешается так же, как у главной (`findHome`), и это не
@@ -594,7 +580,7 @@ final class Page
         return $section !== false ? self::normalizeSection($section) : '';
     }
 
-    /** Публичный адрес раздела: /news или /projects с учётом языка. */
+    /** Публичный адрес раздела (/news) с учётом языка. */
     public static function sectionUrl(string $section, ?string $lang = null): string
     {
         return isset(self::SECTIONS[$section])
@@ -1276,7 +1262,6 @@ final class Page
         string $entityType = 'page'
     ): bool {
         $lang = $lang ?? Language::defaultCode();
-        // Адрес уникален внутри своего типа: /about и /projects/about не спорят.
         $sql = 'SELECT COUNT(*) FROM pages WHERE slug = :slug AND lang = :lang
                 AND entity_type = :entity_type AND deleted_at IS NULL';
         $params = [':slug' => $slug, ':lang' => $lang, ':entity_type' => $entityType];

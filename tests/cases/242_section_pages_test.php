@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Core\SectionPage;
 use App\Models\Page;
 
-// Страница-раздел: обычная страница отдаёт лентам `/news` и `/projects`
+// Страница-раздел: обычная страница отдаёт ленте `/news`
 // заголовок, лид, SEO и блоки под списком. Раньше эти строки жили в шаблонах
 // и в админке не редактировались.
 
@@ -53,24 +53,24 @@ test('Страница-раздел отдаёт заголовок, SEO и бл
     $suffix = uniqid();
 
     $id = Page::create([
-        'title' => 'Проекты Агентства', 'slug' => 'sec-p-' . $suffix, 'section' => 'projects',
+        'title' => 'Новости отрасли', 'slug' => 'sec-p-' . $suffix, 'section' => 'news',
         'lead' => 'Что мы делаем', 'meta_description' => 'Описание для поиска',
         'status' => 'published', 'lang' => 'ru',
     ]);
     $pdo->prepare('INSERT INTO blocks (page_id, type, data, sort_order, is_active, lang) VALUES (?,?,?,1,1,?)')
         ->execute([$id, 'text', json_encode(['content' => 'Текст под списком'], JSON_UNESCAPED_UNICODE), 'ru']);
 
-    $section = SectionPage::render('projects', 'ru');
-    assert_same('Проекты Агентства', $section['title']);
+    $section = SectionPage::render('news', 'ru');
+    assert_same('Новости отрасли', $section['title']);
     assert_same('Что мы делаем', $section['lead']);
     assert_same('Описание для поиска', $section['meta_description']);
     assert_contains('Текст под списком', $section['content']);
 
-    // Раздела нет — вью остаётся на строках из шаблона.
-    assert_true(SectionPage::render('news', 'ru') === null);
+    // Неизвестный раздел — вью остаётся на строках из шаблона.
+    assert_true(SectionPage::render('projects', 'ru') === null);
 
     // Вьюхи выводят блоки под списком, а не над ним.
-    foreach (['news_index.php', 'projects_index.php'] as $file) {
+    foreach (['news_index.php'] as $file) {
         $view = (string) file_get_contents(APP_ROOT . '/app/Views/site/' . $file);
         assert_contains('listing__section-blocks', $view);
         assert_true(

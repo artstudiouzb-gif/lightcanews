@@ -4,12 +4,10 @@ use App\Core\Csrf;
 
 /** @var array<int, array<string, mixed>> $pages */
 /** @var array<int, array<string, mixed>> $news */
-/** @var array<int, array<string, mixed>> $projects */
 $pages = $pages ?? [];
 $news = $news ?? [];
-$projects = $projects ?? [];
 
-$hasItems = !empty($pages) || !empty($news) || !empty($projects);
+$hasItems = !empty($pages) || !empty($news);
 $pageActions = $hasItems ? '
 <form method="post" action="/admin/trash/empty" data-confirm="Очистить всю корзину? Все удалённые страницы, новости и проекты будут уничтожены навсегда без возможности восстановления.">
     ' . Csrf::field() . '
@@ -24,7 +22,6 @@ require __DIR__ . '/../layout/header.php';
 $sections = [
     ['type' => 'pages', 'label' => 'Страницы', 'items' => $pages, 'title' => 'title'],
     ['type' => 'news', 'label' => 'Новости', 'items' => $news, 'title' => 'title'],
-    ['type' => 'projects', 'label' => 'Проекты', 'items' => $projects, 'title' => 'title'],
 ];
 ?>
 <p class="form-hint">Удалённые элементы хранятся здесь. Их можно восстановить или удалить навсегда.</p>

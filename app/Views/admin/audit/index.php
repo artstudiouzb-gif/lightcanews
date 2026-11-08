@@ -17,7 +17,6 @@ $sectionLabels = [
     '/admin/forms/submissions' => 'Заявки форм',
     '/admin/pages' => 'Страницы',
     '/admin/news' => 'Новости',
-    '/admin/projects' => 'Проекты',
     '/admin/forms' => 'Формы',
     '/admin/files' => 'Файлы',
     '/admin/trash' => 'Корзина',

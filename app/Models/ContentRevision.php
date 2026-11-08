@@ -31,13 +31,6 @@ final class ContentRevision
                 ['table' => 'news_polls', 'fk' => 'news_id', 'columns' => ['question', 'options_json']],
             ],
         ],
-        // Проект — строка pages с подтипом: анонс карточки лежит в lead, а
-        // содержимое живёт в блоках со своей историей версий.
-        'project' => [
-            'table' => 'pages',
-            'columns' => ['title', 'slug', 'lead', 'cover_image', 'status', 'is_featured', 'sort_order'],
-            'children' => [],
-        ],
     ];
 
     public static function supports(string $type): bool
@@ -210,7 +203,7 @@ final class ContentRevision
                 $cfg['table'],
                 $cfg['columns'],
                 $entityId,
-                self::withLegacyColumns($type, (array) ($snapshot['entity'] ?? []))
+                (array) ($snapshot['entity'] ?? [])
             );
             $pdo->prepare('UPDATE ' . $cfg['table'] . ' SET lock_version = lock_version + 1 WHERE id = :id')
                 ->execute([':id' => $entityId]);
@@ -264,33 +257,6 @@ final class ContentRevision
             'entity' => array_intersect_key($entity, array_flip($cfg['columns'])),
             'children' => $children,
         ];
-    }
-
-    /**
-     * Старые имена колонок в снимках: актуальная колонка → как она называлась
-     * раньше. Снимки, снятые до переезда проектов в pages, хранят анонс под
-     * именем `description`; без сопоставления восстановление затёрло бы его
-     * пустым значением.
-     *
-     * @var array<string, array<string, string>>
-     */
-    private const LEGACY_COLUMNS = [
-        'project' => ['lead' => 'description'],
-    ];
-
-    /**
-     * @param array<string, mixed> $entity
-     * @return array<string, mixed>
-     */
-    private static function withLegacyColumns(string $type, array $entity): array
-    {
-        foreach (self::LEGACY_COLUMNS[$type] ?? [] as $column => $legacy) {
-            if (!array_key_exists($column, $entity) && array_key_exists($legacy, $entity)) {
-                $entity[$column] = $entity[$legacy];
-            }
-        }
-
-        return $entity;
     }
 
     /**

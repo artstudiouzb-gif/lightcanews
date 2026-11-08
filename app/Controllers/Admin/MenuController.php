@@ -22,10 +22,7 @@ final class MenuController
         View::render('admin/menu/index', [
             'tree' => MenuItem::allTree(),
             'items' => MenuItem::all(),
-            // Проекты — такие же записи pages, и в меню их ставят так же часто,
-            // как обычные страницы: показываем оба списка одним выбором.
             'pages' => Page::filter('published'),
-            'projects' => Page::filter('published', null, 'project'),
             'languages' => Language::active(),
         ]);
     }

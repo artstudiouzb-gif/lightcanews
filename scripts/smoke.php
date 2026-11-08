@@ -141,7 +141,7 @@ $fail = 0;
 
 // --- Публичный обход (BFS от главной + ключевые маршруты) ---
 $seed = [
-    $base . '/', $base . '/news', $base . '/projects', $base . '/albums',
+    $base . '/', $base . '/news', $base . '/albums',
     $base . '/search?q=test', $base . '/calendar',
     $base . '/sitemap.xml', $base . '/robots.txt', $base . '/health',
     $base . '/assets/css/system.css',
@@ -226,7 +226,7 @@ if ($adminCreds !== null) {
         $fail++;
     } else {
         $adminRoutes = [
-            '/admin', '/admin/news', '/admin/news-categories', '/admin/pages', '/admin/heroes', '/admin/projects', '/admin/albums',
+            '/admin', '/admin/news', '/admin/news-categories', '/admin/pages', '/admin/heroes', '/admin/albums',
             '/admin/videos', '/admin/forms', '/admin/languages', '/admin/menu', '/admin/header',
             '/admin/footer', '/admin/performance', '/admin/widgets', '/admin/trash',
             '/admin/audit', '/admin/audit/errors', '/admin/subscribers', '/admin/redirects', '/admin/users',
@@ -234,7 +234,7 @@ if ($adminCreds !== null) {
             '/admin/files', '/admin/profile',
             // Формы создания: именно здесь редактор проводит время, и именно
             // они падают от опечатки во вьюхе — списки такую ошибку не видят.
-            '/admin/news/create', '/admin/pages/create', '/admin/projects/create',
+            '/admin/news/create', '/admin/pages/create',
             '/admin/forms/create', '/admin/widgets/create',
         ];
         echo "Обход админки:\n";

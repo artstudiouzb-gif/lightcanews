@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Project;
 use App\Models\PhotoAlbum;
 use App\Models\Video;
 use App\Core\Database;
@@ -31,17 +30,7 @@ test('Language Badges Accuracy: зеленый индикатор выводит
     assert_true(isset($pageMap[$pageRuId]['ru']), 'Есть RU для страницы без перевода');
     assert_false(isset($pageMap[$pageRuId]['uz']), 'НЕТ UZ для страницы без перевода');
 
-    // 3. Проект без перевода на узбекский
-    $stmt = $pdo->prepare("INSERT INTO pages (title, slug, entity_type, status, lang) VALUES ('Проект RU', 'project-badge-ru-only', 'project', 'published', 'ru')");
-    $stmt->execute();
-    $projRuId = (int) $pdo->lastInsertId();
-
-    $projMap = Project::availableLangsForIds([$projRuId], true);
-    assert_true(isset($projMap[$projRuId]['ru']), 'Есть RU для проекта без перевода');
-    assert_false(isset($projMap[$projRuId]['uz']), 'НЕТ UZ для проекта без перевода');
-
     // Очистка
     $pdo->exec("DELETE FROM news WHERE id = {$newsRuId}");
     $pdo->exec("DELETE FROM pages WHERE id = {$pageRuId}");
-    $pdo->exec("DELETE FROM pages WHERE id = {$projRuId}");
 });

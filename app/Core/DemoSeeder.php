@@ -40,7 +40,6 @@ final class DemoSeeder
                 'vakansii' => 0,
                 'tendery' => 0,
                 'meropriyatiya' => 0,
-                'projects' => 0,
                 'albums' => 0,
                 'videos' => 0,
                 'forms' => 0,
@@ -56,9 +55,6 @@ final class DemoSeeder
             }
             if ($selected('entries') || $selected('documents') || $selected('vacancies') || $selected('tenders') || $selected('events')) {
                 self::seedEntries($pdo, $c);
-            }
-            if ($selected('projects')) {
-                self::seedProjects($pdo, $c);
             }
             if ($selected('media') || $selected('albums') || $selected('videos')) {
                 self::seedMedia($pdo, $c);
@@ -220,17 +216,6 @@ final class DemoSeeder
             'menu' => ['menu_items'],
         ];
 
-        // Проекты — строки pages, отдельной таблицы у них нет: считаем по типу.
-        // У каждого проекта своя узбекская запись, как и у страниц.
-        if ($selected('projects') && self::tableExists($pdo, 'pages')) {
-            $projects = (int) $pdo->query(
-                "SELECT COUNT(*) FROM pages WHERE entity_type = 'project'"
-            )->fetchColumn();
-            if ($projects < 8) {
-                $issues[] = "проекты: {$projects}, ожидалось не менее 8";
-            }
-        }
-
         foreach ($minimums as $table => $minimum) {
             if (!self::tableExists($pdo, $table)) {
                 $issues[] = "отсутствует таблица {$table}";
@@ -335,7 +320,7 @@ final class DemoSeeder
                  GROUP BY b.lang'
             )->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
             foreach (['ru', 'uz'] as $lang) {
-                if ((int) ($homeStacks[$lang] ?? 0) < 6) {
+                if ((int) ($homeStacks[$lang] ?? 0) < 5) {
                     $issues[] = "главная {$lang}: неполный стек блоков";
                 }
             }
@@ -343,16 +328,14 @@ final class DemoSeeder
 
         if ($selected('menu') && self::tableExists($pdo, 'menu_items')) {
             if ($selected('pages') && self::tableExists($pdo, 'pages')) {
-                // Пункт меню на проект хранится как projects/<slug> — при сверке
-                // отрезаем префикс и ищем запись нужного типа.
                 // Допускается как точный язык, так и наличие канонического оригинала (ru).
                 $brokenTargets = (int) $pdo->query(
                     "SELECT COUNT(*)
                      FROM menu_items mi
                      LEFT JOIN pages p
                        ON mi.url_type = 'page'
-                      AND p.slug = IF(mi.url_value LIKE 'projects/%', SUBSTRING(mi.url_value, 10), mi.url_value)
-                      AND p.entity_type = IF(mi.url_value LIKE 'projects/%', 'project', 'page')
+                      AND p.slug = mi.url_value
+                      AND p.entity_type = 'page'
                       AND (p.lang = mi.lang OR p.lang = 'ru')
                       AND p.status = 'published'
                       AND p.deleted_at IS NULL
@@ -1300,242 +1283,6 @@ final class DemoSeeder
         }
     }
 
-    private static function seedProjects(PDO $pdo, array &$c): void
-    {
-        if (!self::tableExists($pdo, 'pages')) {
-            return;
-        }
-
-        $projects = [
-            ['cifrovaya-transformaciya', 'Цифровая трансформация и развитие инноваций', '/uploads/public/hero-demo-g3.jpg', '<h2>О проекте</h2><p>Проект объединяет цифровизацию государственных услуг, развитие инфраструктуры данных и внедрение современных инструментов мониторинга реформ.</p><h3>Ключевые результаты</h3><ul><li>единая система показателей реализации стратегии;</li><li>межведомственный обмен данными;</li><li>сокращение сроков предоставления государственных услуг.</li></ul><blockquote><p>Цифровые решения должны давать измеримый результат для граждан и бизнеса.</p></blockquote>'],
-            ['transportnaya-infrastruktura', 'Развитие транспортной и логистической инфраструктуры', '/uploads/public/hero-demo-g2.jpg', '<h2>О проекте</h2><p>Комплексная программа развития транспортных коридоров, городской мобильности и современной логистической инфраструктуры регионов.</p><h3>План реализации</h3><ol><li>анализ транспортных потоков;</li><li>подготовка приоритетных проектов;</li><li>поэтапная реализация и публичный мониторинг.</li></ol>'],
-            ['zelenaya-energetika', 'Увеличение доли возобновляемых источников энергии', '/uploads/public/hero-demo-g4.jpg', '<h2>О проекте</h2><p>Инициатива направлена на повышение энергоэффективности, развитие солнечной и ветровой генерации и рациональное использование природных ресурсов.</p><table><thead><tr><th>Направление</th><th>Цель</th></tr></thead><tbody><tr><td>Возобновляемая энергетика</td><td>Новые генерирующие мощности</td></tr><tr><td>Энергоэффективность</td><td>Снижение удельного потребления</td></tr></tbody></table>'],
-            ['investicii-prioritetnye-otrasli', 'Привлечение инвестиций в приоритетные отрасли', '/uploads/public/hero-demo.jpg', '<h2>О проекте</h2><p>Формирование прозрачного портфеля инвестиционных предложений и сопровождение проектов, создающих рабочие места и устойчивую добавленную стоимость.</p><h3>Приоритеты</h3><ul><li>промышленная кооперация;</li><li>региональные инвестиционные программы;</li><li>международное партнёрство.</li></ul>'],
-        ];
-        $projectImages = [
-            'cifrovaya-transformaciya' => '/uploads/public/demo-agency-hero.jpg',
-            'transportnaya-infrastruktura' => '/uploads/public/demo-urban-development.jpg',
-            'zelenaya-energetika' => '/uploads/public/demo-green-energy.jpg',
-            'investicii-prioritetnye-otrasli' => '/uploads/public/demo-strategy-meeting.jpg',
-        ];
-        // Проект — страница с подтипом: сама запись идёт в pages, тело проекта
-        // становится текстовым блоком, анонс для карточки — в lead.
-        $ins = $pdo->prepare(
-            "INSERT INTO pages (title, slug, entity_type, `lead`, cover_image, status, is_featured, sort_order, layout_type, lang, created_at)
-             SELECT :t, :s, 'project', :d, :i, 'published', 1, :o, 'no_sidebar', 'ru', NOW()
-             FROM DUAL WHERE NOT EXISTS (
-                 SELECT 1 FROM pages chk WHERE chk.slug = :s2 AND chk.entity_type = 'project'
-             )"
-        );
-        $galleryByProject = [];
-        foreach ($projects as $i => $project) {
-            $ins->execute([
-                ':t' => $project[1],
-                ':s' => $project[0],
-                ':d' => self::projectLead($project[3]),
-                ':i' => $projectImages[$project[0]],
-                ':o' => $i,
-                ':s2' => $project[0],
-            ]);
-            $c['projects'] += $ins->rowCount();
-
-            $pidStmt = $pdo->prepare("SELECT id FROM pages WHERE entity_type = 'project' AND slug = :s LIMIT 1");
-            $pidStmt->execute([':s' => $project[0]]);
-            $projectId = $pidStmt->fetchColumn();
-            if ($projectId === false) {
-                continue;
-            }
-
-            $pdo->prepare(
-                'UPDATE pages SET translation_group_id = id
-                 WHERE id = :id AND (translation_group_id IS NULL OR translation_group_id = 0)'
-            )->execute([':id' => (int) $projectId]);
-            self::seedProjectBody($pdo, (int) $projectId, 'ru', $project[3]);
-
-            // Фотографии и характеристики проекта — блоки его же страницы:
-            // отдельных разделов формы под них больше нет.
-            $gallery = array_values(array_unique([
-                $projectImages[$project[0]],
-                '/uploads/public/demo-strategy-meeting.jpg',
-                '/uploads/public/demo-urban-development.jpg',
-            ]));
-            $galleryItems = [];
-            foreach ($gallery as $path) {
-                $galleryItems[] = [
-                    'kind' => 'photo',
-                    'title' => $project[1],
-                    'image' => $path,
-                    'url' => '',
-                    'meta' => '',
-                    'text' => '',
-                ];
-            }
-            $galleryByProject[$project[0]] = $galleryItems;
-            self::seedProjectBlock($pdo, (int) $projectId, 'ru', 'media_gallery', 'Фотографии проекта', [
-                'title' => 'Фотографии проекта',
-                'source' => 'manual',
-                'items' => $galleryItems,
-            ]);
-
-            self::seedProjectBlock($pdo, (int) $projectId, 'ru', 'icon_text', 'Характеристики проекта', [
-                'variant' => 'plain',
-                'title' => 'Характеристики проекта',
-                'columns' => 2,
-                'items' => [[
-                    'icon_svg' => '',
-                    'icon_color' => '',
-                    'rows' => "Статус | В реализации\nПериод | 2026–2030\nУровень | "
-                        . ($i % 2 === 0 ? 'Национальный' : 'Межрегиональный')
-                        . "\nКлючевой результат | Измеримый вклад в достижение целей Стратегии «Узбекистан–2030»",
-                ]],
-            ]);
-        }
-
-        // Узбекская версия проекта — отдельная запись своего языка, связанная
-        // через translation_group_id: ровно так её и заводит редактор кнопкой
-        // «Создать перевод», и только так её видно в разделе «Проекты».
-        $uzProjects = [
-            'cifrovaya-transformaciya' => ['Raqamli transformatsiya va innovatsiyalarni rivojlantirish', '<h2>Loyiha haqida</h2><p>Loyiha davlat xizmatlarini raqamlashtirish va ma’lumotlar infratuzilmasini rivojlantirishni birlashtiradi.</p>'],
-            'transportnaya-infrastruktura' => ['Transport va logistika infratuzilmasini rivojlantirish', '<h2>Loyiha haqida</h2><p>Transport yo‘laklari va shahar mobilligini rivojlantirish bo‘yicha majmuaviy dastur.</p>'],
-            'zelenaya-energetika' => ['Qayta tiklanuvchi energiya manbalari ulushini oshirish', '<h2>Loyiha haqida</h2><p>Quyosh va shamol energiyasini rivojlantirish hamda energiya samaradorligini oshirish tashabbusi.</p>'],
-            'investicii-prioritetnye-otrasli' => ['Ustuvor tarmoqlarga investitsiyalarni jalb qilish', '<h2>Loyiha haqida</h2><p>Shaffof investitsiya takliflari portfelini shakllantirish va loyihalarni kuzatib borish.</p>'],
-        ];
-        $uzIns = $pdo->prepare(
-            "INSERT INTO pages (title, slug, entity_type, `lead`, cover_image, status, is_featured, sort_order, layout_type, lang, translation_group_id, created_at)
-             SELECT :t, base.slug, 'project', :d, base.cover_image, 'published', base.is_featured, base.sort_order, 'no_sidebar', 'uz',
-                    COALESCE(NULLIF(base.translation_group_id, 0), base.id), NOW()
-             FROM pages base
-             WHERE base.id = :base_id
-               AND NOT EXISTS (
-                   SELECT 1 FROM pages chk WHERE chk.entity_type = 'project' AND chk.lang = 'uz' AND chk.slug = base.slug
-               )"
-        );
-        foreach ($uzProjects as $slug => $data) {
-            $baseStmt = $pdo->prepare("SELECT id FROM pages WHERE entity_type = 'project' AND lang = 'ru' AND slug = :s LIMIT 1");
-            $baseStmt->execute([':s' => $slug]);
-            $baseId = $baseStmt->fetchColumn();
-            if ($baseId === false) {
-                continue;
-            }
-            $uzIns->execute([':t' => $data[0], ':d' => self::projectLead($data[1]), ':base_id' => (int) $baseId]);
-
-            $uzStmt = $pdo->prepare("SELECT id FROM pages WHERE entity_type = 'project' AND lang = 'uz' AND slug = :s LIMIT 1");
-            $uzStmt->execute([':s' => $slug]);
-            $uzId = $uzStmt->fetchColumn();
-            if ($uzId !== false) {
-                self::seedProjectBody($pdo, (int) $uzId, 'uz', $data[1]);
-                // У узбекской записи свой стек блоков: собираем его так же
-                // полно, как русский, иначе UZ-версия выглядит обрезанной.
-                self::seedProjectBlock($pdo, (int) $uzId, 'uz', 'media_gallery', 'Loyiha suratlari', [
-                    'title' => 'Loyiha suratlari',
-                    'source' => 'manual',
-                    'items' => $galleryByProject[$slug] ?? [],
-                ]);
-                self::seedProjectBlock($pdo, (int) $uzId, 'uz', 'icon_text', 'Loyiha ko‘rsatkichlari', [
-                    'variant' => 'plain',
-                    'title' => 'Loyiha ko‘rsatkichlari',
-                    'columns' => 2,
-                    'items' => [[
-                        'icon_svg' => '',
-                        'icon_color' => '',
-                        'rows' => "Holati | Amalga oshirilmoqda\nDavri | 2026–2030\nDaraja | Milliy"
-                            . "\nAsosiy natija | «O‘zbekiston–2030» strategiyasi maqsadlariga o‘lchanadigan hissa",
-                    ]],
-                ]);
-            }
-        }
-    }
-
-    /** Короткий анонс проекта для карточки: разметка снимается, текст режется. */
-    private static function projectLead(string $html): string
-    {
-        // Теги заменяем пробелом, а не вырезаем: иначе «</h2><p>» склеивает
-        // заголовок со следующим предложением в одно слово.
-        $text = strip_tags((string) preg_replace('/<[^>]*>/', ' ', $html));
-        $text = trim((string) preg_replace('/\s+/u', ' ', $text));
-
-        return mb_substr($text, 0, 300);
-    }
-
-    /**
-     * Дополнительный блок демо-проекта (галерея, характеристики). Повторный
-     * запуск ничего не дублирует — блок ставится по внутреннему названию.
-     *
-     * @param array<string, mixed> $data
-     */
-    private static function seedProjectBlock(
-        PDO $pdo,
-        int $pageId,
-        string $lang,
-        string $type,
-        string $title,
-        array $data
-    ): void {
-        if (!self::tableExists($pdo, 'blocks')) {
-            return;
-        }
-
-        $exists = $pdo->prepare('SELECT 1 FROM blocks WHERE page_id = :id AND title = :title LIMIT 1');
-        $exists->execute([':id' => $pageId, ':title' => $title]);
-        if ($exists->fetchColumn() !== false) {
-            return;
-        }
-
-        $sort = (int) $pdo->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM blocks WHERE page_id = ' . $pageId)
-            ->fetchColumn();
-        // Появление секции — по тем же правилам ритма, что у демо-страниц.
-        // Первым у проекта идёт текстовый блок описания (sort_order 0), он и
-        // есть первый экран, поэтому здесь всегда не первый блок.
-        // Блоки проекта добавляются по одному, а правило ритма — одно
-        // появление на страницу, поэтому второе не выдаётся, если у страницы
-        // оно уже есть.
-        if (!array_key_exists('_reveal', $data)) {
-            $look = \App\Core\PagePresets::rhythmFor(['text', $type])[1] ?? [];
-            $taken = $pdo->prepare('SELECT COUNT(*) FROM blocks WHERE page_id = ? AND data LIKE ?');
-            $taken->execute([$pageId, '%"_reveal":{"enabled":true%']);
-            if (isset($look['_reveal']) && (int) $taken->fetchColumn() === 0) {
-                $data['_reveal'] = $look['_reveal'];
-            }
-        }
-        $pdo->prepare(
-            "INSERT INTO blocks (page_id, lang, type, title, data, custom_css, sort_order, is_active, created_at)
-             VALUES (:id, :lang, :type, :title, :data, '', :sort, 1, NOW())"
-        )->execute([
-            ':id' => $pageId,
-            ':lang' => $lang,
-            ':type' => $type,
-            ':title' => $title,
-            ':data' => json_encode($data, JSON_UNESCAPED_UNICODE),
-            ':sort' => $sort,
-        ]);
-    }
-
-    /**
-     * Тело демо-проекта: один текстовый блок нужного языка. Повторный запуск
-     * посева ничего не дублирует — блок ставится только если стек пуст.
-     */
-    private static function seedProjectBody(PDO $pdo, int $pageId, string $lang, string $html): void
-    {
-        if (!self::tableExists($pdo, 'blocks') || trim($html) === '') {
-            return;
-        }
-
-        $exists = $pdo->prepare('SELECT 1 FROM blocks WHERE page_id = :id AND lang = :lang LIMIT 1');
-        $exists->execute([':id' => $pageId, ':lang' => $lang]);
-        if ($exists->fetchColumn() !== false) {
-            return;
-        }
-
-        $pdo->prepare(
-            "INSERT INTO blocks (page_id, lang, type, data, custom_css, sort_order, is_active, created_at)
-             VALUES (:id, :lang, 'text', :data, '', 0, 1, NOW())"
-        )->execute([
-            ':id' => $pageId,
-            ':lang' => $lang,
-            ':data' => json_encode(['variant' => 'default', 'content' => $html], JSON_UNESCAPED_UNICODE),
-        ]);
-    }
-
     private static function seedMedia(PDO $pdo, array &$c): void
     {
         if (self::tableExists($pdo, 'photo_albums')) {
@@ -2056,7 +1803,6 @@ final class DemoSeeder
                     ['Стратегия «Узбекистан–2030»', 'page', 'strategiya-2030', '2030'],
                     ['Приоритетные направления', 'page', 'napravleniya'],
                     ['Устойчивый экономический рост', 'page', 'ustoychivyy-ekonomicheskiy-rost'],
-                    ['Проекты и инициативы', 'custom', '/projects'],
                     ['Аналитика', 'page', 'analitika'],
                 ]],
                 ['title' => 'Пресс-центр', 'type' => 'page', 'value' => 'press-centr', 'mega' => 0, 'children' => [
@@ -2081,7 +1827,6 @@ final class DemoSeeder
                     ['«O‘zbekiston–2030» strategiyasi', 'page', 'strategiya-2030', '2030'],
                     ['Ustuvor yo‘nalishlar', 'page', 'napravleniya'],
                     ['Barqaror iqtisodiy o‘sish', 'page', 'ustoychivyy-ekonomicheskiy-rost'],
-                    ['Loyihalar va tashabbuslar', 'custom', '/projects'],
                     ['Tahlil', 'page', 'analitika'],
                 ]],
                 ['title' => 'Matbuot markazi', 'type' => 'page', 'value' => 'press-centr', 'mega' => 0, 'children' => [
@@ -2106,7 +1851,6 @@ final class DemoSeeder
                     ['Strategy «Uzbekistan–2030»', 'page', 'strategiya-2030', '2030'],
                     ['Priority Areas', 'page', 'napravleniya'],
                     ['Sustainable Economic Growth', 'page', 'ustoychivyy-ekonomicheskiy-rost'],
-                    ['Projects and Initiatives', 'custom', '/projects'],
                     ['Analytics', 'page', 'analitika'],
                 ]],
                 ['title' => 'Press Center', 'type' => 'page', 'value' => 'press-centr', 'mega' => 0, 'children' => [
@@ -2251,21 +1995,21 @@ final class DemoSeeder
                     'eyebrow' => 'Приоритеты',
                     'title' => 'Цифровая трансформация государственных услуг',
                     'subtitle' => 'Единая система показателей, межведомственный обмен данными и сокращение сроков предоставления услуг.',
-                    'cta_text' => 'Проекты',
+                    'cta_text' => 'Новости',
                     'cta2_text' => '',
                 ],
                 'uz' => [
                     'eyebrow' => 'Ustuvor yo‘nalishlar',
                     'title' => 'Davlat xizmatlarining raqamli transformatsiyasi',
                     'subtitle' => 'Yagona ko‘rsatkichlar tizimi, idoralararo ma’lumot almashinuvi va xizmatlar muddatlarining qisqarishi.',
-                    'cta_text' => 'Loyihalar',
+                    'cta_text' => 'Yangiliklar',
                     'cta2_text' => '',
                 ],
                 'data' => [
                     'media_type' => 'image',
                     'image' => '/uploads/public/demo-urban-development.jpg',
                     'overlay' => 'gradient', 'overlay_opacity' => '55',
-                    'cta_enabled' => '1', 'cta_url' => '/projects', 'cta_icon' => 'arrow-right',
+                    'cta_enabled' => '1', 'cta_url' => '/news', 'cta_icon' => 'arrow-right',
                 ],
             ],
             [

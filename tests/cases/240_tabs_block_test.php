@@ -178,32 +178,3 @@ test('Вкладки: содержимое — вложенные блоки л�
     $pdo->exec('DELETE FROM pages');
 });
 
-test('Разделы не путаются: проект не открывается формой страницы, страница — формой проекта (БД)', function () {
-    ensure_test_db();
-    $pdo = Database::pdo();
-    $pdo->exec('DELETE FROM blocks');
-    $pdo->exec('DELETE FROM pages');
-
-    $pageId = Page::create([
-        'slug' => 'plain-page', 'title' => 'Страница', 'status' => 'published',
-        'meta_title' => '', 'meta_description' => '', 'layout_type' => 'no_sidebar',
-    ]);
-    $projectId = \App\Models\Project::create([
-        'title' => 'Проект', 'slug' => 'plain-page', 'description' => 'Анонс',
-        'cover_image' => null, 'status' => 'published', 'is_featured' => true, 'sort_order' => 0,
-    ]);
-
-    // Адрес уникален внутри своего типа: /plain-page и /projects/plain-page
-    // живут рядом и не мешают друг другу.
-    assert_true($projectId > 0 && $projectId !== $pageId);
-
-    // Каждая модель видит только свои записи.
-    assert_same(null, \App\Models\Project::findById($pageId), 'страница не считается проектом');
-    assert_true(\App\Models\Project::findById($projectId) !== null);
-    $page = Page::findById($projectId);
-    assert_same('project', (string) ($page['entity_type'] ?? ''), 'тип записи виден в строке');
-    assert_true(Page::findBySlug('plain-page') !== null, 'публичный адрес страницы ведёт на страницу');
-    assert_same($pageId, (int) Page::findBySlug('plain-page')['id']);
-
-    $pdo->exec('DELETE FROM pages');
-});

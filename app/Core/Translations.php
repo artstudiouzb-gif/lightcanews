@@ -30,21 +30,18 @@ final class Translations
      * Таблица переводов и её ключ на владельца. Ключ массива — таблица самой
      * сущности, она же используется в адресах админки.
      *
-     * @var array<string, array{0:string|null, 1:string|null}>
+     * @var array<string, array{0:string, 1:string}>
      */
     private const TRANSLATION_TABLES = [
         'news' => ['news_translations', 'news_id'],
         'pages' => ['page_translations', 'page_id'],
-        // У проектов своей таблицы переводов нет: языковая версия — отдельная
-        // запись pages того же типа.
-        'projects' => [null, null],
         'photo_albums' => ['photo_album_translations', 'album_id'],
         'videos' => ['video_translations', 'video_id'],
         'content_entries' => ['content_entry_translations', 'entry_id'],
     ];
 
     /** Сущности, у которых языковая версия бывает отдельной записью. */
-    private const LINKED_RECORDS = ['news', 'pages', 'projects'];
+    private const LINKED_RECORDS = ['news', 'pages'];
 
     /** Порция для IN: у подготовленного запроса есть предел числа параметров. */
     private const CHUNK = 500;
@@ -237,9 +234,6 @@ final class Translations
     private static function translationRowsBatch(string $table, array $ids, bool $narrow = false): array
     {
         [$translationTable, $ownerKey] = self::TRANSLATION_TABLES[$table];
-        if ($translationTable === null || $ownerKey === null) {
-            return [];
-        }
         $select = $narrow ? "{$ownerKey}, lang, title" : '*';
 
         $result = [];
@@ -385,15 +379,14 @@ final class Translations
     }
 
     /**
-     * Физическая таблица и условие подтипа: проект — строка pages с
-     * entity_type='project'.
+     * Физическая таблица и условие подтипа: у pages — только обычные
+     * страницы (entity_type='page').
      *
      * @return array{0:string,1:string}
      */
     private static function source(string $table): array
     {
         return match ($table) {
-            'projects' => ['pages', " AND entity_type = 'project'"],
             'pages' => ['pages', " AND entity_type = 'page'"],
             default => [$table, ''],
         };
@@ -457,9 +450,6 @@ final class Translations
     private static function translationRows(string $table, int $id): array
     {
         [$translationTable, $ownerKey] = self::TRANSLATION_TABLES[$table];
-        if ($translationTable === null || $ownerKey === null) {
-            return [];
-        }
 
         try {
             $stmt = Database::pdo()->prepare(

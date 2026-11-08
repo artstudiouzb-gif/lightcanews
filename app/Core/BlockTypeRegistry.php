@@ -39,7 +39,6 @@ final class BlockTypeRegistry
         'tabs' => [], // схема: BlockFieldSchema
         'testimonials' => [], // схема: BlockFieldSchema
         'counters' => [], // схема: BlockFieldSchema
-        'projects_list' => [], // схема: BlockFieldSchema
         'news_latest' => [], // схема: BlockFieldSchema
         'partners' => [], // схема: BlockFieldSchema
         'subscribe' => [], // схема: BlockFieldSchema
@@ -77,7 +76,7 @@ final class BlockTypeRegistry
         'text' => 'Текст', 'html' => 'Произвольный HTML', 'cta' => 'Призыв к действию',
         'slider' => 'Слайдер',
         'form' => 'Форма', 'columns' => 'Колонки', 'tabs' => 'Вкладки', 'testimonials' => 'Отзывы',
-        'counters' => 'Счётчики', 'projects_list' => 'Проекты',
+        'counters' => 'Счётчики',
         'news_latest' => 'Последние новости', 'partners' => 'Партнёры',
         'subscribe' => 'Подписка', 'faq' => 'Вопросы и ответы', 'contact_cards' => 'Контакты',
         'hero' => 'Обложка',
@@ -102,7 +101,6 @@ final class BlockTypeRegistry
     private const EDITOR_LABEL_OVERRIDES = [
         'cta' => 'Призыв к действию (CTA)',
         'tabs' => 'Вкладки (любые блоки внутри)',
-        'projects_list' => 'Список проектов',
         'partners' => 'Партнёры (логотипы)',
         'subscribe' => 'Подписка на дайджест',
         'contact_cards' => 'Контактные карточки',
@@ -153,7 +151,7 @@ final class BlockTypeRegistry
         ],
         'Первый экран и действия' => ['hero', 'cta', 'buttons', 'subscribe', 'form'],
         'Цифры и данные' => ['counters', 'chart', 'table', 'map_point'],
-        'Новости и проекты' => ['news_latest', 'news_feature', 'news_front', 'news_docs', 'projects_list'],
+        'Новости' => ['news_latest', 'news_feature', 'news_front', 'news_docs'],
         'Люди' => ['bio_education'],
         'Раскладка страницы' => ['columns', 'tabs', 'anchor_nav', 'divider'],
     ];
@@ -190,7 +188,6 @@ final class BlockTypeRegistry
         'news_feature' => 'Главная новость крупно и список рядом',
         'news_front' => 'Разделы главной портала: главное, страны, самое читаемое',
         'news_docs' => 'Новости и документы в две колонки',
-        'projects_list' => 'Карточки из раздела «Проекты»',
         'bio_education' => 'Биография и образование человека',
         'columns' => 'Ряд из колонок, в них — любые блоки',
         'tabs' => 'Вкладки, в каждой — свои блоки',

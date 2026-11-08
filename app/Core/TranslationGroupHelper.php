@@ -146,15 +146,14 @@ final class TranslationGroupHelper
      * @return array<string, array<string, mixed>> переводы с ключом — кодом языка (например, 'ru' => [...], 'uz' => [...])
      */
     /**
-     * Физическая таблица и условие подтипа для раздела админки: проект — это
-     * строка pages с entity_type='project', отдельной таблицы у него нет.
+     * Физическая таблица и условие подтипа для раздела админки: у pages —
+     * только обычные страницы (entity_type='page').
      *
      * @return array{0:string,1:string}
      */
     private static function tableFor(string $module): array
     {
         return match ($module) {
-            'projects' => ['pages', " AND entity_type = 'project'"],
             'pages' => ['pages', " AND entity_type = 'page'"],
             default => ['news', ''],
         };
@@ -216,7 +215,7 @@ final class TranslationGroupHelper
     {
         self::ensureSchema();
 
-        if (!in_array($module, ['news', 'pages', 'projects'], true)) {
+        if (!in_array($module, ['news', 'pages'], true)) {
             throw new \InvalidArgumentException("Неподдерживаемый раздел {$module}");
         }
 
@@ -299,9 +298,6 @@ final class TranslationGroupHelper
             $slugBase = match ($module) {
                 // Черновик перевода новости не должен занимать читаемый адрес.
                 'news' => self::NEWS_TRANSLATION_DRAFT_SLUG_PREFIX . bin2hex(random_bytes(6)),
-                // У языковой версии проекта адрес тот же: уникальность slug
-                // считается в пределах пары «тип + язык».
-                'projects' => (string) ($orig['slug'] ?? 'project'),
                 default => (string) ($orig['slug'] ?? 'item') . '-' . $targetLang,
             };
             $newSlug = Slug::unique(
@@ -351,7 +347,7 @@ final class TranslationGroupHelper
                     ':lang' => $targetLang,
                     ':gid' => $groupId,
                 ]);
-            } elseif ($module === 'pages') {
+            } else {
                 $ins = $pdo->prepare(
                     "INSERT INTO pages (title, slug, meta_title, meta_description, `lead`, status, is_home, layout_type, hide_chrome, transparent_header, lang, translation_group_id, parent_id, created_at)
                      VALUES (:t, :s, :mt, :md, :l, 'draft', 0, :lt, :hc, :th, :lang, :gid, :parent_id, NOW())"
@@ -369,31 +365,10 @@ final class TranslationGroupHelper
                     ':gid' => $groupId,
                     ':parent_id' => !empty($orig['parent_id']) ? (int) $orig['parent_id'] : null,
                 ]);
-            } else {
-                // Проект — страница с подтипом: запись идёт в pages, анонс
-                // карточки живёт в lead, тело копируется блоками ниже.
-                $ins = $pdo->prepare(
-                    "INSERT INTO pages (title, slug, entity_type, `lead`, cover_image, status, is_featured, transparent_header, sort_order, layout_type, lang, translation_group_id, created_at)
-                     VALUES (:t, :s, 'project', :d, :ci, 'draft', :if, :th, :so, 'no_sidebar', :lang, :gid, NOW())"
-                );
-                $ins->execute([
-                    ':t' => ($orig['title'] ?? '') . ' (' . strtoupper($targetLang) . ')',
-                    ':s' => $newSlug,
-                    ':d' => $orig['description'] ?? null,
-                    ':ci' => $orig['cover_image'] ?? null,
-                    ':if' => $orig['is_featured'] ?? 0,
-                    // Оформление принадлежит записи, а блоки копируются: без
-                    // этого у перевода шапка молча становилась сплошной, хотя
-                    // обложка первым блоком у него та же самая.
-                    ':th' => $orig['transparent_header'] ?? 0,
-                    ':so' => $orig['sort_order'] ?? 0,
-                    ':lang' => $targetLang,
-                    ':gid' => $groupId,
-                ]);
             }
 
             $newId = (int) $pdo->lastInsertId();
-            if (in_array($module, ['pages', 'projects'], true) && $newId > 0) {
+            if ($module === 'pages' && $newId > 0) {
                 self::copyBlocksForTranslation($pdo, $originalId, $newId, $targetLang);
             }
 

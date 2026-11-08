@@ -39,7 +39,6 @@ $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES);
             <div class="app-admin-bar__drop-menu">
                 <a href="/admin/pages/create" class="app-admin-bar__drop-item">Страницу</a>
                 <a href="/admin/news/create" class="app-admin-bar__drop-item">Новость</a>
-                <a href="/admin/projects/create" class="app-admin-bar__drop-item">Проект</a>
             </div>
         </div>
 
