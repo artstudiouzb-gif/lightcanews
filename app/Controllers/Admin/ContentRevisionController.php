@@ -12,12 +12,11 @@ use App\Core\View;
 use App\Models\ContentRevision;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Project;
 
 final class ContentRevisionController
 {
-    private const LABELS = ['page' => 'страницы', 'news' => 'новости', 'project' => 'проекта'];
-    private const EDIT_PATHS = ['page' => '/admin/pages/%d/edit', 'news' => '/admin/news/%d/edit', 'project' => '/admin/projects/%d/edit'];
+    private const LABELS = ['page' => 'страницы', 'news' => 'новости'];
+    private const EDIT_PATHS = ['page' => '/admin/pages/%d/edit', 'news' => '/admin/news/%d/edit'];
 
     /** @param array<string, string> $params */
     public function index(array $params): void
@@ -75,7 +74,6 @@ final class ContentRevisionController
         return match ($type) {
             'page' => Page::findById($id),
             'news' => News::findById($id),
-            'project' => Project::findById($id),
             default => null,
         };
     }

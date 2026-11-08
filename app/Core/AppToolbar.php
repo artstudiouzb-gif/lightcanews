@@ -50,10 +50,6 @@ final class AppToolbar
             $id = (int) $context['news']['id'];
             $editUrl = "/admin/news/{$id}/edit";
             $editLabel = 'Редактировать новость';
-        } elseif (!empty($context['project']['id'])) {
-            $id = (int) $context['project']['id'];
-            $editUrl = "/admin/projects/{$id}/edit";
-            $editLabel = 'Редактировать проект';
         }
 
         return trim(View::renderPartial('site/components/admin_toolbar', [

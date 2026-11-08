@@ -108,7 +108,7 @@ final class BlockHints
         }
 
         // Автоматический источник подменяет ручной список целиком.
-        if (in_array($type, ['cards_grid', 'media_gallery'], true)) {
+        if ($type === 'media_gallery') {
             $source = (string) ($data['source'] ?? 'manual');
             $items = is_array($data['items'] ?? null) ? $data['items'] : [];
             if ($source !== 'manual' && $items !== []) {
@@ -197,10 +197,7 @@ final class BlockHints
         if ($type === 'instagram_feed') {
             return InstagramFeed::profileUrl() !== '';
         }
-        $source = (string) ($data['source'] ?? 'manual');
-
-        return ($type === 'cards_grid' && ($data['variant'] ?? 'icon') === 'image' && $source === 'projects')
-            || ($type === 'media_gallery' && $source === 'albums');
+        return $type === 'media_gallery' && (string) ($data['source'] ?? 'manual') === 'albums';
     }
 
     /**

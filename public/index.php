@@ -14,7 +14,6 @@ use App\Controllers\Admin\LanguageController as AdminLanguageController;
 use App\Controllers\Admin\MenuController as AdminMenuController;
 use App\Controllers\Admin\NewsController as AdminNewsController;
 use App\Controllers\Admin\PageController as AdminPageController;
-use App\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Controllers\Admin\ContentRevisionController as AdminContentRevisionController;
 use App\Controllers\Admin\HealthController as AdminHealthController;
 use App\Controllers\Admin\LogController as AdminLogController;
@@ -283,14 +282,6 @@ $router->post('/admin/snippets/import', [\App\Controllers\Admin\SnippetControlle
 $router->post('/admin/snippets/{id}/delete', [\App\Controllers\Admin\SnippetController::class, 'destroy']);
 
 // --- Admin: проекты ---
-$router->get('/admin/projects', [AdminProjectController::class, 'index']);
-$router->get('/admin/projects/create', [AdminProjectController::class, 'create']);
-$router->post('/admin/projects/create', [AdminProjectController::class, 'store']);
-$router->get('/admin/projects/{id}/edit', [AdminProjectController::class, 'edit']);
-$router->post('/admin/projects/{id}/edit', [AdminProjectController::class, 'update']);
-$router->post('/admin/projects/{id}/delete', [AdminProjectController::class, 'destroy']);
-$router->post('/admin/projects/{id}/create-translation', [AdminProjectController::class, 'createTranslation']);
-$router->post('/admin/projects/{id}/duplicate', [AdminProjectController::class, 'duplicate']);
 
 // --- Admin: команда ---
 
@@ -518,8 +509,6 @@ $router->get('/', [SitePageController::class, 'home']);
 $router->get('/news', [SiteNewsController::class, 'index']);
 $router->get('/rubric/{slug}', [SiteNewsController::class, 'rubric']);
 $router->get('/country/{slug}', [SiteNewsController::class, 'country']);
-$router->get('/projects', [\App\Controllers\Site\ProjectController::class, 'index']);
-$router->get('/projects/{slug}', [\App\Controllers\Site\ProjectController::class, 'show']);
 $router->get('/news/rss.xml', [SiteNewsController::class, 'feed']);
 $router->get('/news/{slug}/photos.zip', [SiteNewsController::class, 'photosZip']);
 $router->get('/news/{slug}', [SiteNewsController::class, 'show']);
@@ -543,7 +532,7 @@ $router->get('/{slug}', [SitePageController::class, 'show']);
 // Раздел каталога, у которого снят префикс `/catalog`: его запись живёт на
 // `/<type>/<entry>`. Маршрут объявлен ПОСЛЕДНИМ намеренно — это шаблон из двух
 // произвольных сегментов, и объявленный выше он перехватывал бы `/news/...`,
-// `/projects/...` и всё остальное. Новый двухсегментный маршрут добавляется
+// `/albums/...` и всё остальное. Новый двухсегментный маршрут добавляется
 // перед ним, иначе он никогда не сработает (стережёт тест 353).
 $router->get('/{type}/{slug}', [\App\Controllers\Site\ContentController::class, 'rootShow']);
 

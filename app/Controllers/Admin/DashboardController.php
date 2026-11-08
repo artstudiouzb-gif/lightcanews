@@ -23,7 +23,6 @@ final class DashboardController
             'news' => (int) Database::pdo()->query('SELECT COUNT(*) FROM news WHERE deleted_at IS NULL')->fetchColumn(),
             'news_drafts' => (int) Database::pdo()->query("SELECT COUNT(*) FROM news WHERE status = 'draft' AND deleted_at IS NULL")->fetchColumn(),
             'pages' => (int) Database::pdo()->query("SELECT COUNT(*) FROM pages WHERE deleted_at IS NULL AND entity_type = 'page'")->fetchColumn(),
-            'projects' => (int) Database::pdo()->query("SELECT COUNT(*) FROM pages WHERE entity_type = 'project' AND deleted_at IS NULL")->fetchColumn(),
             'forms' => (int) Database::pdo()->query('SELECT COUNT(*) FROM forms')->fetchColumn(),
             'submissions_unread' => $canManageSubmissions
                 ? (int) Database::pdo()->query('SELECT COUNT(*) FROM form_submissions WHERE is_read = 0')->fetchColumn()

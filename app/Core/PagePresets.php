@@ -59,7 +59,7 @@ final class PagePresets
             'cards_grid', 'contact_cards',
             'counters', 'docs_list', 'media_gallery',
             'news_feature', 'news_latest', 'partners',
-            'projects_list', 'testimonials',
+            'testimonials',
         ];
 
         foreach (array_values($types) as $index => $type) {
@@ -114,7 +114,6 @@ final class PagePresets
             'about' => self::about(),
             'press' => self::press(),
             'contacts' => self::contacts(),
-            'project' => self::project(),
         ]);
     }
 
@@ -172,7 +171,7 @@ final class PagePresets
                     if (isset($b['type'], $b['data'])) {
                         $data = (array) $b['data'];
                         $data += $looks[$index] ?? [];
-                        if (in_array((string) ($data['source'] ?? 'manual'), ['projects', 'albums', 'videos', 'media'], true)) {
+                        if (in_array((string) ($data['source'] ?? 'manual'), ['albums', 'videos', 'media'], true)) {
                             // Автоматический источник целиком заменяет ручные
                             // карточки; не храним в образце поля, которые
                             // редактор никогда не увидит на сайте.
@@ -231,24 +230,14 @@ final class PagePresets
                         'limit' => 6,
                     ], self::look('none', 'premium', 'fade')),
                 ],
-                [
-                    'type' => 'cards_grid',
-                    'title' => 'Проекты и инициативы',
-                    'data' => array_merge([
-                        'title' => 'Проекты и инициативы',
-                        'variant' => 'image',
-                        'source' => 'projects',
-                        'limit' => 6,
-                    ], self::look('light', 'premium', 'slide-up')),
-                ],
                 self::ctaBand('Готовы начать сотрудничество?', 'Обратитесь к нашим специалистам или оставьте заявку онлайн.'),
             ];
         }
 
         return [
             'name' => 'Главная страница (Демо-макет)',
-            'description' => 'Эталонный готовый макет главной страницы с демо-ресурсами: Баннер Hero, Счётчики, Приоритетные направления, Проекты, Новости и Медиа.',
-            'outline' => ['Главный баннер (Hero)', 'Показатели и достижения', 'Приоритетные направления', 'Проекты и инициативы', 'Новости и аналитика', 'Медиагалерея'],
+            'description' => 'Эталонный готовый макет главной страницы с демо-ресурсами: Баннер Hero, Счётчики, Приоритетные направления, Новости и Медиа.',
+            'outline' => ['Главный баннер (Hero)', 'Показатели и достижения', 'Приоритетные направления', 'Новости и аналитика', 'Медиагалерея'],
             'blocks' => $blocks,
         ];
     }
@@ -607,79 +596,6 @@ final class PagePresets
                         'form_id' => null,
                     ], self::look('none', 'premium')),
                 ],
-            ],
-        ];
-    }
-
-    /**
-     * Проект или программа.
-     *
-     * @return Preset
-     */
-    private static function project(): array
-    {
-        return [
-            'name' => 'Проект или программа',
-            'description' => 'Суть проекта, этапы реализации и результаты в цифрах. Фотоотчёт добавьте блоком «Галерея», когда снимки будут готовы.',
-            'outline' => ['Заголовок проекта', 'О проекте с фото', 'Этапы реализации', 'Результаты', 'Призыв к участию'],
-            'blocks' => [
-                [
-                    'type' => 'hero',
-                    'title' => 'Заголовок проекта',
-                    'data' => array_merge([
-                        'eyebrow' => 'Проекты',
-                        'title' => 'Название проекта',
-                        'subtitle' => 'Одно предложение о цели проекта и сроках реализации.',
-                        'height' => 'regular',
-                        'width' => 'full',
-                        'text_position' => 'left',
-                        'overlay_enabled' => true,
-                        'overlay_mode' => 'gradient',
-                        'overlay_direction' => 'auto',
-                        'overlay_opacity' => 55,
-                    ], self::look('none', 'max')),
-                ],
-                [
-                    'type' => 'text_image',
-                    'title' => 'О проекте',
-                    'data' => array_merge([
-                        'title' => 'О проекте',
-                        'text' => "Опишите задачу, которую решает проект, его масштаб и участников.\n\n"
-                            . "Укажите источник финансирования и ожидаемый эффект.",
-                        'items' => [
-                            ['label' => 'Срок реализации: 2025–2027', 'icon_svg' => ''],
-                            ['label' => 'Охват: 14 регионов', 'icon_svg' => ''],
-                        ],
-                    ], self::look('none', 'premium', 'fade')),
-                ],
-                [
-                    'type' => 'stages',
-                    'title' => 'Этапы реализации',
-                    'data' => array_merge([
-                        'title' => 'Этапы реализации',
-                        'items' => [
-                            ['stage' => 'Этап 1', 'title' => 'Подготовка', 'text' => 'Проектирование и согласования.', 'year' => '2025', 'status' => 'done', 'status_text' => 'Завершён'],
-                            ['stage' => 'Этап 2', 'title' => 'Реализация', 'text' => 'Основные работы по проекту.', 'year' => '2026', 'status' => 'active', 'status_text' => 'В работе'],
-                            ['stage' => 'Этап 3', 'title' => 'Ввод в эксплуатацию', 'text' => 'Запуск и оценка результатов.', 'year' => '2027', 'status' => '', 'status_text' => 'Запланирован'],
-                        ],
-                    ], self::look('light', 'premium', 'slide-up')),
-                ],
-                [
-                    'type' => 'counters',
-                    'title' => 'Результаты',
-                    'data' => array_merge([
-                        'title' => 'Результаты проекта',
-                        'items' => [
-                            ['value' => '12', 'suffix' => '', 'label' => 'построенных объектов', 'icon_svg' => ''],
-                            ['value' => '4500', 'suffix' => '+', 'label' => 'человек охвачено', 'icon_svg' => ''],
-                            ['value' => '98', 'suffix' => '%', 'label' => 'выполнение плана', 'icon_svg' => ''],
-                        ],
-                    ], self::look('none', 'premium', 'fade')),
-                ],
-                // Блок галереи в сборку не кладём: без загруженных фото он даёт
-                // на странице пустую секцию. Редактор добавит его сам, когда
-                // снимки появятся.
-                self::ctaBand('Хотите участвовать в проекте?', 'Направьте заявку — рассмотрим предложения о партнёрстве.', 'Направить заявку'),
             ],
         ];
     }

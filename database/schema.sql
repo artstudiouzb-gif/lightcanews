@@ -339,8 +339,8 @@ CREATE TABLE IF NOT EXISTS pages (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     title           VARCHAR(255) NOT NULL COMMENT 'заголовок на языке по умолчанию',
     slug            VARCHAR(255) NOT NULL,
-    entity_type     ENUM('page', 'project') NOT NULL DEFAULT 'page' COMMENT 'подтип записи: обычная страница или проект',
-    section         VARCHAR(20) NOT NULL DEFAULT '' COMMENT 'раздел, шапкой которого служит страница: news|projects',
+    entity_type     ENUM('page', 'project') NOT NULL DEFAULT 'page' COMMENT 'подтип записи; проектов больше нет, остаётся page',
+    section         VARCHAR(20) NOT NULL DEFAULT '' COMMENT 'раздел, шапкой которого служит страница: news',
     meta_title      VARCHAR(255) NULL,
     meta_description VARCHAR(500) NULL,
     `lead`          TEXT NULL COMMENT 'видимый лид/подзаголовок страницы; у проекта — анонс для карточки',
@@ -565,7 +565,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
 CREATE TABLE IF NOT EXISTS widgets (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sidebar         ENUM('left', 'right') NOT NULL,
-    type            VARCHAR(60) NOT NULL COMMENT 'latest_news, contacts, custom_html, projects_list',
+    type            VARCHAR(60) NOT NULL COMMENT 'latest_news, contacts, custom_html, subscribe',
     title           VARCHAR(190) NULL COMMENT 'заголовок виджета на сайте',
     lang            VARCHAR(8) NOT NULL DEFAULT '' COMMENT 'код языка или пусто для всех',
     data            JSON NOT NULL,
@@ -1252,7 +1252,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_22_drop_goals.sql'),
     ('2026_10_22_drop_team_and_org_structure.sql'),
     ('2026_10_23_news_country_axis.sql'),
-    ('2026_10_24_news_editor_pick.sql')
+    ('2026_10_24_news_editor_pick.sql'),
+    ('2026_11_08_drop_projects.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

@@ -67,7 +67,6 @@ return [
     'Описание не заполнено.' => 'No description provided.',
     'Сведения' => 'Details',
     'Ко всем записям раздела' => 'Back to all section entries',
-    'Проект' => 'Project',
     'Другие проекты' => 'Other projects',
     'Все проекты' => 'All projects',
     'Сортировка' => 'Sort',

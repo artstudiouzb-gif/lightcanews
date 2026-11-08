@@ -155,7 +155,7 @@ final class SnippetController
      */
     private function applyTargets(): array
     {
-        $groups = ['Страницы' => Page::all(), 'Проекты' => \App\Models\Project::all()];
+        $groups = ['Страницы' => Page::all()];
 
         $out = [];
         foreach ($groups as $group => $rows) {

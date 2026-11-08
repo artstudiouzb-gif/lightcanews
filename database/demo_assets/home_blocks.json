@@ -98,50 +98,6 @@
     }
   },
   {
-    "type": "cards_grid",
-    "title": "",
-    "data": {
-      "variant": "image",
-      "title": "Стратегические инициативы",
-      "all_text": "Все проекты",
-      "all_url": "/projects",
-      "source": "projects",
-      "limit": 6,
-      "items": [
-        {
-          "image": "/uploads/public/demo-strategy-meeting.jpg",
-          "title": "Привлечение инвестиций в приоритетные отрасли",
-          "url": "/projects/investicii-prioritetnye-otrasli"
-        },
-        {
-          "image": "/uploads/public/demo-urban-development.jpg",
-          "title": "Развитие транспортной и логистической инфраструктуры",
-          "url": "/projects/transportnaya-infrastruktura"
-        },
-        {
-          "image": "/uploads/public/demo-agency-hero.jpg",
-          "title": "Цифровая трансформация и развитие инноваций",
-          "url": "/projects/cifrovaya-transformaciya"
-        },
-        {
-          "image": "/uploads/public/demo-green-energy.jpg",
-          "title": "Увеличение доли возобновляемых источников энергии",
-          "url": "/projects/zelenaya-energetika"
-        },
-        {
-          "image": "/uploads/public/demo-strategy-meeting.jpg",
-          "title": "Поддержка малого и среднего бизнеса",
-          "url": "/ustoychivyy-ekonomicheskiy-rost"
-        },
-        {
-          "image": "/uploads/public/demo-urban-development.jpg",
-          "title": "Развитие человеческого капитала и образования",
-          "url": "/analitika"
-        }
-      ]
-    }
-  },
-  {
     "type": "news_feature",
     "title": "",
     "data": {

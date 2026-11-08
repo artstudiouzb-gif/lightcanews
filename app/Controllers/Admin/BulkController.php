@@ -13,7 +13,6 @@ use App\Core\View;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PhotoAlbum;
-use App\Models\Project;
 
 /**
  * Массовые операции над списками (задача 91) и дублирование (задача 80):
@@ -24,7 +23,6 @@ final class BulkController
     private const MAP = [
         'news' => News::class,
         'pages' => Page::class,
-        'projects' => Project::class,
         'albums' => PhotoAlbum::class,
     ];
 
@@ -35,7 +33,7 @@ final class BulkController
      * же случай, ради которого настройка блока объявляется один раз в схеме
      * полей). Дублирования нет у albums — метода
      * `duplicate()` у этой модели никогда не было.
-     * Удаление у News/Page/Project мягкое (уходит в корзину, `deleted_at`), у
+     * Удаление у News/Page мягкое (уходит в корзину, `deleted_at`), у
      * PhotoAlbum — настоящее (`DELETE FROM`), поэтому подпись
      * у неё честно «Удалить»: назвать необратимое действие «В корзину»
      * значило бы пообещать восстановление, которого не будет.
@@ -47,7 +45,6 @@ final class BulkController
         switch ($type) {
             case 'news':
             case 'pages':
-            case 'projects':
                 $model = self::MAP[$type];
 
                 return [

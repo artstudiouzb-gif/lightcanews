@@ -11,7 +11,6 @@ use App\Core\RbacGuard;
 use App\Core\View;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Project;
 
 /**
  * Корзина — административный раздел. Право `manage_trash` объявлено в
@@ -24,7 +23,7 @@ use App\Models\Project;
  */
 final class TrashController
 {
-    private const TYPES = ['pages', 'news', 'projects'];
+    private const TYPES = ['pages', 'news'];
 
     public function index(): void
     {
@@ -33,7 +32,6 @@ final class TrashController
         View::render('admin/trash/index', [
             'pages' => Page::trashed(),
             'news' => News::trashed(),
-            'projects' => Project::trashed(),
         ]);
     }
 
@@ -55,7 +53,6 @@ final class TrashController
         match ($type) {
             'pages' => Page::restore($id),
             'news' => News::restore($id),
-            'projects' => Project::restore($id),
         };
 
         Flash::success('Элемент восстановлен из корзины.');
@@ -84,12 +81,10 @@ final class TrashController
         if ($type === 'pages') {
             $media = \App\Core\MediaCleaner::collectForPage($id);
             Page::forceDelete($id);
-        } elseif ($type === 'news') {
+        } else {
             $news = News::findById($id);
             $media = $news ? \App\Core\MediaCleaner::collectForNews($news) : [];
             News::forceDelete($id);
-        } else {
-            Project::forceDelete($id);
         }
 
         \App\Core\MediaCleaner::purgeUnreferenced($media);
@@ -121,7 +116,7 @@ final class TrashController
      * не является исключением и не перехватывается try/catch. Из-за этого вызов
      * действия напрямую завершал процесс тест-раннера вместе со всем прогоном.
      *
-     * @return array{pages: int, news: int, projects: int} сколько записей удалено
+     * @return array{pages: int, news: int} сколько записей удалено
      */
     public function purgeAll(): array
     {
@@ -143,17 +138,9 @@ final class TrashController
             \App\Core\MediaCleaner::purgeUnreferenced($media);
         }
 
-        /** @var array<int, array<string, mixed>> $projects */
-        $projects = Project::trashed();
-        foreach ($projects as $pr) {
-            $id = (int) $pr['id'];
-            Project::forceDelete($id);
-        }
-
         return [
             'pages' => count($pages),
             'news' => count($news),
-            'projects' => count($projects),
         ];
     }
 }
