@@ -7,7 +7,6 @@ use App\Core\View;
 test('Хлебные крошки публичных шаблонов переводят Главную', function () {
     $views = [
         'news_show.php',
-        'project_show.php',
         'content_show.php',
         'content_index.php',
         'calendar.php',

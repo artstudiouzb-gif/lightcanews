@@ -22,7 +22,7 @@ use App\Core\BlockTypeRegistry;
 const EXPECTED_BLOCK_TYPES = [
     'text', 'html', 'cta',
     'slider', 'form', 'columns', 'tabs', 'testimonials',
-    'counters', 'projects_list', 'news_latest',
+    'counters', 'news_latest',
     'partners', 'subscribe', 'faq', 'contact_cards',
     'hero', 'cards_grid', 'media_gallery', 'news_feature', 'news_front',
     'news_docs',

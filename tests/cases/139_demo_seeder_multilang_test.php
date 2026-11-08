@@ -63,7 +63,7 @@ test('DemoSeeder создает демо-данные с многоязычны�
     );
     $uzHomeBlocksStmt->execute([':page_id' => (int) $homePages['uz']['id']]);
     $uzHomeBlocks = (int) $uzHomeBlocksStmt->fetchColumn();
-    assert_true($uzHomeBlocks >= 6, 'Главная страница имеет полный UZ-стек блоков');
+    assert_true($uzHomeBlocks >= 5, 'Главная страница имеет полный UZ-стек блоков');
 
     $demoPagesStmt = $pdo->prepare(
         "SELECT lang, id, translation_group_id
@@ -107,19 +107,6 @@ test('DemoSeeder создает демо-данные с многоязычны�
         $count = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}` WHERE lang = 'uz'")->fetchColumn();
         assert_true($count > 0, "{$table}: созданы узбекские переводы");
     }
-
-    // У проекта языковая версия — отдельная запись своего языка (так её и
-    // заводит редактор), а не строка в таблице переводов.
-    $uzProjects = (int) $pdo->query(
-        "SELECT COUNT(*) FROM pages WHERE entity_type = 'project' AND lang = 'uz' AND deleted_at IS NULL"
-    )->fetchColumn();
-    assert_true($uzProjects > 0, 'проекты: созданы узбекские записи');
-    $uzProjectBlocks = (int) $pdo->query(
-        "SELECT COUNT(*) FROM blocks b
-         INNER JOIN pages p ON p.id = b.page_id
-         WHERE p.entity_type = 'project' AND p.lang = 'uz' AND b.lang = 'uz'"
-    )->fetchColumn();
-    assert_true($uzProjectBlocks > 0, 'проекты: у узбекской записи свой стек блоков');
 });
 
 test('DemoSeeder: повторный запуск не плодит пустые рубрики (БД)', function (): void {

@@ -139,22 +139,22 @@ test('selected language persists until the visitor explicitly changes it', async
     await page.goto('/');
     expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/uz\/?$/);
 
-    await page.goto('/projects');
-    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/projects\/?$/);
+    await page.goto('/news');
+    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/news\/?$/);
 
     cookies = await page.context().cookies();
     expect(cookies.find((cookie) => cookie.name === 'site_lang')?.value).toBe('uz');
 
-    await page.goto('/projects?_lang=ru');
-    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/projects\/?$/);
+    await page.goto('/news?_lang=ru');
+    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/news\/?$/);
     cookies = await page.context().cookies();
     expect(cookies.find((cookie) => cookie.name === 'site_lang')?.value).toBe('ru');
 
     // Открыть страницу на другом языке по прямой ссылке можно всегда, и
     // сохранённый выбор от этого не меняется: язык переключают явно —
     // параметром _lang или переключателем в шапке.
-    await page.goto('/uz/projects');
-    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/uz\/projects\/?$/);
+    await page.goto('/uz/news');
+    expect(page.url()).toMatch(/^http:\/\/127\.0\.0\.1:8080\/uz\/news\/?$/);
     cookies = await page.context().cookies();
     expect(cookies.find((cookie) => cookie.name === 'site_lang')?.value).toBe('ru');
 

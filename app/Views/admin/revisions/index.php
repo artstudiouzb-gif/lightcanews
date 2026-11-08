@@ -17,7 +17,6 @@ $pageTitle = 'История ' . $entityLabel;
 $activeNav = match ($entityType) {
     'page' => 'pages',
     'news' => 'news',
-    'project' => 'projects',
     default => '',
 };
 require __DIR__ . '/../layout/header.php';

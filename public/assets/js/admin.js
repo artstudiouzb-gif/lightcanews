@@ -3861,7 +3861,6 @@
             { icon: 'plus', title: 'Добавить новую новость', desc: 'Создать статью или анонс', url: '/admin/news/create' },
             { icon: 'files', title: 'Страницы', desc: 'Структура и разделы сайта', url: '/admin/pages' },
             { icon: 'plus', title: 'Добавить страницу', desc: 'Создать новую страницу', url: '/admin/pages/create' },
-            { icon: 'briefcase', title: 'Проекты', desc: 'Реестр проектов и направлений', url: '/admin/projects' },
             { icon: 'palette', title: 'Дизайн и Оформление', desc: 'Шрифты, цвета и пресеты', url: '/admin/design' },
             { icon: 'menu-2', title: 'Конструктор меню', desc: 'Навигация в шапке и подвале', url: '/admin/menu' },
             { icon: 'photo', title: 'Медиабиблиотека', desc: 'Загрузка изображений и документов', url: '/admin/files' },

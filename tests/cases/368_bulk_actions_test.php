@@ -12,7 +12,7 @@ use App\Models\PhotoAlbum;
  *
  * Набор действий объявлен один раз в `BulkController::actions()`, и у каждого
  * типа он свой:
- *  - у News/Page/Project — publish/unpublish/duplicate/trash (без изменений);
+ *  - у News/Page — publish/unpublish/duplicate/trash (без изменений);
  *  - у PhotoAlbum дублирования никогда не было — метода
  *    `duplicate()` у неё нет, и заводить фиктивную кнопку незачем;
  *  - удаление у PhotoAlbum настоящее (`DELETE FROM`, без
@@ -32,9 +32,6 @@ test('BulkController: у каждого типа свой набор дейст�
 
     $pages = BulkController::labels('pages');
     assert_same(['publish', 'unpublish', 'duplicate', 'trash'], array_keys($pages));
-
-    $projects = BulkController::labels('projects');
-    assert_same(['publish', 'unpublish', 'duplicate', 'trash'], array_keys($projects));
 
     $albums = BulkController::labels('albums');
     assert_same(['publish', 'unpublish', 'delete'], array_keys($albums));

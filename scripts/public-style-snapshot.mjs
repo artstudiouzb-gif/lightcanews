@@ -52,8 +52,6 @@ const SCREENS = [
     ['home-uz', '/uz'],
     ['news', '/news'],
     ['news-detail', { from: '/news', pick: '.newslist-grid a[href^="/news/"]' }],
-    ['projects', '/projects'],
-    ['project-detail', { from: '/projects', pick: 'a[href^="/projects/"]' }],
     ['catalog', '/catalog/documenty'],
     ['catalog-entry', { from: '/catalog/documenty', pick: 'main a[href^="/catalog/documenty/"]' }],
     ['form-page', '/kontakty'],

@@ -92,7 +92,6 @@ $attentionRow = static function (array $check) use ($esc): string {
     <?= $statCard('/admin/news', 'news', 'accent', (int) $counts['news'], t('Новости'),
         !empty($counts['news_drafts']) ? (int) $counts['news_drafts'] . ' ' . t('черновиков') : '') ?>
     <?= $statCard('/admin/pages', 'file-text', 'info', (int) $counts['pages'], t('Страницы')) ?>
-    <?= $statCard('/admin/projects', 'briefcase', 'violet', (int) $counts['projects'], t('Проекты')) ?>
     <?php /* Плиток «Формы» и «Активные языки» здесь нет: первая считала
              определения форм, вторая — настройку. Оба числа месяцами не
              меняются, то есть занимали место, ничего не сообщая. */ ?>

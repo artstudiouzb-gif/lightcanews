@@ -224,9 +224,8 @@ final class ContentLocator
             $stmt->execute($ids);
             $out = [];
             foreach (Database::rows($stmt) as $page) {
-                $isProject = BlockOwner::isProject($page);
                 $out[] = [
-                    'label' => ($isProject ? 'Проект' : 'Страница') . ' «' . (string) $page['title'] . '»' . self::langSuffix($page),
+                    'label' => 'Страница «' . (string) $page['title'] . '»' . self::langSuffix($page),
                     'url' => BlockOwner::editUrlFor($page),
                     'trashed' => !empty($page['deleted_at']),
                     'table' => $owners[(int) $page['id']] ?? 'pages',

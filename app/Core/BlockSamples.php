@@ -75,7 +75,6 @@ final class BlockSamples
                 ['value' => '35', 'suffix' => ' млрд', 'label' => 'привлечённых инвестиций', 'icon_svg' => ''],
             ]],
             // Блоки-обёртки наполняются из базы: образцу достаточно заголовка.
-            'projects_list' => ['title' => 'Проекты', 'limit' => 3],
             'news_latest' => ['title' => 'Последние новости', 'limit' => 3],
             'news_feature' => ['title' => 'Новости и аналитика', 'all_text' => 'Все новости', 'limit' => 6],
             'news_front' => ['layout' => 'main'],

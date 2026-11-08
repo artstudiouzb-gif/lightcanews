@@ -9,15 +9,11 @@ use App\Core\BlockTypeRegistry;
 /** @var array $widgets */
 /** @var string|null $error */
 
-// Владелец блока — страница или проект: от него зависят и подпись кнопки
-// возврата, и подсвеченный раздел бокового меню. Считается до шапки: раздел
-// меню подсвечивает она.
 $blockOwner = \App\Models\Page::findById((int) $block['page_id']) ?? [];
 $blockOwner['id'] = (int) $block['page_id'];
-$ownerIsProject = \App\Core\BlockOwner::isProject($blockOwner);
 
 $pageTitle = 'Редактирование блока';
-$activeNav = $ownerIsProject ? 'projects' : 'pages';
+$activeNav = 'pages';
 require __DIR__ . '/../layout/header.php';
 
 $type = (string) $block['type'];
@@ -25,11 +21,8 @@ $typeLabels = BlockTypeRegistry::editorLabels();
 $typeLabel = $typeLabels[$type] ?? $type;
 $error = $error ?? null;
 $widgets = $widgets ?? [];
-// Раздел владельца, а не литерал `/admin/pages/`: у проекта своя форма, и
-// страница отвечает на него 404 — редактор упирался в «404» ровно тогда,
-// когда закончил править блок проекта.
 $backUrl = \App\Core\BlockOwner::editUrlFor($blockOwner, (string) ($block['lang'] ?? ''));
-$backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к странице';
+$backLabel = 'Назад к странице';
 ?>
 <?php if ($error): ?><div class="alert alert--error"><?= htmlspecialchars($error, ENT_QUOTES) ?></div><?php endif; ?>
 <a href="<?= htmlspecialchars($backUrl, ENT_QUOTES) ?>" class="btn btn--small u-inline-79a1c5a5db">&larr; <?= htmlspecialchars($backLabel, ENT_QUOTES) ?></a>
@@ -175,7 +168,7 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                             </div>
                             <div class="form-field">
                                 <label>Ссылка со слайда (необязательно)</label>
-                                <input type="text" name="slides[<?= $i ?>][url]" value="<?= htmlspecialchars($slide['url'] ?? '', ENT_QUOTES) ?>" placeholder="/projects/example">
+                                <input type="text" name="slides[<?= $i ?>][url]" value="<?= htmlspecialchars($slide['url'] ?? '', ENT_QUOTES) ?>" placeholder="/news/example">
                             </div>
                             <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
                             <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
@@ -195,7 +188,7 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
                     </div>
                     <div class="form-field">
                         <label>Ссылка со слайда (необязательно)</label>
-                        <input type="text" name="slides[__INDEX__][url]" placeholder="/projects/example">
+                        <input type="text" name="slides[__INDEX__][url]" placeholder="/news/example">
                     </div>
                     <button type="button" class="btn btn--small" data-repeater-move="up" aria-label="Переместить выше" title="Переместить выше"><?= \App\Core\AdminUi::icon('arrow-up') ?></button>
                     <button type="button" class="btn btn--small" data-repeater-move="down" aria-label="Переместить ниже" title="Переместить ниже"><?= \App\Core\AdminUi::icon('arrow-down') ?></button>
@@ -622,10 +615,6 @@ $backLabel = $ownerIsProject ? 'Назад к проекту' : 'Назад к �
 
         <?php if ($type === 'news_latest'): ?>
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('news_latest', $data) ?>
-        <?php endif; ?>
-
-        <?php if ($type === 'projects_list'): ?>
-            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('projects_list', $data) ?>
         <?php endif; ?>
 
         <?php if (in_array($type, ['news_latest', 'news_feature', 'news_front', 'news_docs'], true)): ?>

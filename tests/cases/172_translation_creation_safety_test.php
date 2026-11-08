@@ -7,7 +7,7 @@ test('Создание независимого перевода использ�
     $helper = (string) file_get_contents(APP_ROOT . '/app/Core/TranslationGroupHelper.php');
     $badges = (string) file_get_contents(APP_ROOT . '/app/Views/admin/layout/lang_badges.php');
 
-    foreach (['news', 'pages', 'projects'] as $module) {
+    foreach (['news', 'pages'] as $module) {
         assert_contains(
             "\$router->post('/admin/{$module}/{id}/create-translation'",
             $routes,
@@ -23,7 +23,6 @@ test('Создание независимого перевода использ�
     foreach ([
         APP_ROOT . '/app/Controllers/Admin/NewsController.php',
         APP_ROOT . '/app/Controllers/Admin/PageController.php',
-        APP_ROOT . '/app/Controllers/Admin/ProjectController.php',
     ] as $controllerFile) {
         $controller = (string) file_get_contents($controllerFile);
         assert_contains('Csrf::verifyRequest();', $controller, basename($controllerFile) . ': CSRF проверяется');
@@ -40,7 +39,6 @@ test('Создание независимого перевода использ�
     foreach ([
         APP_ROOT . '/app/Views/admin/news/form.php',
         APP_ROOT . '/app/Views/admin/pages/form.php',
-        APP_ROOT . '/app/Views/admin/projects/form.php',
     ] as $formFile) {
         $form = (string) file_get_contents($formFile);
         assert_contains('Csrf::field()', $form, basename(dirname($formFile)) . ': родительская форма содержит CSRF');
@@ -75,8 +73,6 @@ test('Миграция целостности восстанавливает н�
         $schema,
         'чистая установка отмечает миграцию применённой'
     );
-    // Проекты живут в pages (entity_type='project'), отдельной нормализации им
-    // не нужно — их корни выставляет тот же UPDATE по pages.
     foreach (['news', 'pages'] as $table) {
         assert_contains(
             "UPDATE {$table} SET translation_group_id = id",

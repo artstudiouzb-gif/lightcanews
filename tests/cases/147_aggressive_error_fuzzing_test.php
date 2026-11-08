@@ -16,7 +16,6 @@ use App\Models\Language;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PhotoAlbum;
-use App\Models\Project;
 use App\Models\Video;
 
 test('Aggressive Error & Fuzzing Test: роутинг, модель бейджей, инъекции, XSS и граничные значения', function (): void {
@@ -70,7 +69,6 @@ test('Aggressive Error & Fuzzing Test: роутинг, модель бейдже
     $models = [
         News::class,
         Page::class,
-        Project::class,
         PhotoAlbum::class,
         Video::class,
     ];

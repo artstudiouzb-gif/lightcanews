@@ -98,50 +98,6 @@
     }
   },
   {
-    "type": "cards_grid",
-    "title": "",
-    "data": {
-      "variant": "image",
-      "title": "Strategik tashabbuslar",
-      "all_text": "Barcha loyihalar",
-      "all_url": "/projects",
-      "source": "projects",
-      "limit": 6,
-      "items": [
-        {
-          "image": "/uploads/public/demo-strategy-meeting.jpg",
-          "title": "Ustuvor tarmoqlarga investitsiyalarni jalb qilish",
-          "url": "/projects/investicii-prioritetnye-otrasli"
-        },
-        {
-          "image": "/uploads/public/demo-urban-development.jpg",
-          "title": "Transport va logistika infratuzilmasini rivojlantirish",
-          "url": "/projects/transportnaya-infrastruktura"
-        },
-        {
-          "image": "/uploads/public/demo-agency-hero.jpg",
-          "title": "Raqamli transformatsiya va innovatsiyalarni rivojlantirish",
-          "url": "/projects/cifrovaya-transformaciya"
-        },
-        {
-          "image": "/uploads/public/demo-green-energy.jpg",
-          "title": "Qayta tiklanuvchi energiya manbalari ulushini oshirish",
-          "url": "/projects/zelenaya-energetika"
-        },
-        {
-          "image": "/uploads/public/demo-strategy-meeting.jpg",
-          "title": "Kichik va o‘rta biznesni qo‘llab-quvvatlash",
-          "url": "/ustoychivyy-ekonomicheskiy-rost"
-        },
-        {
-          "image": "/uploads/public/demo-urban-development.jpg",
-          "title": "Inson kapitali va ta’limni rivojlantirish",
-          "url": "/analitika"
-        }
-      ]
-    }
-  },
-  {
     "type": "news_feature",
     "title": "",
     "data": {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Core\BlockRenderer;
 use App\Core\Database;
-use App\Models\Project;
 
 /** Хелпер: рендер одиночного блока по типу и данным (без БД). */
 function render_block(string $type, array $data): string
@@ -42,18 +41,3 @@ test('Блок counters рендерит числа с data-counter-target (гр
     assert_contains('counter__suffix', $html);
 });
 
-test('Блок projects_list выводит опубликованные записи с учётом limit (БД, группа 4)', function () {
-    ensure_test_db();
-    $pdo = Database::pdo();
-    $pdo->exec("DELETE FROM pages WHERE entity_type = 'project'");
-
-    Project::create(['title' => 'Проект Альфа', 'slug' => 'alpha', 'description' => 'desc', 'cover_image' => null, 'status' => 'published', 'sort_order' => 1]);
-    Project::create(['title' => 'Черновик', 'slug' => 'draft-p', 'description' => '', 'cover_image' => null, 'status' => 'draft', 'sort_order' => 2]);
-
-    // projects_list → только опубликованные (черновик не показывается).
-    $proj = render_block('projects_list', ['title' => 'Проекты', 'limit' => 0]);
-    assert_contains('Проект Альфа', $proj);
-    assert_true(!str_contains($proj, 'Черновик'), 'черновик проекта не выводится');
-
-    $pdo->exec("DELETE FROM pages WHERE entity_type = 'project'");
-});

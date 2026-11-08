@@ -5,32 +5,15 @@ declare(strict_types=1);
 use App\Core\BlockOwner;
 
 /*
- * Возврат из конструктора — в раздел владельца блока.
- *
- * Блок принадлежит строке `pages` и про подтип не знает: конструктор у
- * страницы и у проекта один и тот же партиал. А формы у них разные, и форма
- * страницы на проект отвечает 404 — так разведены разделы админки.
- *
- * Пока адрес возврата писался литералом `/admin/pages/<id>/edit`, кнопка
- * «Назад к странице» в форме блока проекта вела на `/admin/pages/101/edit` и
- * показывала 404 — ровно в тот момент, когда редактор закончил правку. Тем же
- * литералом страдали редиректы после копирования блоков другого языка и после
- * применения шаблона страницы.
+ * Возврат из конструктора — в форму владельца блока. Адрес собирает
+ * `BlockOwner`, а не литерал по месту: им пользуются кнопка «Назад к
+ * странице», переключатель языка блоков и редиректы после копирования блоков
+ * и применения шаблона.
  */
 
-test('Адрес возврата считается по подтипу записи', function () {
-    $page = ['id' => 7, 'entity_type' => 'page'];
-    $project = ['id' => 101, 'entity_type' => 'project'];
-
-    assert_same('/admin/pages/7/edit', BlockOwner::editUrlFor($page));
-    assert_same('/admin/projects/101/edit', BlockOwner::editUrlFor($project));
-    assert_same('/admin/projects/101/edit?block_lang=uz', BlockOwner::editUrlFor($project, 'uz'));
-
-    // Запись без подтипа — страница: так вели себя все записи до появления
-    // проектов, и менять это значило бы уводить их в чужой раздел.
-    assert_same('/admin/pages/7/edit', BlockOwner::editUrlFor(['id' => 7]));
-    assert_false(BlockOwner::isProject(['id' => 7]), 'без подтипа это страница');
-    assert_true(BlockOwner::isProject($project), 'подтип проекта опознан');
+test('Адрес возврата ведёт в форму страницы', function () {
+    assert_same('/admin/pages/7/edit', BlockOwner::editUrlFor(['id' => 7, 'entity_type' => 'page']));
+    assert_same('/admin/pages/7/edit?block_lang=uz', BlockOwner::editUrlFor(['id' => 7], 'uz'));
 });
 
 test('Конструктор и его редиректы не пишут раздел литералом', function () {
@@ -66,14 +49,4 @@ test('Конструктор и его редиректы не пишут раз
         $blockController,
         'сохранение не должно автоматически возвращать к странице или проекту'
     );
-});
-
-test('Форма блока подписывает кнопку по владельцу', function () {
-    $src = (string) file_get_contents(APP_ROOT . '/app/Views/admin/pages/block_form.php');
-
-    // Подпись и подсвеченный раздел меню читают тот же признак, что и адрес:
-    // «Назад к странице» на блоке проекта обещает не тот раздел.
-    assert_contains("'Назад к проекту'", $src, 'у проекта своя подпись кнопки');
-    assert_contains("BlockOwner::isProject(", $src, 'подтип спрашивается у BlockOwner');
-    assert_contains("\$activeNav = \$ownerIsProject ? 'projects' : 'pages'", $src, 'раздел меню тоже по владельцу');
 });

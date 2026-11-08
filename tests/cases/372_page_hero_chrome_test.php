@@ -71,8 +71,8 @@ test('Неузнанная разметка обложки не теряет к�
     assert_not_contains(PageHero::ON_HERO_CLASS, $left, 'модификатор «поверх обложки» снят');
 });
 
-test('Страница и проект спрашивают PageHero, а не свои регулярки', function () {
-    foreach (['page.php', 'project_show.php'] as $view) {
+test('Страница спрашивает PageHero, а не свои регулярки', function () {
+    foreach (['page.php'] as $view) {
         $src = (string) file_get_contents(APP_ROOT . '/app/Views/site/' . $view);
 
         assert_contains('PageHero::isHero($content)', $src, $view . ': признак обложки — из PageHero');
@@ -82,16 +82,6 @@ test('Страница и проект спрашивают PageHero, а не с
             (bool) preg_match('/preg_match\([^)]*cms-block--hero/', $src),
             $view . ': своей копии правила быть не должно'
         );
-    }
-});
-
-test('Паспорт проекта не печатается под обложкой', function () {
-    $src = (string) file_get_contents(APP_ROOT . '/app/Views/site/project_show.php');
-
-    $guard = strpos($src, 'if (!$firstOwnsHeading)');
-    assert_true($guard !== false, 'паспорт записи под условием');
-    foreach (['projdetail-head', 'projdetail__title', 'projdetail__lead', 'projdetail__media'] as $part) {
-        assert_true(strpos($src, $part) > $guard, $part . ' — внутри условия');
     }
 });
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Core\Database;
 use App\Core\Search;
 use App\Core\SearchQuery;
-use App\Models\Project;
+use App\Models\News;
 
 test('SearchQuery: RU/UZ нормализация и транслитерация', function (): void {
     assert_same("o'zbekiston e'lon", SearchQuery::normalize(' OʻZBEKISTON  E’LON '));
@@ -21,20 +21,20 @@ test('Site search: запрос кириллицей находит узбекс
         return;
     }
     $marker = 'uzsearch' . bin2hex(random_bytes(3));
-    $id = Project::create([
+    $id = News::create([
         'title' => "O'zbekiston madaniyati {$marker}",
         'slug' => $marker,
-        'description' => 'Milliy sanʼat loyihasi',
-        'cover_image' => null,
+        'excerpt' => 'Milliy sanʼat yangiligi',
+        'content' => '',
         'status' => 'published',
-        'is_featured' => false,
-        'sort_order' => 0,
+        'published_at' => date('Y-m-d H:i:s', time() - 60),
+        'lang' => 'ru',
     ]);
     try {
         $results = Search::site('ўзбекистон ' . $marker);
         assert_true(in_array("O'zbekiston madaniyati {$marker}", array_column($results, 'title'), true));
     } finally {
-        Project::forceDelete($id);
+        News::forceDelete($id);
     }
 });
 

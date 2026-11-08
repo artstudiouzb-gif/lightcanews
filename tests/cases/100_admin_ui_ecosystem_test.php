@@ -40,7 +40,6 @@ test('AdminUI: общая навигация и основные редакто�
         APP_ROOT . '/app/Views/admin/header/index.php',
         APP_ROOT . '/app/Views/admin/pages/form.php',
         APP_ROOT . '/app/Views/admin/news/form.php',
-        APP_ROOT . '/app/Views/admin/projects/form.php',
         APP_ROOT . '/app/Views/admin/files/index.php',
         APP_ROOT . '/app/Views/admin/design/index.php',
         APP_ROOT . '/app/Views/admin/auth/login.php',

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Page;
 use App\Models\News;
-use App\Models\Project;
 use App\Controllers\Admin\TrashController;
 
-test('Корзина: очистка всех удалённых элементов (emptyAll) удаляет страницы, новости и проекты', function (): void {
+test('Корзина: очистка всех удалённых элементов (emptyAll) удаляет страницы и новости', function (): void {
     ensure_test_db();
 
     $uid = uniqid();
@@ -34,21 +33,9 @@ test('Корзина: очистка всех удалённых элемент�
     ]);
     News::delete($newsId);
 
-    // Создаём и мягко удаляем проект
-    $projId = Project::create([
-        'title' => 'Мусорный проект',
-        'slug' => 'trash-project-test-' . $uid,
-        'description' => 'Описание',
-        'cover_image' => '',
-        'status' => 'draft',
-        'lang' => 'ru',
-    ]);
-    Project::delete($projId);
-
     // Проверяем, что элементы есть в корзине
     assert_true(count(Page::trashed()) > 0, 'В корзине есть страницы');
     assert_true(count(News::trashed()) > 0, 'В корзине есть новости');
-    assert_true(count(Project::trashed()) > 0, 'В корзине есть проекты');
 
     // Вызываем очистку напрямую, минуя HTTP-обвязку действия.
     //
@@ -63,10 +50,8 @@ test('Корзина: очистка всех удалённых элемент�
 
     assert_true($removed['pages'] >= 1, 'Очистка отчиталась об удалённых страницах');
     assert_true($removed['news'] >= 1, 'Очистка отчиталась об удалённых новостях');
-    assert_true($removed['projects'] >= 1, 'Очистка отчиталась об удалённых проектах');
 
     // Проверяем, что корзина пуста
     assert_same(0, count(Page::trashed()), 'Корзина страниц очищена');
     assert_same(0, count(News::trashed()), 'Корзина новостей очищена');
-    assert_same(0, count(Project::trashed()), 'Корзина проектов очищена');
 });

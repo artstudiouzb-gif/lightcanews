@@ -93,10 +93,10 @@ test('Автоматический ритм: те же правила для с�
     // Демо-контент и импорт собирают страницы своим содержимым, но оформление
     // секций должно подчиняться тем же правилам, что и готовые сборки.
     $pages = [
-        ['hero', 'text', 'projects_list', 'docs_list', 'contact_cards', 'cta'],
+        ['hero', 'text', 'cards_grid', 'docs_list', 'contact_cards', 'cta'],
         ['text'],
         ['table', 'text', 'cta'],
-        ['hero', 'text', 'counters', 'advantages', 'timeline', 'projects_list', 'faq', 'cta'],
+        ['hero', 'text', 'counters', 'advantages', 'timeline', 'news_latest', 'faq', 'cta'],
     ];
 
     foreach ($pages as $types) {
@@ -154,16 +154,15 @@ test('Ритм даёт одно появление на страницу — п
     }
 });
 
-test('Демо-главная и демо-проекты тоже получают появление секций', function () {
-    // Эти две ветки посева шли мимо ритма, и главная — самая заметная страница
-    // демо — показывалась одним снимком: редактор не видел настройки, которая
-    // по умолчанию включена.
+test('Демо-главная тоже получает появление секций', function () {
+    // Ветка посева главной шла мимо ритма, и самая заметная страница демо
+    // показывалась одним снимком: редактор не видел настройки, которая по
+    // умолчанию включена.
     $seeder = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Core/DemoSeeder.php');
     assert_contains('$homeLooks = \\App\\Core\\PagePresets::rhythmFor($homeTypes)', $seeder);
-    assert_contains("rhythmFor(['text', \$type])[1]", $seeder);
-    // Берём только появление: фоны и отступы у главной и проектов свои.
+    // Берём только появление: фоны и отступы у главной свои.
     assert_contains("\$blockData['_reveal'] = \$homeLooks[\$lookIndex]['_reveal']", $seeder);
-    assert_same(2, substr_count($seeder, "array_key_exists('_reveal'"), 'своё появление в данных должно оставаться главнее');
+    assert_same(1, substr_count($seeder, "array_key_exists('_reveal'"), 'своё появление в данных должно оставаться главнее');
 });
 
 test('Сборки страниц: разметка не протекает в поля, которые экранируются', function () {

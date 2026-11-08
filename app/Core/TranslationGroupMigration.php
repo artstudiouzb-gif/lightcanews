@@ -128,8 +128,6 @@ final class TranslationGroupMigration
                     }
 
                     $newSlug = ($orig['slug'] ?? 'page') . '-' . strtolower($lang);
-                    // entity_type переносим как есть: проект — это страница с
-                    // подтипом, и его языковая версия обязана остаться проектом.
                     $ins = $pdo->prepare(
                         "INSERT INTO pages (title, slug, entity_type, meta_title, meta_description, `lead`, cover_image, is_featured, sort_order, status, is_home, layout_type, hide_chrome, transparent_header, lang, translation_group_id, created_at)
                          VALUES (:t, :s, :et, :mt, :md, :l, :ci, :if, :so, :st, 0, :lt, :hc, :th, :lang, :gid, NOW())"

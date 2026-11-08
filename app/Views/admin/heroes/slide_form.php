@@ -281,7 +281,7 @@ $customDuration = (int) $data['duration'];
                         </div>
                         <div class="form-field col-6">
                             <label for="cta_url">Куда ведёт кнопка</label>
-                            <input type="text" id="cta_url" name="cta_url" value="<?= $esc($data['cta_url']) ?>" placeholder="/projects, #forma или /page#forma">
+                            <input type="text" id="cta_url" name="cta_url" value="<?= $esc($data['cta_url']) ?>" placeholder="/news, #forma или /page#forma">
                         </div>
                         <?= $select('cta_style', 'Внешний вид', $ctaStyles, (string) $data['cta_style'], '', 'col-4') ?>
                         <div class="col-4">

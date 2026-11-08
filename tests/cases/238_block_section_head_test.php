@@ -161,14 +161,10 @@ test('Слайдер: пропорция, автопрокрутка и ссыл
     assert_not_contains('data-autoplay', (string) $still['html']);
 });
 
-test('Блоки новостей и проектов знают о ссылке «все» и колонках', function () {
+test('Блоки новостей знают о ссылке «все»', function () {
     $news = BlockTypeRegistry::defaultsFor('news_latest');
     assert_true(array_key_exists('all_text', $news), 'подпись ссылки настраивается');
     assert_true(array_key_exists('all_url', $news), 'адрес ссылки настраивается');
-
-    $projects = BlockTypeRegistry::defaultsFor('projects_list');
-    assert_true(array_key_exists('all_url', $projects));
-    assert_same(3, $projects['columns'], 'по умолчанию три колонки');
 });
 
 test('Контейнер «Колонки»: заголовок и описание над колонками, уровень и выравнивание', function () {

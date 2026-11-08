@@ -70,10 +70,10 @@ test('Пакетное разрешение целей меню совпадае
     );
     $insert->execute([':title' => 'Контакты', ':slug' => 'contacts', ':lang' => 'ru', ':type' => 'page', ':status' => 'published']);
     $insert->execute([':title' => 'Черновик', ':slug' => 'hidden', ':lang' => 'ru', ':type' => 'page', ':status' => 'draft']);
-    $insert->execute([':title' => 'Проект', ':slug' => 'bridge', ':lang' => 'ru', ':type' => 'project', ':status' => 'published']);
+    $insert->execute([':title' => 'О редакции', ':slug' => 'about', ':lang' => 'ru', ':type' => 'page', ':status' => 'published']);
 
-    // Ведущий слэш, дубль, проект с префиксом, черновик и несуществующий адрес.
-    $values = ['contacts', '/contacts', 'projects/bridge', 'hidden', 'nothing-here'];
+    // Ведущий слэш, дубль, вторая страница, черновик и несуществующий адрес.
+    $values = ['contacts', '/contacts', 'about', 'hidden', 'nothing-here'];
 
     Page::forgetMenuTargets();
     $batch = Page::publishedMenuTargets($values, 'ru');
@@ -200,5 +200,5 @@ test('Карта сайта и RSS не выбирают строки целик
     foreach (['SELECT p.*', 'SELECT n.*', 'SELECT pr.*', 'SELECT *'] as $wide) {
         assert_not_contains($wide, $source, $wide . ' возил бы тело каждой записи');
     }
-    assert_same(3, substr_count($source, 'false, self::'), 'все три пакета версий сужены');
+    assert_same(2, substr_count($source, 'false, self::'), 'оба пакета версий сужены');
 });

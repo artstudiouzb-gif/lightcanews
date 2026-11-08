@@ -65,7 +65,7 @@ final class PageController
         }
 
         // Шапка раздела — тот же случай: заголовок, лид и блоки этой страницы
-        // выводятся на /news или /projects, и со своим slug'ом получалось два
+        // выводятся на /news, и со своим slug'ом получалось два
         // адреса с одинаковым содержимым и canonical на самих себя.
         $pageSection = Page::sectionOf($page, $lang);
         if ($pageSection !== '') {

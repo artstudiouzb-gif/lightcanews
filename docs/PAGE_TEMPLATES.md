@@ -114,7 +114,6 @@
 | `tabs` | Вкладки | `variant`, `title`, `description`, `align`, `items` |
 | `testimonials` | Отзывы | `variant`, `title`, `description`, `columns`, `autoplay`, `items` |
 | `counters` | Счётчики | `title`, `card_bg`, `text_color`, `icon_size`, `icon_bg`, `icon_position`, `text_align`, `variant`, `value_size`, `items` |
-| `projects_list` | Проекты | `variant`, `title`, `description`, `all_text`, `all_url`, `columns`, `limit`, `autoplay` |
 | `news_latest` | Последние новости | `title`, `all_text`, `all_url`, `limit`, `category` |
 | `partners` | Партнёры | `title`, `description`, `all_text`, `all_url`, `columns`, `logo_size`, `grayscale`, `autoplay`, `items` |
 | `subscribe` | Подписка | `variant`, `title`, `text`, `image`, `placeholder`, `note`, `button_text` |

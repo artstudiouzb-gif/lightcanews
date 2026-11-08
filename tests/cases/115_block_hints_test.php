@@ -18,9 +18,8 @@ test('Подсказки блока: кнопка без ссылки не мо�
 });
 
 test('Подсказки блока: автоисточник прячет ручные карточки', function () {
-    $hints = BlockHints::forBlock('cards_grid', [
-        'variant' => 'image',
-        'source' => 'projects',
+    $hints = BlockHints::forBlock('media_gallery', [
+        'source' => 'albums',
         'items' => [['title' => 'Раз'], ['title' => 'Два']],
     ]);
     assert_same(1, count($hints));
@@ -28,9 +27,9 @@ test('Подсказки блока: автоисточник прячет ру�
     assert_contains('Вручную', $hints[0], 'сказано, как починить');
 
     // Ручной источник — ничего не теряется.
-    assert_same([], BlockHints::forBlock('cards_grid', ['variant' => 'image', 'source' => 'manual', 'items' => [['title' => 'Раз']]]));
+    assert_same([], BlockHints::forBlock('media_gallery', ['source' => 'manual', 'items' => [['title' => 'Раз']]]));
     // Автоисточник без ручных элементов — обычный сценарий.
-    assert_same([], BlockHints::forBlock('cards_grid', ['variant' => 'image', 'source' => 'projects', 'items' => []]));
+    assert_same([], BlockHints::forBlock('media_gallery', ['source' => 'albums', 'items' => []]));
 });
 
 test('Подсказки блока: слайд без фото и форма без формы', function () {
@@ -66,7 +65,7 @@ test('Подсказки блока: ложных срабатываний не�
     // Блоки-обёртки сами подставляют ссылку на раздел, когда поле пустое.
     assert_same([], BlockHints::forBlock('news_feature', ['all_text' => 'Все новости', 'all_url' => '']));
     assert_same([], BlockHints::forBlock('news_latest', ['all_text' => 'Все новости', 'all_url' => '']));
-    assert_same([], BlockHints::forBlock('cards_grid', ['variant' => 'image', 'source' => 'projects', 'all_text' => 'Все проекты', 'all_url' => '']));
+    assert_same([], BlockHints::forBlock('media_gallery', ['source' => 'albums', 'all_text' => 'Все альбомы', 'all_url' => '']));
 
     // А вот у ручного источника ссылку подставлять некому — предупреждаем.
     $manual = BlockHints::forBlock('cards_grid', ['variant' => 'image', 'source' => 'manual', 'all_text' => 'Все проекты', 'all_url' => '']);

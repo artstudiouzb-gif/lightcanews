@@ -695,8 +695,6 @@ final class BlockController
                 return \App\Core\BlockData\ButtonsBlockNormalizer::normalize($_POST, $locale);
             case 'counters':
                 return CountersBlockNormalizer::normalize($_POST, $locale);
-            case 'projects_list':
-                return BlockFieldSchema::normalize('projects_list', $_POST, $locale);
             case 'news_latest':
                 return array_merge(
                     BlockFieldSchema::normalize('news_latest', $_POST, $locale),
@@ -733,17 +731,7 @@ final class BlockController
                 return HeroBlockNormalizer::normalize($_POST, $locale);
             case 'cards_grid':
             case 'media_gallery':
-                $collected = \App\Core\BlockData\CardsGridBlockNormalizer::normalize($_POST, $locale, $type);
-                // Проекты собираются с обложками, поэтому вариант без фото им
-                // не подходит; но выбор между текстом на фото и текстом под ним
-                // остаётся за редактором. Это зависимость одного поля от
-                // другого — схема такое не выражает.
-                if (($collected['source'] ?? '') === 'projects'
-                    && !in_array($collected['variant'] ?? '', ['image', 'image_below'], true)
-                ) {
-                    $collected['variant'] = 'image';
-                }
-                return $collected;
+                return \App\Core\BlockData\CardsGridBlockNormalizer::normalize($_POST, $locale, $type);
             case 'news_feature':
                 return array_merge(
                     BlockFieldSchema::normalize('news_feature', $_POST, $locale),

@@ -123,12 +123,12 @@ test('Прежний адрес раздела остаётся рабочим �
 
 test('Маршрут записи в корне объявлен последним', function (): void {
     // `/{type}/{slug}` — шаблон из двух произвольных сегментов. Объявленный
-    // выше, он перехватил бы `/news/...`, `/projects/...` и `/albums/...`.
+    // выше, он перехватил бы `/news/...` и `/albums/...`.
     $routes = (string) file_get_contents(APP_ROOT . '/public/index.php');
     $rootShow = strpos($routes, "\$router->get('/{type}/{slug}'");
     assert_true($rootShow !== false, 'маршрут записи в корне объявлен');
 
-    foreach (["'/news/{slug}'", "'/projects/{slug}'", "'/albums/{slug}'", "'/catalog/{type}'", "'/{slug}'"] as $earlier) {
+    foreach (["'/news/{slug}'", "'/albums/{slug}'", "'/catalog/{type}'", "'/{slug}'"] as $earlier) {
         $at = strpos($routes, '$router->get(' . $earlier);
         assert_true($at !== false && $at < $rootShow, "маршрут {$earlier} обязан идти раньше");
     }

@@ -99,7 +99,6 @@ final class SeoAudit
         $noDescription = [];
         foreach ([
             ['pages', "entity_type = 'page'", '/'],
-            ['pages', "entity_type = 'project'", '/projects/'],
             ['news', '1=1', '/news/'],
         ] as [$table, $extra, $prefix]) {
             $rows = $pdo->query(

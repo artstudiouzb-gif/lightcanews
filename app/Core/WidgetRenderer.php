@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Models\News;
-use App\Models\Project;
 use App\Models\Setting;
 use App\Models\Widget;
 
@@ -21,7 +20,6 @@ final class WidgetRenderer
         'latest_news' => ['count' => 5],
         'contacts' => ['show_socials' => true],
         'custom_html' => ['html' => ''],
-        'projects_list' => ['count' => 5],
         'subscribe' => ['text' => 'Eng muhim yangiliklar va tahliliy materiallarni pochtangizga oling.'],
         // Карусель фотографий без подписей и ссылок. Порядок по умолчанию
         // случайный — виджет для того и заводился, чтобы показывать набор
@@ -173,9 +171,6 @@ final class WidgetRenderer
                 // Виджет бывает и внутри блока, то есть в кэше страницы.
                 BlockRenderer::noteBoundary(News::nextScheduledAt());
                 $data['items'] = News::published((int) ($data['count'] ?? 5), 0, $lang);
-                break;
-            case 'projects_list':
-                $data['items'] = array_slice(Project::published($lang), 0, (int) ($data['count'] ?? 5));
                 break;
             case 'instagram_feed':
                 $data['posts'] = InstagramFeed::posts((int) ($data['count'] ?? 6));
