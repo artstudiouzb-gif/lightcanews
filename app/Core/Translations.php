@@ -30,7 +30,7 @@ final class Translations
      * Таблица переводов и её ключ на владельца. Ключ массива — таблица самой
      * сущности, она же используется в адресах админки.
      *
-     * @var array<string, array{0:string|null, 1:string|null}>
+     * @var array<string, array{0:string, 1:string}>
      */
     private const TRANSLATION_TABLES = [
         'news' => ['news_translations', 'news_id'],
@@ -234,9 +234,6 @@ final class Translations
     private static function translationRowsBatch(string $table, array $ids, bool $narrow = false): array
     {
         [$translationTable, $ownerKey] = self::TRANSLATION_TABLES[$table];
-        if ($translationTable === null || $ownerKey === null) {
-            return [];
-        }
         $select = $narrow ? "{$ownerKey}, lang, title" : '*';
 
         $result = [];
@@ -453,9 +450,6 @@ final class Translations
     private static function translationRows(string $table, int $id): array
     {
         [$translationTable, $ownerKey] = self::TRANSLATION_TABLES[$table];
-        if ($translationTable === null || $ownerKey === null) {
-            return [];
-        }
 
         try {
             $stmt = Database::pdo()->prepare(
