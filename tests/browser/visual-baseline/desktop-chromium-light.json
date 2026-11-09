@@ -1,16 +1,6 @@
 {
-  ".site-header": {
-    "backgroundColor": "rgb(255, 255, 255)",
-    "borderBottomColor": "rgb(226, 232, 240)",
-    "boxShadow": "none",
-    "height": "65px"
-  },
-  ".site-header__logo": {
-    "color": "rgb(15, 43, 70)",
-    "fontSize": "20px",
-    "fontWeight": "700",
-    "gap": "12px"
-  },
+  ".site-header": "нет на странице",
+  ".site-header__logo": "нет на странице",
   ".cms-block--cards_grid .section-head__title": {
     "color": "rgb(15, 43, 70)",
     "fontSize": "32px",

@@ -2,7 +2,7 @@
 
 use App\Models\Setting;
 
-$siteName = Setting::get('site_name', 'ASDR');
+$siteName = Setting::get('site_name', 'LightCA.News');
 // Сообщение — HTML из визуального редактора, очищается на выводе (MaintenanceMessage).
 $messageHtml = \App\Core\MaintenanceMessage::html(
     Setting::get('maintenance_message'),

@@ -43,7 +43,8 @@ test('dropdown search is anchored, constrained and restores focus', function ():
     // Источником вида поиска стал конструктор шапки ($searchConfig['style'],
     // где 'modal' = overlay) вместо настроек дизайна. Инвариант тот же: тип
     // сводится строго к inline|overlay и попадает в класс body.
-    assert_contains("\$searchType = (\$searchConfig['style'] ?? 'inline') === 'modal' ? 'overlay' : 'inline';", $header);
+    // Шапка «Портал» всегда ищет всплывающим окном: поля в строке у неё нет.
+    assert_contains("\$searchType = \$isPortalHeader || (\$searchConfig['style'] ?? 'inline') === 'modal' ? 'overlay' : 'inline';", $header);
     assert_contains("\$designBodyClass .= ' design-search-' . \$searchType;", $header);
     assert_contains("\$searchHtml = \$searchType === 'overlay' ? \$overlaySearchHtml : \$inlineSearchHtml;", $header);
     assert_contains("<?php if (\$searchType === 'overlay'): ?>", $header);

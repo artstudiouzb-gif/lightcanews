@@ -91,7 +91,7 @@ final class ProfileController
     {
         $host = (string) (parse_url((string) \App\Core\Config::get('app.url'), PHP_URL_HOST) ?: '');
 
-        return $host !== '' && preg_match('/^[\x21-\x7E]{1,40}$/', $host) ? $host : 'ASDR';
+        return $host !== '' && preg_match('/^[\x21-\x7E]{1,40}$/', $host) ? $host : 'LightCA';
     }
 
     /**

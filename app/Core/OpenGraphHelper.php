@@ -54,7 +54,7 @@ final class OpenGraphHelper
         $siteName = Setting::getLocalized(
             'site_name',
             Locale::current(),
-            'Государственный портал Республики Узбекистан'
+            'LightCA.News'
         );
 
         // Дополнительные изображения живут только в рамках одного рендера.

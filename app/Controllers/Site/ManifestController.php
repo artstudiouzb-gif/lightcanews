@@ -17,7 +17,7 @@ final class ManifestController
     {
         header('Content-Type: application/manifest+json; charset=UTF-8');
 
-        $name = Setting::get('site_name', 'ASDR');
+        $name = Setting::get('site_name', 'LightCA.News');
         $short = SettingsValidator::shortName(Setting::get('pwa_short_name', $name));
         $themeColor = SettingsValidator::hexColor(Setting::get('theme_color', '#1a1a1a'), '#1a1a1a');
         $favicon = Setting::get('favicon_url', '');

@@ -70,8 +70,11 @@ test('поиск в шапке отправляется с клавиатуры 
     // Раскрытие ставит `is-open`/`is-expanded`. Прежний обработчик ждал класса
     // `is-active`, которого никто не ставил, и отменял отправку: поле было
     // открыто, а Enter (он же кнопка «поиск» на экранной клавиатуре) молчал.
+    // Поиск бывает полем в шапке (.site-search) и окном (.site-search-overlay):
+    // у шапки «Портал» и у стиля «модальный» — окно. Проверяется поведение,
+    // а не вид, поэтому годится любой из двух.
     await toggle.click();
-    const input = page.locator('.site-search input[type="search"]').first();
+    const input = page.locator('.site-search input[type="search"], .site-search-overlay input[type="search"]').first();
     await expect(input).toBeVisible();
 
     await input.fill('Sardor');
@@ -82,7 +85,7 @@ test('поиск в шапке отправляется с клавиатуры 
     await page.goto('/');
     await toggle.click();
     await input.fill('Sardor');
-    await page.locator('.site-search__submit').first().click();
+    await page.locator('.site-search__submit, .site-search-overlay__submit').first().click();
     await expect(page).toHaveURL(/[?&]q=Sardor/);
 });
 
@@ -93,7 +96,7 @@ test('пустой запрос из шапки не уводит со стра�
 
     await toggle.click();
     const before = page.url();
-    await page.locator('.site-search input[type="search"]').first().press('Enter');
+    await page.locator('.site-search input[type="search"], .site-search-overlay input[type="search"]').first().press('Enter');
     await page.waitForTimeout(500);
     expect(page.url()).toBe(before);
 });

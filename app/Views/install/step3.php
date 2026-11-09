@@ -26,7 +26,7 @@ require __DIR__ . '/_header.php';
         <label class="u-inline-aa1820469b" for="site_name">Название организации / портала <span class="u-inline-9dd1207e58">*</span></label>
         <div class="install-input-wrap">
             <?= \App\Core\Icon::render('building-bank', 18, 'install-input-icon') ?>
-            <input class="u-inline-1cef6a84e1" type="text" id="site_name" name="site_name" value="Агентство стратегического развития и реформ" required>
+            <input class="u-inline-1cef6a84e1" type="text" id="site_name" name="site_name" value="LightCA.News" required>
         </div>
     </div>
 
