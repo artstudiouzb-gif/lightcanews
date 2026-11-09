@@ -164,11 +164,11 @@
     },
     "/assets/css/blocks/portal-header.css": {
       "path": "/assets/css/blocks/portal-header.min.css",
-      "sourceSha256": "bbf9d496b075af67239966b1fa038862ed86c315d5749fbef8effbdaa118bb47",
-      "sha256": "1da5a9b375274316c6fa2a4fa8fb49b6c2c1f03b8d5d139231ccfd5dc0b6ef12",
-      "raw": 6081,
-      "gzip": 1783,
-      "brotli": 1484
+      "sourceSha256": "f14647f223fbd7e34adebe78e5602e212d28136aa6ef8cade026f75f28e403f6",
+      "sha256": "599043fa54418ae47353dd78b3093f42e7c10a04f6bd0be62a9b7e85d0bc1ce5",
+      "raw": 6116,
+      "gzip": 1791,
+      "brotli": 1496
     },
     "/assets/css/blocks/table.css": {
       "path": "/assets/css/blocks/table.min.css",

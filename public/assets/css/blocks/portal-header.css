@@ -11,6 +11,9 @@
     z-index: 200;
     background: var(--gov-surface);
     border-bottom: 1px solid var(--gov-border);
+    /* Место под выступ плашки: иначе она ложится на первую строку страницы
+       (крошки) и закрывает ссылку «Главная» — axe ловит это как target-size. */
+    margin-bottom: 20px;
 }
 .phdr--sticky { position: sticky; top: 0; }
 /* Полоса стран — во всю ширину экрана, под второй строкой сетки. */
@@ -180,7 +183,7 @@ body .phdr__tools .site-lang-dropdown__trigger { height: 38px; padding: 0 10px; 
     .phdr__countries-label { display: none; }
 }
 @media (max-width: 900px) {
-    .phdr { --phdr-row1: 64px; --phdr-row2: 48px; --phdr-logo-w: 124px; }
+    .phdr { --phdr-row1: 64px; --phdr-row2: 48px; --phdr-logo-w: 124px; margin-bottom: 0; }
     .phdr__grid { column-gap: 12px; padding: 0 16px; }
     .phdr__logo { height: calc(var(--phdr-row1) + 12px); grid-area: 1 / 1; padding: 10px 12px; gap: 0; }
     .phdr__logo-word { font-size: var(--step-4); }
