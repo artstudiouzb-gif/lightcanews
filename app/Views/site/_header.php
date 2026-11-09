@@ -14,7 +14,7 @@ use App\Models\Setting;
 /** @var string $ogType */
 /** @var array<int, string> $preloadImages */
 
-$siteName = Setting::getLocalized('site_name', \App\Core\Locale::current(), 'ASDR');
+$siteName = Setting::getLocalized('site_name', \App\Core\Locale::current(), 'LightCA.News');
 // Логотип: переопределение на текущий язык (Шапка → логотип для языка),
 // иначе общий логотип из Настроек.
 $hcfgAll = \App\Core\HeaderConfig::get();
@@ -70,6 +70,13 @@ $themeColor = Setting::get('theme_color', '');
 $pwaShortName = Setting::get('pwa_short_name', '');
 
 $hcfg = HeaderConfig::get();
+// Вид шапки: «Портал» — плашка логотипа на кромке, рубрики и полоса стран;
+// «Классический» — прежний конструктор с зонами. Стили портала — отдельным
+// файлом: в общем бандле нет запаса, а классическому виду они не нужны.
+$isPortalHeader = ($hcfg['variant'] ?? 'portal') === 'portal';
+if ($isPortalHeader) {
+    \App\Core\AssetCollector::requireCss('portal-header', '/assets/css/blocks/portal-header.css');
+}
 $currentLang = Locale::current();
 
 // --- Логотип ---
@@ -439,7 +446,7 @@ $themeToggle = '<button type="button" class="site-theme-toggle" aria-label="' . 
 $designVals = \App\Core\DesignSettings::current();
 $designBodyClass = \App\Core\DesignSettings::bodyClasses($designVals);
 $searchConfig = (array) ($hcfg['search'] ?? []);
-$searchType = ($searchConfig['style'] ?? 'inline') === 'modal' ? 'overlay' : 'inline';
+$searchType = $isPortalHeader || ($searchConfig['style'] ?? 'inline') === 'modal' ? 'overlay' : 'inline';
 $designBodyClass .= ' design-search-' . $searchType;
 // Подпись поля поиска приходит из конструктора шапки и печаталась как есть,
 // поэтому на узбекской странице оставалась русской — хотя перевод в словаре
@@ -821,6 +828,9 @@ $bodyClass = trim($designBodyClass
 </div>
 <?php endif; ?>
 <?php if (empty($hideChrome)): // лендинг (группа 6) скрывает шапку сайта ?>
+<?php if ($isPortalHeader): ?>
+<?php require __DIR__ . '/_header_portal.php'; ?>
+<?php else: ?>
 <?= $topbarHtml ?>
 <?php
 $hasHeaderContent = trim($zones['left'] . $zones['center'] . $zones['right'] . $topbarHtml) !== '';
@@ -872,6 +882,7 @@ $headerClasses = implode(' ', array_filter($headerClasses));
     </div>
     <?php endif; ?>
 </header>
+<?php endif; ?>
 <?php endif; ?>
 <?php if ($drawerMenu !== ''): ?>
 <?php // Off-canvas меню вынесено за пределы <header>, чтобы position:fixed не

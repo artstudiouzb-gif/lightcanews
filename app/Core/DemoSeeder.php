@@ -481,9 +481,9 @@ final class DemoSeeder
             );
             $insertDefaultHome->execute([
                 ':title' => 'Главная',
-                ':meta_title' => 'Агентство стратегического развития и реформ',
-                ':meta_description' => 'Стратегические инициативы, проекты, новости и аналитические материалы Агентства.',
-                ':lead' => 'Стратегия. Реформы. Развитие.',
+                ':meta_title' => 'LightCA.News',
+                ':meta_description' => 'Новости лёгкой промышленности Центральной Азии.',
+                ':lead' => 'Новости лёгкой промышленности Центральной Азии.',
             ]);
             $c['pages'] += $insertDefaultHome->rowCount();
             $findDefaultHome->execute();
@@ -527,21 +527,13 @@ final class DemoSeeder
             $otherHomeId = $findOtherHome->fetchColumn();
             if ($otherHomeId === false) {
                 $hTitle = $otherLang === 'uz' ? 'Bosh sahifa' : ($otherLang === 'en' ? 'Home' : 'Главная');
-                $hMeta = $otherLang === 'uz'
-                    ? 'Strategik rivojlanish va islohotlar agentligi'
-                    : ($otherLang === 'en'
-                        ? 'Agency for Strategic Development and Reforms'
-                        : 'Агентство стратегического развития и реформ');
+                $hMeta = 'LightCA.News';
                 $hDesc = $otherLang === 'uz'
-                    ? 'Agentlikning strategik tashabbuslari, loyihalari, yangiliklari va tahliliy materiallari.'
+                    ? 'Markaziy Osiyo yengil sanoati yangiliklari.'
                     : ($otherLang === 'en'
-                        ? 'Strategic initiatives, projects, news and analytical materials of the Agency.'
-                        : 'Стратегические инициативы, проекты, новости и аналитические материалы Агентства.');
-                $hLead = $otherLang === 'uz'
-                    ? 'Strategiya. Islohotlar. Taraqqiyot.'
-                    : ($otherLang === 'en'
-                        ? 'Strategy. Reforms. Development.'
-                        : 'Стратегия. Реформы. Развитие.');
+                        ? 'Light industry news from Central Asia.'
+                        : 'Новости лёгкой промышленности Центральной Азии.');
+                $hLead = $hDesc;
 
                 $insertOtherHome = $pdo->prepare(
                     "INSERT INTO pages
@@ -1617,11 +1609,7 @@ final class DemoSeeder
                 $blocks = $data['blocks'] ?? [];
                 $metaTitle = array_key_exists('meta_title', $data)
                     ? (string) $data['meta_title']
-                    : $title . ($lang === 'uz'
-                        ? ' — Strategik rivojlanish va islohotlar agentligi'
-                        : ($lang === 'en'
-                            ? ' — Agency for Strategic Development and Reforms'
-                            : ' — Агентство стратегического развития и реформ'));
+                    : $title . ' — LightCA.News';
                 $metaDescription = array_key_exists('meta_description', $data)
                     ? (string) $data['meta_description']
                     : ($lang === 'uz'

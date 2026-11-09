@@ -50,7 +50,7 @@ final class DigestDispatcher
                 continue;
             }
 
-            $siteName = Setting::getLocalized('site_name', $lang, 'ASDR');
+            $siteName = Setting::getLocalized('site_name', $lang, 'LightCA.News');
             $prefix = Locale::prefix($lang);
             $subject = Digest::buildSubject($siteName, $now->format('d.m.Y'), $lang);
             $body = Digest::buildBody($items, $siteName, $baseUrl, $lang, $prefix);

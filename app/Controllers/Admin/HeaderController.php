@@ -135,6 +135,12 @@ final class HeaderController
             ],
             'borders' => $_POST['borders'] ?? 'full',
             'container_mode' => $_POST['container_mode'] ?? 'full',
+            'variant' => $_POST['header_variant'] ?? 'portal',
+            'portal' => [
+                'tagline' => (string) ($_POST['portal_tagline'] ?? ''),
+                'live_text' => (string) ($_POST['portal_live_text'] ?? ''),
+                'live_url' => (string) ($_POST['portal_live_url'] ?? ''),
+            ],
             'contacts' => [
                 'phone' => $_POST['contact_phone'] ?? '',
                 'email' => $_POST['contact_email'] ?? '',

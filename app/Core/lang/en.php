@@ -497,4 +497,7 @@ return [
     'цель' => 'target',
     'откроется в Instagram' => 'opens on Instagram',
     'Подписаться в Instagram' => 'Follow on Instagram',
+    'Новости лёгкой промышленности Центральной Азии' => 'Central Asian light industry news',
+    'Онлайн' => 'Live',
+    'на главную' => 'home page',
 ];

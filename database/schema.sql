@@ -496,7 +496,8 @@ CREATE TABLE IF NOT EXISTS settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO settings (`key`, `value`) VALUES
-    ('site_name', 'Агентство стратегического развития и реформ'),
+    ('site_name', 'LightCA.News'),
+    ('pwa_short_name', 'LightCA'),
     ('logo_url', ''),
     -- Цвета и шрифты намеренно не сеются: пустое значение означает «взять
     -- значение по умолчанию из кода» (SiteThemeCss), поэтому фирменная пара
