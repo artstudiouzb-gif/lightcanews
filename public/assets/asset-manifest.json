@@ -162,6 +162,14 @@
       "gzip": 1508,
       "brotli": 1253
     },
+    "/assets/css/blocks/portal-header.css": {
+      "path": "/assets/css/blocks/portal-header.min.css",
+      "sourceSha256": "bbf9d496b075af67239966b1fa038862ed86c315d5749fbef8effbdaa118bb47",
+      "sha256": "1da5a9b375274316c6fa2a4fa8fb49b6c2c1f03b8d5d139231ccfd5dc0b6ef12",
+      "raw": 6081,
+      "gzip": 1783,
+      "brotli": 1484
+    },
     "/assets/css/blocks/table.css": {
       "path": "/assets/css/blocks/table.min.css",
       "sourceSha256": "fb1a7bee9a2a8999b0dd70d8e771044f918a0e4d7bd817935d3f79b9ec0800fc",

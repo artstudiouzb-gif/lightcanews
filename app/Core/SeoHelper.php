@@ -96,7 +96,7 @@ final class SeoHelper
      */
     public static function organizationRef(string $appUrl): array
     {
-        $siteName = Setting::getLocalized("site_name", Locale::current(), "Государственный портал Республики Узбекистан");
+        $siteName = Setting::getLocalized("site_name", Locale::current(), "LightCA.News");
         $data = [
             "@type" => "GovernmentOrganization",
             "@id" => self::organizationId($appUrl),

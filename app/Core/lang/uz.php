@@ -498,4 +498,7 @@ return [
     'цель' => 'maqsad',
     'откроется в Instagram' => 'Instagramda ochiladi',
     'Подписаться в Instagram' => 'Instagramda obuna bo‘lish',
+    'Новости лёгкой промышленности Центральной Азии' => 'Markaziy Osiyo yengil sanoati yangiliklari',
+    'Онлайн' => 'Onlayn',
+    'на главную' => 'bosh sahifaga',
 ];

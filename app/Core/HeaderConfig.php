@@ -38,6 +38,13 @@ final class HeaderConfig
         'space' => 'Пробел',
     ];
 
+    /**
+     * Вид шапки. «Портал» — плашка логотипа висит на кромке и выступает за
+     * низ шапки, рядом рубрики и полоса стран (_header_portal.php).
+     * «Классический» — прежний конструктор с зонами.
+     */
+    public const VARIANTS = ['portal', 'classic'];
+
     /** Стили верхней/утилитарной полосы шапки. */
     public const BAR_STYLES = ['navy', 'light', 'teal'];
 
@@ -52,6 +59,11 @@ final class HeaderConfig
     private const REPEATABLE = ['divider', 'spacer', 'space'];
 
     public const DEFAULTS = [
+        'variant' => 'portal',
+        // Шапка «Портал»: подпись в плашке логотипа и кнопка трансляции.
+        // Пустая подпись — общая строка из словаря; кнопка без адреса не
+        // выводится вовсе.
+        'portal' => ['tagline' => '', 'live_text' => '', 'live_url' => ''],
         'logo_position' => 'left',            // left | center
         'logo_width' => 240,                  // px, 40..600
         'logo_height' => 48,                  // px, 20..200
@@ -405,6 +417,16 @@ final class HeaderConfig
         // Сниппет: строгий allowlist-санитайзер (без <script>/on*-обработчиков).
         $snippet = (string) ($config['snippet'] ?? '');
         $result['snippet'] = $snippet !== '' ? HtmlSanitizer::sanitize($snippet) : '';
+
+        $result['variant'] = in_array($config['variant'] ?? '', self::VARIANTS, true)
+            ? (string) $config['variant'] : self::DEFAULTS['variant'];
+        $portal = is_array($config['portal'] ?? null) ? $config['portal'] : [];
+        $liveUrl = trim((string) ($portal['live_url'] ?? ''));
+        $result['portal'] = [
+            'tagline' => mb_substr(trim(strip_tags((string) ($portal['tagline'] ?? ''))), 0, 120),
+            'live_text' => mb_substr(trim(strip_tags((string) ($portal['live_text'] ?? ''))), 0, 24),
+            'live_url' => $liveUrl !== '' && UrlGuard::isSafeLink($liveUrl) ? mb_substr($liveUrl, 0, 500) : '',
+        ];
 
         $styles = (array) ($config['styles'] ?? []);
         $boundedInt = static function (mixed $value, int $default, int $min, int $max): int {

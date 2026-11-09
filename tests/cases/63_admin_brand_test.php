@@ -12,8 +12,8 @@ test('AdminBrand: значения по умолчанию', function () {
     Setting::set('admin_brand_logo', '');
     Setting::set('admin_brand_accent', '');
 
-    assert_same('ASDR', AdminBrand::name());
-    assert_same('A', AdminBrand::letter());
+    assert_same('LightCA.News', AdminBrand::name());
+    assert_same('L', AdminBrand::letter());
     assert_true(AdminBrand::logo() === null, 'логотип не задан');
     assert_same('#2271b1', AdminBrand::accent());
 

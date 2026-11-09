@@ -13,7 +13,7 @@ use App\Models\Setting;
  */
 final class AdminBrand
 {
-    public const DEFAULT_NAME = 'ASDR';
+    public const DEFAULT_NAME = 'LightCA.News';
     public const DEFAULT_ACCENT = '#2271b1';
 
     /** Название панели для topbar и <title>. */

@@ -149,6 +149,40 @@ $heightSelect = function (string $name, string $current): string {
 
         <!-- MODULE 1: ARCHITECTURE & GLASSMORPHISM -->
         <div class="admin-tab-content" id="tab-hdr-arch" role="tabpanel" aria-labelledby="hdr-tab-arch">
+            <?php
+            $hvariant = $config['variant'] ?? 'portal';
+            $portalCfg = (array) ($config['portal'] ?? []);
+            ?>
+            <div class="header-builder__group form-card">
+                <h3>Вид шапки</h3>
+                <p class="form-hint">«Портал» — плашка логотипа на кромке шапки, рубрики из основного меню и полоса стран. Остальные настройки этой страницы относятся к классическому виду.</p>
+                <div class="hdr-card-grid">
+                    <label class="hdr-select-card <?= $hvariant === 'portal' ? 'is-selected' : '' ?>">
+                        <input type="radio" name="header_variant" value="portal" <?= $hvariant === 'portal' ? 'checked' : '' ?>>
+                        <span class="hdr-select-card__title">Портал</span>
+                        <span class="hdr-select-card__desc">Плашка логотипа выступает за низ шапки; рубрики, «Онлайн», языки, поиск; ниже — страны.</span>
+                    </label>
+                    <label class="hdr-select-card <?= $hvariant === 'classic' ? 'is-selected' : '' ?>">
+                        <input type="radio" name="header_variant" value="classic" <?= $hvariant === 'classic' ? 'checked' : '' ?>>
+                        <span class="hdr-select-card__title">Классический</span>
+                        <span class="hdr-select-card__desc">Конструктор с зонами, полосами и стилями меню ниже.</span>
+                    </label>
+                </div>
+                <div class="form-field">
+                    <label for="portal_tagline">Подпись в плашке логотипа</label>
+                    <input type="text" id="portal_tagline" name="portal_tagline" maxlength="120" value="<?= htmlspecialchars((string) ($portalCfg['tagline'] ?? ''), ENT_QUOTES) ?>" placeholder="Новости лёгкой промышленности Центральной Азии">
+                    <span class="form-hint">Пусто — общая подпись, она переводится на все языки сайта.</span>
+                </div>
+                <div class="form-field">
+                    <label for="portal_live_url">Кнопка «Онлайн» — ссылка</label>
+                    <input type="text" id="portal_live_url" name="portal_live_url" maxlength="500" value="<?= htmlspecialchars((string) ($portalCfg['live_url'] ?? ''), ENT_QUOTES) ?>" placeholder="/news/textile-expo-online">
+                    <span class="form-hint">Ссылка на трансляцию или онлайн-материал. Пусто — кнопки нет.</span>
+                </div>
+                <div class="form-field">
+                    <label for="portal_live_text">Кнопка «Онлайн» — текст</label>
+                    <input type="text" id="portal_live_text" name="portal_live_text" maxlength="24" value="<?= htmlspecialchars((string) ($portalCfg['live_text'] ?? ''), ENT_QUOTES) ?>" placeholder="Онлайн">
+                </div>
+            </div>
             <!-- Container Mode Card Selector -->
             <div class="header-builder__group form-card u-inline-8cddc29a69">
                 <h3 class="u-inline-0e0c39e056">
