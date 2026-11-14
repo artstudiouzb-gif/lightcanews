@@ -213,3 +213,14 @@ test('Портал: снимки статьи идут галереей с ми�
     assert_contains('Цех Пресс-служба', $html);
     assert_contains('href="/uploads/public/two.jpg" data-pt-gal-zoom', $html, 'кадр без скрипта ведёт на файл');
 });
+
+test('Портал: ссылки языкового меню переписывают запомненный язык', function (): void {
+    $active = array_map(static fn (array $l): string => (string) $l['code'], \App\Models\Language::site());
+    if (count($active) < 2) {
+        return;
+    }
+    $_SERVER['REQUEST_URI'] = '/';
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    // Без ?_lang= ссылка на основной язык уводила обратно на язык из cookie.
+    assert_contains('?' . \App\Core\LocalePreference::QUERY . '=ru"', $html);
+});
