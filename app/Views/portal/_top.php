@@ -77,7 +77,15 @@ foreach (Language::site() as $language) {
     $langLinks[] = [
         'code' => $code,
         'label' => Language::shortLabel($language),
-        'url' => Locale::url(Locale::alternatePath($code), $code),
+        'url' => (static function (string $code): string {
+            // `?_lang=` перезаписывает запомненный язык (cookie site_lang):
+            // без него ссылка на основной язык (без префикса) уводила обратно
+            // на язык из cookie. Материала нет на выбранном языке — адрес тот
+            // же, и страница сама скажет, что перевода нет.
+            $href = Locale::url(Locale::alternatePath($code), $code) . '?' . \App\Core\LocalePreference::QUERY . '=' . rawurlencode($code);
+            // На узбекский возвращаемся в латинице, как прежний переключатель.
+            return $code === 'uz' && \App\Core\UzCyrillic::enabled() ? '/script/latn?to=' . rawurlencode($href) : $href;
+        })($code),
         'current' => $code === $currentLang,
     ];
 }
