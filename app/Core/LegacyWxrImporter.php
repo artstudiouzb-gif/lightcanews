@@ -51,6 +51,13 @@ final class LegacyWxrImporter
             }
         }
 
+        // Рубрики сайта целиком: номер → slug. Главную рубрику записи SEO-модуль
+        // хранит номером, а у самой записи рубрики названы slug'ом.
+        $termSlugs = [];
+        foreach ($channel->children($wp)->category as $term) {
+            $termSlugs[(int) $term->term_id] = (string) $term->category_nicename;
+        }
+
         $attachments = [];
         $posts = [];
         $comments = 0;
@@ -90,10 +97,20 @@ final class LegacyWxrImporter
             }
 
             $thumbId = 0;
+            $primaryTerm = 0;
             foreach ($w->postmeta as $meta) {
-                if ((string) $meta->meta_key === '_thumbnail_id') {
+                $key = (string) $meta->meta_key;
+                if ($key === '_thumbnail_id') {
                     $thumbId = (int) $meta->meta_value;
+                } elseif ($key === '_yoast_wpseo_primary_category') {
+                    $primaryTerm = (int) $meta->meta_value;
                 }
+            }
+            // Главная рубрика («Primary» в старой админке) идёт первой: рубрика
+            // у новости здесь одна, и берётся первая подходящая.
+            $primarySlug = $termSlugs[$primaryTerm] ?? '';
+            if ($primarySlug !== '' && isset($categories[$primarySlug])) {
+                $categories = [$primarySlug => $categories[$primarySlug]] + $categories;
             }
 
             $link = (string) $item->link;
