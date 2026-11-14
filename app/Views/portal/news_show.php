@@ -54,6 +54,38 @@ $keyPoints = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n
 $docs = json_decode((string) ($news['docs'] ?? '[]'), true);
 $docs = is_array($docs) ? $docs : [];
 $videoId = \App\Core\Video::youtubeId($news['video_url'] ?? null);
+// Ролик не с YouTube: файл (mp4/webm) играет встроенный плеер, остальное —
+// ссылкой. Ссылка проверяется: адрес пришёл из формы.
+$videoUrl = trim((string) ($news['video_url'] ?? ''));
+$videoUrl = $videoUrl !== '' && \App\Core\UrlGuard::isSafeLink($videoUrl) ? $videoUrl : '';
+$videoFile = $videoId === null && $videoUrl !== '' && preg_match('~\.(mp4|webm|m4v)(\?|$)~i', $videoUrl) === 1;
+$audioUrl = trim((string) ($news['audio_url'] ?? ''));
+if ($audioUrl !== '' && (str_starts_with($audioUrl, '//') || !\App\Core\UrlGuard::isSafeMedia($audioUrl))) {
+    $audioUrl = '';
+}
+$audioTitle = trim((string) ($news['audio_title'] ?? ''));
+$sourceNote = trim((string) ($news['source_note'] ?? ''));
+$eventMeta = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) ($news['event_meta'] ?? '')) ?: [])));
+$timeline = json_decode((string) ($news['timeline_json'] ?? ''), true);
+$timeline = is_array($timeline) ? array_values(array_filter($timeline, static fn ($e): bool => is_array($e) && trim((string) ($e['title'] ?? '')) !== '')) : [];
+// Пресс-релиз старых записей — в общий список документов, если его там нет.
+$pressUrl = trim((string) ($news['press_release_url'] ?? ''));
+if ($pressUrl !== '' && !in_array($pressUrl, array_map(static fn ($d): string => is_array($d) ? trim((string) ($d['url'] ?? '')) : '', $docs), true)) {
+    $docs[] = ['title' => t('Пресс-релиз'), 'url' => $pressUrl];
+}
+// Опрос: запись в news_polls, вопрос и варианты перевода — из полей новости.
+$poll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $news['id']) : null;
+if (trim((string) ($news['poll_question'] ?? '')) !== '') {
+    $pollOptions = is_array($news['poll_options_json'] ?? null) ? $news['poll_options_json'] : (json_decode((string) ($news['poll_options_json'] ?? ''), true) ?: []);
+    $poll = ($poll ?? ['id' => (int) $news['id'], 'options' => []]);
+    $poll['question'] = (string) $news['poll_question'];
+    if ($pollOptions !== []) {
+        $poll['options'] = $pollOptions;
+    }
+}
+if ($poll !== null && (trim((string) ($poll['question'] ?? '')) === '' || (array) ($poll['options'] ?? []) === [])) {
+    $poll = null;
+}
 
 // Обложка и её подпись — из записи галереи с тем же путём.
 $cover = $ogImage;
@@ -67,6 +99,24 @@ foreach ($gallery as $image) {
         $extraPhotos[] = $image;
     }
 }
+// Кадры галереи: обложка первой, затем остальные снимки новости. Когда у
+// новости есть ролик, он стоит наверху, а галерея из прочих снимков — под
+// текстом; без ролика галерея занимает место обложки.
+$photoSlide = static fn (array $img, string $path, string $caption): array => [
+    'path' => $path,
+    'alt' => (string) ($img['alt'] ?? ''),
+    'caption' => $caption,
+    'focal_x' => isset($img['focal_x']) ? (int) $img['focal_x'] : null,
+    'focal_y' => isset($img['focal_y']) ? (int) $img['focal_y'] : null,
+];
+$extraSlides = array_map(
+    static fn (array $img): array => $photoSlide($img, (string) $img['path'], trim((string) ($img['caption'] ?? '') . ' ' . (string) ($img['credit'] ?? ''))),
+    $extraPhotos
+);
+$coverSlide = $cover !== '' ? $photoSlide(['alt' => (string) $news['title'], 'focal_x' => $news['focal_x'] ?? null, 'focal_y' => $news['focal_y'] ?? null], $cover, $coverCaption) : null;
+$hasVideo = $videoId !== null || $videoFile;
+$topSlides = !$hasVideo && $coverSlide !== null && $extraSlides !== [] ? array_merge([$coverSlide], $extraSlides) : [];
+$bottomSlides = $topSlides === [] ? $extraSlides : [];
 
 $related = array_slice(Portal::cards($related, $lang), 0, 4);
 $next = $nextNews !== null ? (Portal::cards([$nextNews], $lang)[0] ?? null) : null;
@@ -81,6 +131,7 @@ $crumbs = [
     ['label' => (string) $news['title']],
 ];
 
+$adPlace = 'news_show';
 require __DIR__ . '/_top.php';
 ?>
 <div class="pt-wrap pt-art">
@@ -123,11 +174,28 @@ require __DIR__ . '/_top.php';
                     <iframe src="https://www.youtube-nocookie.com/embed/<?= htmlspecialchars($videoId, ENT_QUOTES) ?>" title="<?= htmlspecialchars((string) $news['title'], ENT_QUOTES) ?>" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </figure>
+        <?php elseif ($videoFile): ?>
+            <figure class="pt-art__figure">
+                <video class="pt-art__video-file" src="<?= htmlspecialchars($videoUrl, ENT_QUOTES) ?>" controls preload="metadata"<?= $cover !== '' ? ' poster="' . htmlspecialchars($cover, ENT_QUOTES) . '"' : '' ?>></video>
+            </figure>
+        <?php elseif ($topSlides !== []): ?>
+            <?php $gallerySlides = $topSlides; $galleryEager = true; require __DIR__ . '/_gallery.php'; ?>
         <?php elseif ($cover !== ''): ?>
             <figure class="pt-art__figure">
                 <div class="pt-ph pt-ph--16x9"><?= Media::picture($cover, (string) $news['title'], isset($news['focal_x']) ? (int) $news['focal_x'] : null, isset($news['focal_y']) ? (int) $news['focal_y'] : null, '', false, '(max-width: 760px) 100vw, 760px', true) ?></div>
                 <?php if ($coverCaption !== ''): ?><figcaption><?= htmlspecialchars($coverCaption, ENT_QUOTES) ?></figcaption><?php endif; ?>
             </figure>
+        <?php endif; ?>
+
+        <?php if ($videoUrl !== '' && $videoId === null && !$videoFile): ?>
+            <p><a class="pt-btn pt-btn--brand" href="<?= htmlspecialchars($videoUrl, ENT_QUOTES) ?>" target="_blank" rel="noopener"><?= htmlspecialchars(t('Смотреть видео'), ENT_QUOTES) ?></a></p>
+        <?php endif; ?>
+
+        <?php if ($audioUrl !== ''): ?>
+            <div class="pt-audio">
+                <p class="pt-audio__head"><span class="pt-audio__badge"><?= htmlspecialchars(t('Аудиозапись'), ENT_QUOTES) ?></span> <?= htmlspecialchars($audioTitle !== '' ? $audioTitle : t('Аудиоверсия новости'), ENT_QUOTES) ?></p>
+                <audio src="<?= htmlspecialchars($audioUrl, ENT_QUOTES) ?>" controls preload="metadata"></audio>
+            </div>
         <?php endif; ?>
 
         <?php if ($keyPoints !== []): ?>
@@ -140,17 +208,26 @@ require __DIR__ . '/_top.php';
         <?php endif; ?>
 
         <div class="pt-art__body rich-content"><?= $contentHtml ?></div>
+        <?php if ($sourceNote !== ''): ?><p class="pt-art__source"><?= htmlspecialchars($sourceNote, ENT_QUOTES) ?></p><?php endif; ?>
 
-        <?php if ($extraPhotos !== []): ?>
-            <div class="pt-art__photos">
-                <?php foreach ($extraPhotos as $photo): ?>
-                    <figure class="pt-art__figure">
-                        <div class="pt-ph"><?= Media::picture((string) $photo['path'], (string) ($photo['alt'] ?? ''), isset($photo['focal_x']) ? (int) $photo['focal_x'] : null, isset($photo['focal_y']) ? (int) $photo['focal_y'] : null, '', true, '(max-width: 760px) 100vw, 380px') ?></div>
-                        <?php $photoCaption = trim((string) ($photo['caption'] ?? '') . ' ' . (string) ($photo['credit'] ?? '')); ?>
-                        <?php if ($photoCaption !== ''): ?><figcaption><?= htmlspecialchars($photoCaption, ENT_QUOTES) ?></figcaption><?php endif; ?>
-                    </figure>
-                <?php endforeach; ?>
-            </div>
+        <?php if ($timeline !== []): ?>
+            <section class="pt-timeline" aria-labelledby="pt-timeline-title">
+                <h2 class="pt-art__docs-title" id="pt-timeline-title"><?= htmlspecialchars(t('Хронология событий'), ENT_QUOTES) ?></h2>
+                <ol>
+                    <?php foreach ($timeline as $evt): ?>
+                        <li>
+                            <?php if (trim((string) ($evt['date'] ?? '')) !== ''): ?><span class="pt-timeline__date"><?= htmlspecialchars((string) $evt['date'], ENT_QUOTES) ?></span><?php endif; ?>
+                            <span class="pt-timeline__title"><?= htmlspecialchars((string) $evt['title'], ENT_QUOTES) ?></span>
+                            <?php if (trim((string) ($evt['text'] ?? '')) !== ''): ?><span class="pt-timeline__text"><?= htmlspecialchars((string) $evt['text'], ENT_QUOTES) ?></span><?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            </section>
+        <?php endif; ?>
+        <?php $adKey = 'mid'; require __DIR__ . '/_ad.php'; ?>
+
+        <?php if ($bottomSlides !== []): ?>
+            <?php $gallerySlides = $bottomSlides; $galleryEager = false; require __DIR__ . '/_gallery.php'; ?>
         <?php endif; ?>
 
         <?php if ($docs !== []): ?>
@@ -185,6 +262,45 @@ require __DIR__ . '/_top.php';
     </article>
 
     <aside class="pt-art__side">
+        <?php $adKey = 'article'; require __DIR__ . '/_ad.php'; ?>
+        <?php if ($eventMeta !== []): ?>
+        <div class="pt-side-card">
+            <div class="pt-side-card__head"><?= htmlspecialchars(t('О мероприятии'), ENT_QUOTES) ?></div>
+            <dl class="pt-event">
+                <?php foreach ($eventMeta as $line): ?>
+                    <?php $eventParts = array_map('trim', explode(':', $line, 2)); ?>
+                    <div><?php if (count($eventParts) === 2): ?><dt><?= htmlspecialchars($eventParts[0], ENT_QUOTES) ?></dt><dd><?= htmlspecialchars($eventParts[1], ENT_QUOTES) ?></dd><?php else: ?><dd><?= htmlspecialchars($eventParts[0], ENT_QUOTES) ?></dd><?php endif; ?></div>
+                <?php endforeach; ?>
+            </dl>
+        </div>
+        <?php endif; ?>
+        <?php if ($poll !== null): ?>
+            <?php
+            $pollToken = \App\Core\Csrf::token(); // поднимает сессию: голос узнаётся по ней
+            $pollVoter = hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . (string) session_id());
+            $pollVoted = \App\Models\NewsPoll::hasVoted((int) $poll['id'], $pollVoter);
+            $pollResults = \App\Models\NewsPoll::getResults((int) $poll['id'], (array) $poll['options']);
+            ?>
+        <div class="pt-side-card pt-poll" data-pt-poll="<?= (int) $poll['id'] ?>">
+            <div class="pt-side-card__head"><?= htmlspecialchars(t('Опрос читателей'), ENT_QUOTES) ?></div>
+            <p class="pt-poll__q"><?= htmlspecialchars((string) $poll['question'], ENT_QUOTES) ?></p>
+            <form class="pt-poll__form"<?= $pollVoted ? ' hidden' : '' ?>>
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($pollToken, ENT_QUOTES) ?>">
+                <?php foreach ((array) $poll['options'] as $idx => $optLabel): ?>
+                    <label class="pt-poll__opt"><input type="radio" name="poll_option" value="<?= (int) $idx ?>" required> <?= htmlspecialchars((string) $optLabel, ENT_QUOTES) ?></label>
+                <?php endforeach; ?>
+                <button type="submit" class="pt-btn pt-btn--brand"><?= htmlspecialchars(t('Голосовать'), ENT_QUOTES) ?></button>
+            </form>
+            <div class="pt-poll__results" aria-live="polite"<?= $pollVoted ? '' : ' hidden' ?> data-total-label="<?= htmlspecialchars(t('Всего голосов:'), ENT_QUOTES) ?>">
+                <?php if ($pollVoted): ?>
+                    <?php foreach ($pollResults['items'] as $resItem): ?>
+                        <div class="pt-poll__row"><span><?= htmlspecialchars((string) $resItem['label'], ENT_QUOTES) ?></span><b><?= (float) $resItem['percent'] ?>%</b><progress max="100" value="<?= (float) $resItem['percent'] ?>"></progress></div>
+                    <?php endforeach; ?>
+                    <p class="pt-meta"><?= htmlspecialchars(t('Всего голосов:'), ENT_QUOTES) ?> <?= (int) $pollResults['total'] ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php if ($related !== []): ?>
         <div class="pt-side-card">
             <div class="pt-side-card__head"><?= htmlspecialchars(t('Читайте также'), ENT_QUOTES) ?></div>
@@ -208,6 +324,7 @@ require __DIR__ . '/_top.php';
             </ol>
         </div>
         <?php endif; ?>
+        <?php $adKey = 'partner'; require __DIR__ . '/_ad.php'; ?>
     </aside>
 </div>
 <?php $newsOrg = \App\Core\SeoHelper::organizationRef($base); ?>

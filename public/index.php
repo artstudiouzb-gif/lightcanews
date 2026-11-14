@@ -323,6 +323,8 @@ $router->post('/admin/header', [AdminHeaderController::class, 'update']);
 // --- Admin: конструктор подвала ---
 $router->get('/admin/footer', [\App\Controllers\Admin\FooterController::class, 'index']);
 $router->post('/admin/footer', [\App\Controllers\Admin\FooterController::class, 'update']);
+$router->get('/admin/ads', [\App\Controllers\Admin\AdController::class, 'index']);
+$router->post('/admin/ads', [\App\Controllers\Admin\AdController::class, 'update']);
 
 // --- Admin: производительность ---
 $router->get('/admin/update', [\App\Controllers\Admin\UpdateController::class, 'index']);
