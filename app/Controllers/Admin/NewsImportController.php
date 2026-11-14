@@ -214,6 +214,7 @@ final class NewsImportController
             'planned_news' => count($plan['groups']),
             'translations' => $translations,
             'unresolved' => count($plan['unresolved']),
+            'unresolved_ids' => array_map(static fn (array $p): int => (int) ($p['id'] ?? 0), $plan['unresolved']),
             'to_import' => (int) ($dry['imported'] ?? 0),
             'already_exists' => (int) ($dry['skipped'] ?? 0),
             'attachments' => count($data['attachments']),
@@ -276,8 +277,8 @@ final class NewsImportController
             $this->json(['ok' => false, 'error' => 'Сначала загрузите и проверьте XML.'], 409);
         }
         $report = is_array($state['report'] ?? null) ? $state['report'] : [];
-        if ((int) ($report['unresolved'] ?? 1) !== 0 || !empty($report['errors'])) {
-            $this->json(['ok' => false, 'error' => 'Импорт заблокирован: в отчёте проверки есть ошибки или неопределённые переводы.'], 409);
+        if (!empty($report['errors'])) {
+            $this->json(['ok' => false, 'error' => 'Импорт заблокирован: в отчёте проверки есть ошибки.'], 409);
         }
         if (!hash_equals((string) ($state['sha256'] ?? ''), hash_file('sha256', $path) ?: '')) {
             self::forgetToken($token);

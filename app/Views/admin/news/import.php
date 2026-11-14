@@ -75,7 +75,7 @@ require __DIR__ . '/../layout/header.php';
 
         <div class="news-import__notice" data-report-ok hidden>
             <?= AdminUi::icon('circle-check', 20) ?>
-            <div><strong>Файл готов к импорту</strong><span>Все переводы связаны однозначно. Можно переходить к импорту.</span></div>
+            <div><strong>Файл готов к импорту</strong><span data-report-ok-text>Все переводы связаны однозначно. Можно переходить к импорту.</span></div>
         </div>
         <div class="news-import__notice news-import__notice--error" data-report-error hidden>
             <?= AdminUi::icon('alert-triangle', 20) ?>
