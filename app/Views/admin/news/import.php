@@ -91,6 +91,11 @@ require __DIR__ . '/../layout/header.php';
                 </select>
                 <span class="form-hint">Исходные даты публикации сохраняются в обоих режимах.</span>
             </div>
+            <div class="form-field">
+                <label for="import_photos">Фото загружать для последних новостей</label>
+                <input type="number" id="import_photos" min="0" step="1" value="0" inputmode="numeric" data-import-photos>
+                <span class="form-hint">0 — фото у всех новостей. Число N — снимки (обложка, фото в тексте, галерея) скачиваются только у N самых свежих новостей, у более старых переносится один текст, а снимки из него убираются. Экономит время импорта и место на диске.</span>
+            </div>
             <label class="news-import__check">
                 <input type="checkbox" checked data-import-backup>
                 <span><strong>Создать резервную копию перед импортом</strong><small>Снимается отдельным шагом, до первого пакета. На большой базе дамп может не уложиться в лимит времени сервера — тогда импорт можно продолжить без копии или снять её заранее в «Базах данных».</small></span>

@@ -23,6 +23,7 @@
     var report = null;
     var busy = false;
     var runStatus = 'draft';
+    var runPhotos = '0';
     var csrfInput = form ? form.querySelector('input[type="hidden"]') : null;
 
     function csrf(formData) {
@@ -255,6 +256,7 @@
             var fd = new FormData();
             fd.append('token', token);
             fd.append('status', status);
+            fd.append('photos_limit', runPhotos);
             var result = await jsonPost('run', fd);
             var batchErrors = result.batch && Array.isArray(result.batch.errors) ? result.batch.errors : [];
             if (batchErrors.length) {
@@ -307,6 +309,8 @@
         startButton.addEventListener('click', async function () {
             if (busy || !token || !report) return;
             runStatus = root.querySelector('[data-import-status]').value;
+            var photosInput = root.querySelector('[data-import-photos]');
+            runPhotos = String(Math.max(0, parseInt(photosInput ? photosInput.value : '0', 10) || 0));
             var backup = root.querySelector('[data-import-backup]').checked;
             if (runStatus === 'published' && !window.confirm('Новые записи будут опубликованы сразу. Продолжить?')) return;
             clearError();
