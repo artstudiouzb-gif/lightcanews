@@ -522,4 +522,9 @@ return [
     'Также в центре внимания' => 'Shuningdek diqqat markazida',
     'Читать' => 'O‘qish',
     'Язык' => 'Til',
+    'Главное' => 'Asosiysi',
+    'Прочитано' => 'O‘qildi',
+    'Содержание' => 'Mundarija',
+    'Читайте также' => 'Shuningdek o‘qing',
+    'страница %d' => '%d-sahifa',
 ];

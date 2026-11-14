@@ -68,6 +68,9 @@ test('News: sidebar_layout saves, updates and defaults to right_sidebar', functi
 test('News: frontend layout rendering with and without sidebar', function () {
     ensure_test_db();
     $pdo = Database::pdo();
+    // Проверяется прежний шаблон новости: он остаётся запасным выходом
+    // (public_template = classic), у портала своя статья и свой тест 443.
+    \App\Models\Setting::set('public_template', 'classic');
 
     // Создаём активный виджет в правом сайдбаре, чтобы renderSidebar вернул непустую строку
     $wid = \App\Models\Widget::create([

@@ -1,0 +1,207 @@
+/* ==========================================================================
+   LightCA.News — блоки конструктора в шаблоне портала.
+   Подключается только на страницах из блоков. Две части:
+   1) мост токенов: у части типов свои файлы стилей (таблица, врезка, кнопки,
+      диаграмма, показатели, медиагалерея, изображение), и они читают токены
+      темы — здесь эти имена получают значения портала;
+   2) оформление типов, чьи стили жили в бандле прежней темы (текст, FAQ,
+      призыв к действию, контакты, форма, подписка, новости).
+   ========================================================================== */
+
+:root {
+    --gov-teal: var(--brand);
+    --gov-teal-text: var(--link);
+    --gov-teal-on-light: var(--link);
+    --accent-fill-strong: var(--brand);
+    --on-accent: #fff;
+    --gov-navy: var(--brand-deep);
+    --gov-surface: var(--surface);
+    --gov-bg: var(--ground);
+    --gov-bg-alt: var(--paper);
+    --gov-border: var(--rule);
+    --gov-ink: var(--ink);
+    --gov-muted: var(--ink-3);
+    --gov-title: var(--ink);
+    --section-fg: var(--ink);
+    --section-title-fg: var(--ink);
+    --section-muted-fg: var(--ink-3);
+    --section-link-fg: var(--link);
+    --font-family: var(--sans);
+    --font-heading: var(--sans);
+    --heading-font-weight: 800;
+    --radius: 2px;
+    --radius-sm: 2px;
+    --radius-xs: 2px;
+    --radius-lg: 2px;
+    --radius-pill: 2px;
+    --btn-radius: 2px;
+    --card-shadow: none;
+    --shadow-hover: none;
+    --shadow-control: none;
+    --card-gap: 24px;
+    --editorial-reading: 760px;
+    --section-space-s: 16px;
+    --section-space-l: 32px;
+    --step--4: .75rem; --step--3: .8125rem; --step--2: .875rem; --step--1: .95rem;
+    --step-0: 1rem; --step-1: 1.125rem; --step-2: 1.25rem; --step-3: 1.375rem;
+    --step-4: 1.5rem; --step-5: 1.8rem; --step-6: 2.1rem; --step-7: 2.4rem;
+    --step-8: 2.8rem; --step-9: 3.2rem; --step-10: 3.6rem; --step-11: 4rem; --step-12: 4.6rem;
+}
+
+/* --- Каркас страницы ---------------------------------------------------- */
+.pt-page { padding-block: 22px 56px; }
+.pt-pagehead { padding-bottom: 18px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); max-width: 900px; }
+.pt-pagehead__title { font-size: clamp(1.85rem, 3vw, 2.55rem); line-height: 1.14; font-weight: 800; }
+.pt-pagehead__lead { margin: 12px 0 0; font-family: var(--serif); font-size: 1.2rem; line-height: 1.55; color: var(--ink-2); max-width: 64ch; }
+.pt-page__grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; align-items: start; }
+.pt-page__aside { position: sticky; top: calc(var(--hdr-row1) + var(--hdr-row2) + 24px); display: grid; gap: 20px; }
+.pt-page__aside > * { border: 1px solid var(--rule); background: var(--surface); padding: 16px; border-radius: var(--r); }
+@media (max-width: 1080px) { .pt-page__grid { grid-template-columns: minmax(0, 1fr); } .pt-page__aside { position: static; } }
+
+/* Каждый блок — секция с ритмом 32px; разделять их линейками, а не подложками. */
+.pt-blocks .cms-block { padding-block: 32px 0; }
+.pt-blocks .cms-block:first-child { padding-top: 24px; }
+.pt-blocks .cms-block--space-none { padding-top: 0; }
+.pt-blocks .container { max-width: none; padding: 0; margin: 0; }
+.pt-blocks .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* --- Шапка секции ---------------------------------------------------------- */
+.pt-blocks .section-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px 16px; border-bottom: 1px solid var(--rule); padding-bottom: 12px; margin-bottom: 22px; }
+.pt-blocks .section-head__copy { display: grid; gap: 6px; min-width: 0; }
+.pt-blocks .section-head__title,
+.pt-blocks .block-text__title,
+.pt-blocks .block-cta h2,
+.pt-blocks .subscribe-block__title { margin: 0; font-size: 1.45rem; line-height: 1.15; font-weight: 800; color: var(--ink); border-left: 4px solid var(--brand); padding-left: 12px; }
+/* Заголовок без обёртки .section-head (таблица, диаграмма, врезка, контакты)
+   получает ту же линейку снизу сам. */
+.pt-blocks .cms-block > div > .section-head__title { padding-bottom: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--rule); border-left: 4px solid var(--brand); }
+.pt-blocks .section-head__desc, .pt-blocks .section-head__text { margin: 0; color: var(--ink-2); font-size: .95rem; max-width: 70ch; }
+.pt-blocks .section-head__kicker { font-size: .74rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--link); }
+.pt-blocks .section-head__all { color: var(--link); font-size: .85rem; font-weight: 700; display: inline-flex; gap: 6px; }
+.pt-blocks .section-head__all:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pt-blocks .tx-mark { color: var(--link); }
+
+/* --- Текст ------------------------------------------------------------------- */
+.pt-blocks .block-text__layout { display: grid; gap: 28px; }
+.pt-blocks .block-text__title { margin-bottom: 18px; }
+.pt-blocks .block-text__quote { margin: 0; padding: 18px 22px; border-left: 4px solid var(--signal); background: var(--paper); font-family: var(--serif); font-size: 1.2rem; line-height: 1.5; }
+.pt-blocks .block-text__quote--card { border-left: 0; }
+.pt-blocks .block-text--spotlight .block-text__layout { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 720px) { .pt-blocks .block-text--spotlight .block-text__layout { grid-template-columns: minmax(0, 1fr); } }
+.pt-blocks .block-text__media img { width: 100%; height: auto; border-radius: var(--r); }
+.pt-blocks .block-text__media-caption, .pt-blocks .media-caption { margin-top: 8px; font-size: .78rem; color: var(--ink-3); line-height: 1.4; }
+
+/* --- Вопросы и ответы ------------------------------------------------------ */
+.pt-blocks .block-faq__list { border-top: 1px solid var(--rule); }
+.pt-blocks .faq-item { border-bottom: 1px solid var(--rule); }
+.pt-blocks .faq-item__q { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; font-weight: 700; font-size: 1.02rem; }
+.pt-blocks .faq-item__q::-webkit-details-marker { display: none; }
+.pt-blocks .faq-item__q::after { content: "+"; flex-shrink: 0; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: var(--r); color: var(--link); font-weight: 800; }
+.pt-blocks .faq-item[open] .faq-item__q::after { content: "−"; background: var(--brand); border-color: var(--brand); color: #fff; }
+.pt-blocks .faq-item__q:hover { color: var(--link); }
+.pt-blocks .faq-item__a { padding: 0 0 18px; font-size: 1rem; }
+.pt-blocks .faq-item__category { font-size: .72rem; color: var(--ink-3); font-weight: 700; }
+.pt-blocks .faq-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pt-blocks .faq-tools input, .pt-blocks .faq-tools select { height: 38px; padding-inline: 12px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); color: var(--ink); font: inherit; }
+.pt-blocks .faq-topics { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pt-blocks .faq-topics__item { border: 1px solid var(--rule); background: var(--surface); color: var(--ink-2); padding: 6px 12px; border-radius: var(--r); font-size: .84rem; font-weight: 700; cursor: pointer; }
+.pt-blocks .faq-topics__item[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+.pt-blocks .block-faq__empty { color: var(--ink-3); }
+
+/* --- Призыв к действию --------------------------------------------------- */
+.pt-blocks .block-cta, .pt-blocks .block-banner, .pt-blocks .block-ctaband {
+    display: grid; gap: 12px; padding: 24px 26px; border-radius: var(--r);
+    background: var(--brand-soft); border: 1px solid var(--rule); border-top: 3px solid var(--brand);
+}
+.pt-blocks .block-cta h2 { border-left: 0; padding-left: 0; }
+.pt-blocks .block-cta p, .pt-blocks .block-banner__text, .pt-blocks .ctaband__text { margin: 0; color: var(--ink-2); max-width: 70ch; }
+.pt-blocks .block-banner__title, .pt-blocks .ctaband__title { margin: 0; font-size: 1.35rem; font-weight: 800; }
+.pt-blocks .block-ctaband { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.pt-blocks .ctaband__lead { display: flex; gap: 14px; align-items: center; }
+.pt-blocks .block-banner__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.pt-blocks .block-banner--image { background: var(--dark-band); color: #fff; border-color: var(--dark-band); }
+.pt-blocks .block-banner--image .block-banner__text { color: #cbe0dc; }
+.pt-blocks .block-cta__button, .pt-blocks .ctaband__button, .pt-blocks .block-banner__btn, .pt-blocks .block-banner__actions a {
+    justify-self: start; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 40px; padding-inline: 16px; background: var(--brand); color: #fff; border: 1px solid var(--brand); border-radius: var(--r); font-weight: 700; font-size: .9rem;
+}
+.pt-blocks .block-cta__button:hover, .pt-blocks .ctaband__button:hover, .pt-blocks .block-banner__actions a:hover { opacity: .92; }
+@media (max-width: 720px) { .pt-blocks .block-ctaband { grid-template-columns: minmax(0, 1fr); } }
+
+/* --- Контакты и карточки ---------------------------------------------------- */
+.pt-blocks .contact-cards, .pt-blocks .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.pt-blocks .feature-card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--brand); border-radius: var(--r); }
+.pt-blocks .feature-card__top { display: flex; align-items: center; justify-content: space-between; }
+.pt-blocks .feature-card__icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r); background: var(--brand-soft); color: var(--link); }
+.pt-blocks .feature-card__icon svg { width: 20px; height: 20px; }
+.pt-blocks .feature-card__num { font-size: .74rem; font-weight: 800; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pt-blocks .feature-card__title { margin: 0; font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+.pt-blocks .feature-card__text { margin: 0; color: var(--ink-2); font-size: .92rem; line-height: 1.5; }
+.pt-blocks .contact-card__line { display: flex; gap: 8px; align-items: flex-start; }
+.pt-blocks .contact-card__line-icon { color: var(--link); flex-shrink: 0; }
+.pt-blocks .contact-card__line-icon svg { width: 16px; height: 16px; }
+.pt-blocks .contact-link, .pt-blocks .contact-card__link { color: var(--link); font-weight: 700; }
+.pt-blocks .contact-card__link { margin-top: auto; font-size: .85rem; }
+
+/* --- Форма -------------------------------------------------------------------- */
+.pt-blocks .block-form form, .pt-blocks form.block-form { display: grid; gap: 14px; max-width: 760px; }
+.pt-blocks .block-form label { display: grid; gap: 6px; font-size: .88rem; font-weight: 700; color: var(--ink); }
+.pt-blocks .block-form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.pt-blocks .block-form select, .pt-blocks .block-form textarea,
+.pt-blocks .subscribe-block__form input[type="email"] {
+    width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--rule); border-radius: var(--r);
+    background: var(--ground); color: var(--ink); font: inherit; font-weight: 400;
+}
+.pt-blocks .block-form textarea { min-height: 120px; resize: vertical; }
+.pt-blocks .block-form input:focus, .pt-blocks .block-form textarea:focus, .pt-blocks .block-form select:focus { border-color: var(--brand); outline: 2px solid var(--brand-soft); }
+.pt-blocks .block-form__consent, .pt-blocks .block-form__checkbox-single { display: flex !important; flex-direction: row; gap: 8px; align-items: flex-start; font-weight: 400 !important; font-size: .82rem !important; color: var(--ink-2) !important; }
+.pt-blocks .block-form__submit, .pt-blocks .subscribe-block__form button {
+    justify-self: start; height: 42px; padding-inline: 20px; background: var(--brand); color: #fff; border: 0; border-radius: var(--r); font: inherit; font-weight: 700; cursor: pointer;
+}
+.pt-blocks .block-form__submit:hover, .pt-blocks .subscribe-block__form button:hover { opacity: .92; }
+.pt-blocks .form-hint, .pt-blocks .block-form__char-counter { font-size: .78rem; color: var(--ink-3); font-weight: 400; }
+.pt-blocks .block-form__missing { padding: 14px 16px; border: 1px dashed var(--rule); color: var(--ink-3); border-radius: var(--r); }
+
+/* --- Подписка --------------------------------------------------------------- */
+.pt-blocks .subscribe-block { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px 28px; align-items: center; padding: 26px; background: var(--brand-soft); border: 1px solid var(--rule); border-top: 3px solid var(--brand); border-radius: var(--r); }
+.pt-blocks .subscribe-block__title { border-left: 0; padding-left: 0; }
+.pt-blocks .subscribe-block__text { margin: 6px 0 0; color: var(--ink-2); }
+.pt-blocks .subscribe-block__form { display: flex; flex-wrap: wrap; gap: 8px; }
+.pt-blocks .subscribe-block__form input[type="email"] { flex: 1 1 220px; width: auto; }
+.pt-blocks .subscribe-block__consent, .pt-blocks .subscribe-block__note { flex-basis: 100%; font-size: .78rem; color: var(--ink-3); }
+@media (max-width: 720px) { .pt-blocks .subscribe-block { grid-template-columns: minmax(0, 1fr); } }
+
+/* --- Новости в блоках -------------------------------------------------------- */
+.pt-blocks .block-news__grid, .pt-blocks .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+.pt-blocks .news-card__link { display: flex; flex-direction: column; gap: 8px; }
+.pt-blocks .news-card__cover { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--r); background: var(--paper); }
+.pt-blocks .news-card__cover img, .pt-blocks .news-card__cover picture { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pt-blocks .news-card__cover--empty { background: linear-gradient(135deg, var(--brand-soft), var(--paper)); }
+.pt-blocks .news-card__body { display: grid; gap: 6px; }
+.pt-blocks .news-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: .82rem; color: var(--ink-3); }
+.pt-blocks .news-category { color: var(--link); font-weight: 700; }
+.pt-blocks .news-card__title { font-weight: 750; font-size: 1.04rem; line-height: 1.34; }
+.pt-blocks .news-card__link:hover .news-card__title { color: var(--link); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.pt-blocks .news-card__excerpt { color: var(--ink-2); font-size: .9rem; line-height: 1.45; }
+
+/* --- Изображение и прочее --------------------------------------------------- */
+.pt-blocks .block-image__frame img { border-radius: var(--r); }
+.pt-blocks .block-image__empty { color: var(--ink-3); }
+.pt-blocks hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+
+/* --- Появление при прокрутке (настройка блока «Появление») ----------------
+   Механика та же, что у прежней темы: скрытие навешивает скрипт портала, без
+   него и при «меньше движения» блок виден сразу. */
+[data-reveal] { opacity: 0; transition: opacity .75s cubic-bezier(.215, .61, .355, 1), transform .75s cubic-bezier(.215, .61, .355, 1); }
+[data-reveal-type="slide-up"] { transform: translateY(28px); }
+[data-reveal-type="slide-left"] { transform: translateX(-32px); }
+[data-reveal-type="slide-right"] { transform: translateX(32px); }
+[data-reveal-type="zoom-in"] { transform: scale(.94); }
+[data-reveal].is-visible { opacity: 1; transform: none; }
+@media (scripting: none) { [data-reveal] { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { [data-reveal] { transform: none !important; } }
+.anim-card { opacity: 0; }
+.anim-card.is-inview { opacity: 1; animation: pt-card-reveal .7s cubic-bezier(.22, 1, .36, 1) var(--card-reveal-delay, 0ms) backwards; }
+@keyframes pt-card-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { @keyframes pt-card-reveal { from { opacity: 0; } to { opacity: 1; } } }
+[data-reveal-items]:not(.is-motion-ready) .anim-card { opacity: 1; }
