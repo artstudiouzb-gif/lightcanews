@@ -76,7 +76,11 @@ final class A11ySettings
         return self::normalize($parsed);
     }
 
-    /** Умолчания с письменностью узбекского, выбранной для сайта. */
+    /**
+     * Умолчания с письменностью узбекского, выбранной для сайта.
+     *
+     * @return array<string, int|string>
+     */
     public static function defaults(): array
     {
         return ['script' => UzCyrillic::defaultScript()] + self::DEFAULTS;
