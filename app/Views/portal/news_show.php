@@ -56,7 +56,7 @@ $docs = is_array($docs) ? $docs : [];
 $videoId = \App\Core\Video::youtubeId($news['video_url'] ?? null);
 
 // Обложка и её подпись — из записи галереи с тем же путём.
-$cover = (string) ($ogImage ?? '');
+$cover = $ogImage;
 $coverCaption = '';
 $extraPhotos = [];
 foreach ($gallery as $image) {

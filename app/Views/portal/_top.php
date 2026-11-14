@@ -136,7 +136,8 @@ foreach ($langLinks as $langLink) {
 <?= \App\Core\AssetCollector::renderThemeStyles() ?>
 <?= \App\Core\AssetCollector::renderStyles() ?>
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/portal/blocks-after.css'), ENT_QUOTES) ?>">
-<?php $portalBlockCssUrl = trim((string) ($blockCss ?? '')) !== '' ? \App\Core\GeneratedCss::publish((string) $blockCss, 'page') : null; ?>
+<?php $portalBlockCss = trim((string) ($blockCss ?? '')); ?>
+<?php $portalBlockCssUrl = $portalBlockCss !== '' ? \App\Core\GeneratedCss::publish($portalBlockCss, 'page') : null; ?>
 <?php if ($portalBlockCssUrl !== null): ?>
 <link rel="stylesheet" href="<?= htmlspecialchars($portalBlockCssUrl, ENT_QUOTES) ?>">
 <?php endif; ?>
