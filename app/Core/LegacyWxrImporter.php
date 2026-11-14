@@ -285,15 +285,23 @@ final class LegacyWxrImporter
      * стабилен, вход — порядок записей в XML), а контроллер сверяет sha256
      * файла перед каждым пакетом, поэтому курсор не может съехать.
      *
-     * @param array{status?:string,authorId?:?int,langs?:array<string,string>,uploadsDir?:?string,limit?:int,offset?:int,timeBudget?:float,dryRun?:bool} $opts
-     * @return array{imported:int,skipped:int,images:int,redirects:int,translations:int,errors:array<int,string>,source_published:int,source_drafts:int,source_comments:int,planned_news:int,unresolved:int,cursor:int,total:int}
+     * Фото переносятся только у последних `photosLimit` новостей (0 = у всех):
+     * старый архив бывает в тысячи записей, и скачивание каждого снимка — это
+     * часы импорта и гигабайты диска ради материалов, которые не открывают.
+     * Порядок плана — от старых к новым, поэтому «последние N» — это группы с
+     * номером от total − N: правило не зависит от пакета и курсора. У новости
+     * без фото снимки из текста вырезаются, а не остаются ссылками на старый
+     * сайт — их не пропустила бы CSP, и на месте снимка была бы дыра.
+     *
+     * @param array{status?:string,authorId?:?int,langs?:array<string,string>,uploadsDir?:?string,limit?:int,offset?:int,timeBudget?:float,dryRun?:bool,photosLimit?:int} $opts
+     * @return array{imported:int,skipped:int,images:int,redirects:int,translations:int,errors:array<int,string>,source_published:int,source_drafts:int,source_comments:int,planned_news:int,unresolved:int,cursor:int,total:int,photos_from:int}
      */
     public static function importFile(string $path, array $opts = []): array
     {
         $out = [
             'imported' => 0, 'skipped' => 0, 'images' => 0, 'redirects' => 0, 'translations' => 0, 'errors' => [],
             'source_published' => 0, 'source_drafts' => 0, 'source_comments' => 0, 'planned_news' => 0, 'unresolved' => 0,
-            'cursor' => 0, 'total' => 0,
+            'cursor' => 0, 'total' => 0, 'photos_from' => 0,
         ];
         if (!is_file($path)) {
             $out['errors'][] = 'Файл не найден: ' . $path;
@@ -337,6 +345,9 @@ final class LegacyWxrImporter
         $total = count($groups);
         $out['total'] = $total;
         $index = min($offset, $total);
+        $photosLimit = max(0, (int) ($opts['photosLimit'] ?? 0));
+        $photosFrom = $photosLimit > 0 ? max(0, $total - $photosLimit) : 0;
+        $out['photos_from'] = $photosFrom;
         $processed = 0;
 
         for (; $index < $total; $index++) {
@@ -377,11 +388,12 @@ final class LegacyWxrImporter
                     continue;
                 }
 
-                [$body, $gallery, $bodyImages] = self::transferBody((string) $primary['content'], $site, $authorId, $uploadsDir, $att, true);
+                $withPhotos = $index >= $photosFrom;
+                [$body, $gallery, $bodyImages] = self::transferBody((string) $primary['content'], $site, $authorId, $uploadsDir, $att, true, $withPhotos);
                 $out['images'] += $bodyImages;
                 $featuredUrl = (int) ($primary['thumb_id'] ?? 0) > 0 ? ($att[(int) $primary['thumb_id']] ?? '') : '';
                 $cover = '';
-                if ($featuredUrl !== '') {
+                if ($featuredUrl !== '' && $withPhotos) {
                     $cover = (string) (LegacyCmsImporter::importImage($featuredUrl, $authorId, $uploadsDir) ?? '');
                     if ($cover !== '' && !in_array($cover, $gallery, true)) {
                         $out['images']++;
@@ -420,7 +432,7 @@ final class LegacyWxrImporter
                     if ($artCode === '') {
                         continue;
                     }
-                    [$translatedBody, , $translatedImages] = self::transferBody((string) $p['content'], $site, $authorId, $uploadsDir, $att, false);
+                    [$translatedBody, , $translatedImages] = self::transferBody((string) $p['content'], $site, $authorId, $uploadsDir, $att, false, $withPhotos);
                     $out['images'] += $translatedImages;
                     NewsTranslation::upsert($newsId, $artCode, [
                         'title' => self::plain((string) $p['title']),
@@ -440,6 +452,22 @@ final class LegacyWxrImporter
         $out['cursor'] = $index;
 
         return $out;
+    }
+
+    /**
+     * Текст без снимков: теги <img>, опустевшие <figure>/подписи старой CMS и
+     * шорткоды галерей. Подпись к вырезанному снимку без него не имеет смысла.
+     */
+    public static function stripImages(string $html): string
+    {
+        // Только фигуры со снимком: в <figure> старая CMS кладёт и ролики, и цитаты.
+        $html = (string) preg_replace('~<figure\b[^>]*>(?:(?!</figure>).)*?<img\b.*?</figure>~is', '', $html);
+        $html = (string) preg_replace('~\[caption\b[^\]]*\].*?\[/caption\]~is', '', $html);
+        $html = (string) preg_replace('~<img\b[^>]*>~i', '', $html);
+        $html = (string) preg_replace('~<a\b[^>]*>\s*</a>~i', '', $html);
+        $html = (string) preg_replace('~<p\b[^>]*>(\s|&nbsp;)*</p>~i', '', $html);
+
+        return self::stripGalleryShortcodes($html);
     }
 
     /** @return list<int> */
@@ -610,8 +638,12 @@ final class LegacyWxrImporter
         ?int $authorId,
         ?string $uploadsDir,
         array $attachments,
-        bool $includeGallery
+        bool $includeGallery,
+        bool $withPhotos = true
     ): array {
+        if (!$withPhotos) {
+            return [self::stripImages($html), [], 0];
+        }
         $map = [];
         $gallery = [];
         $images = 0;

@@ -285,10 +285,15 @@ final class NewsImportController
         }
 
         $status = (string) ($_POST['status'] ?? 'draft') === 'published' ? 'published' : 'draft';
+        // Сколько последних новостей получают фото (0 = все). Как и статус,
+        // фиксируется первым пакетом: смена посреди импорта дала бы часть
+        // архива с фото по одному правилу, часть — по другому.
+        $photosLimit = max(0, min(1000000, (int) ($_POST['photos_limit'] ?? 0)));
         $first = empty($state['started_at']);
         if ($first) {
             $_SESSION[self::SESSION_KEY][$token]['started_at'] = time();
             $_SESSION[self::SESSION_KEY][$token]['status'] = $status;
+            $_SESSION[self::SESSION_KEY][$token]['photos_limit'] = $photosLimit;
             $_SESSION[self::SESSION_KEY][$token]['new_imported'] = 0;
             $_SESSION[self::SESSION_KEY][$token]['translations'] = 0;
             $_SESSION[self::SESSION_KEY][$token]['images'] = 0;
@@ -296,6 +301,8 @@ final class NewsImportController
             $_SESSION[self::SESSION_KEY][$token]['cursor'] = 0;
         } elseif (($state['status'] ?? 'draft') !== $status) {
             $this->json(['ok' => false, 'error' => 'Нельзя менять статус публикации после начала импорта.'], 409);
+        } elseif ((int) ($state['photos_limit'] ?? 0) !== $photosLimit) {
+            $this->json(['ok' => false, 'error' => 'Нельзя менять число новостей с фото после начала импорта.'], 409);
         }
 
         // Смещение берётся из $first, а не из прочитанного выше состояния:
@@ -309,6 +316,7 @@ final class NewsImportController
             'limit' => self::BATCH_MAX,
             'timeBudget' => (float) self::BATCH_SECONDS,
             'offset' => $cursor,
+            'photosLimit' => $photosLimit,
             'dryRun' => false,
             'authorId' => Auth::id(),
         ]);
