@@ -4,12 +4,13 @@
  * Ожидает $adKey — ключ из PortalAds::ZONES.
  *
  * @var string $adKey
+ * @var string|null $adPlace тип страницы из PortalAds::PLACES; не задан — «остальные»
  */
 
 use App\Core\Media;
 use App\Core\Portal\PortalAds;
 
-$ad = PortalAds::zone($adKey);
+$ad = PortalAds::zone($adKey, (string) ($adPlace ?? 'other'));
 if ($ad === null) {
     return;
 }
@@ -44,7 +45,7 @@ $adCta = (string) $ad['cta'];
 <?php else: ?>
 <?php $adBand = $adKey === 'top'; ?>
 <?php if ($adBand): ?><div class="pt-ad-band"><?php endif; ?>
-<div class="pt-ad pt-ad--<?= $adE($adKey) ?><?= in_array($adKey, ['top', 'mid'], true) ? ' pt-wrap' : '' ?>">
+<div class="pt-ad pt-ad--<?= $adE($adKey) ?><?= $adKey === 'top' || ($adKey === 'mid' && ($adPlace ?? '') === 'home') ? ' pt-wrap' : '' ?>">
     <p class="pt-ad__meta"><span class="pt-ad-mark"><?= $adMark ?></span></p>
     <a class="pt-ad__box" href="<?= $adHref ?>">
         <?php if ($adSponsor !== ''): ?><span class="pt-ad__brand"><?= $adE($adSponsor) ?></span><?php endif; ?>

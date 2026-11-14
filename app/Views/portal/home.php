@@ -21,6 +21,7 @@ $voices = (array) ($home['voices'] ?? []);
 $rates = \App\Core\CurrencyRates::current();
 $newsUrl = Locale::url('news');
 
+$adPlace = 'home';
 require __DIR__ . '/_top.php';
 ?>
 <h1 class="pt-visually-hidden"><?= htmlspecialchars($metaTitle !== '' ? $metaTitle : t('Главное в отрасли'), ENT_QUOTES) ?></h1>

@@ -51,6 +51,7 @@ if ($section === null) {
     $crumbs[] = ['label' => (string) $section['name']];
 }
 
+$adPlace = 'news_index';
 require __DIR__ . '/_top.php';
 ?>
 <div class="pt-wrap pt-sec pt-listing">
@@ -87,6 +88,8 @@ require __DIR__ . '/_top.php';
             <?php $photoCard = $lead; $photoRatio = '4x3'; $photoSizes = '(max-width: 720px) 100vw, 560px'; $photoEager = true; require __DIR__ . '/_photo.php'; ?>
         </a>
     <?php endif; ?>
+
+    <?php if ($lead !== null && $cards !== []): $adKey = 'mid'; require __DIR__ . '/_ad.php'; endif; ?>
 
     <?php if ($cards !== []): ?>
     <div class="pt-grid3 pt-listing__grid">

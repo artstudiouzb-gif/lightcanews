@@ -12,7 +12,7 @@ require __DIR__ . '/../layout/header.php';
 $esc = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES);
 ?>
 <div class="admin-builder-workspace">
-    <p class="form-hint">Пять мест на страницах портала. Зона выводится, когда она включена и у неё есть заголовок и ссылка; выключенная зона на сайте не оставляет пустого места. Ссылка рекламы помечается для поисковиков как спонсорская.</p>
+    <p class="form-hint">Пять зон на страницах портала. Зона выводится на отмеченных страницах, когда она включена и у неё есть заголовок и ссылка; выключенная зона на сайте не оставляет пустого места. Ссылка рекламы помечается для поисковиков как спонсорская.</p>
     <form method="post" action="/admin/ads" class="form-grid">
         <?= Csrf::field() ?>
         <?php foreach (PortalAds::ZONES as $key => $meta): ?>
@@ -23,6 +23,16 @@ $esc = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES);
                     <input type="checkbox" id="ad-<?= $key ?>-on" name="<?= $n ?>[enabled]" value="1"<?= $zone['enabled'] ? ' checked' : '' ?>>
                     <label for="ad-<?= $key ?>-on">Показывать</label>
                 </div>
+                <fieldset class="bf-group">
+                    <legend>Где показывать</legend>
+                    <input type="hidden" name="<?= $n ?>[pages][]" value="">
+                    <?php foreach ($meta['places'] as $place => $spot): ?>
+                        <div class="form-field form-field--checkbox">
+                            <input type="checkbox" id="ad-<?= $key ?>-<?= $place ?>" name="<?= $n ?>[pages][]" value="<?= $esc($place) ?>"<?= in_array($place, $zone['pages'], true) ? ' checked' : '' ?>>
+                            <label for="ad-<?= $key ?>-<?= $place ?>"><?= $esc(PortalAds::PLACES[$place]) ?> <span class="form-hint">— <?= $esc($spot) ?></span></label>
+                        </div>
+                    <?php endforeach; ?>
+                </fieldset>
                 <div class="form-field">
                     <label for="ad-<?= $key ?>-sponsor">Рекламодатель</label>
                     <input id="ad-<?= $key ?>-sponsor" type="text" name="<?= $n ?>[sponsor]" maxlength="60" value="<?= $esc((string) $zone['sponsor']) ?>" placeholder="CAITME 2026">

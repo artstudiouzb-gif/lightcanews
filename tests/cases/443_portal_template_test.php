@@ -148,3 +148,28 @@ test('Портал: рекламная зона выводится только 
     assert_not_contains('Без ссылки', $html, 'зона без ссылки не выводится');
     assert_same(1, substr_count($html, 'class="pt-feed__ad"'), 'объявление в ленте одно');
 });
+
+test('Портал: рекламная зона показывается только на отмеченных типах страниц', function (): void {
+    $ads = \App\Core\Portal\PortalAds::class;
+    $base = ['enabled' => '1', 'title' => 'Баннер', 'url' => 'https://example.org'];
+    // Запись без списка страниц получает умолчание: широкий баннер — только главная.
+    $ads::save(['mid' => $base]);
+    assert_true($ads::zone('mid', 'home') !== null);
+    assert_true($ads::zone('mid', 'news_show') === null);
+    // Отмеченные страницы; место, которого у зоны нет, отбрасывается.
+    $ads::save(['mid' => $base + ['pages' => ['', 'news_index', 'news_show', 'other']]]);
+    assert_true($ads::zone('mid', 'home') === null);
+    assert_true($ads::zone('mid', 'news_show') !== null);
+    assert_same(['news_index', 'news_show'], $ads::all()['mid']['pages']);
+    // Ни одной отметки — зона нигде, а не «как по умолчанию».
+    $ads::save(['top' => $base + ['pages' => ['']]]);
+    assert_true($ads::zone('top', 'home') === null);
+
+    $ads::save(['mid' => $base + ['pages' => ['news_index']]]);
+    $_SERVER['REQUEST_URI'] = '/news';
+    $html = render_view('app/Views/portal/news_index.php', [
+        'items' => sample_news_rows(5), 'page' => 1, 'pages' => 1,
+        'categories' => [], 'countries' => [], 'section' => null, 'basePath' => 'news', 'sectionPage' => null,
+    ]);
+    assert_contains('pt-ad--mid', $html, 'баннер встаёт между первой новостью и сеткой');
+});

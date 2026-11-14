@@ -81,6 +81,7 @@ $crumbs = [
     ['label' => (string) $news['title']],
 ];
 
+$adPlace = 'news_show';
 require __DIR__ . '/_top.php';
 ?>
 <div class="pt-wrap pt-art">
@@ -140,6 +141,7 @@ require __DIR__ . '/_top.php';
         <?php endif; ?>
 
         <div class="pt-art__body rich-content"><?= $contentHtml ?></div>
+        <?php $adKey = 'mid'; require __DIR__ . '/_ad.php'; ?>
 
         <?php if ($extraPhotos !== []): ?>
             <div class="pt-art__photos">
@@ -209,6 +211,7 @@ require __DIR__ . '/_top.php';
             </ol>
         </div>
         <?php endif; ?>
+        <?php $adKey = 'partner'; require __DIR__ . '/_ad.php'; ?>
     </aside>
 </div>
 <?php $newsOrg = \App\Core\SeoHelper::organizationRef($base); ?>
