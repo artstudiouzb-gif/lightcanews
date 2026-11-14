@@ -128,6 +128,20 @@ foreach ($langLinks as $langLink) {
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/noto-serif.css'), ENT_QUOTES) ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/portal/portal.css'), ENT_QUOTES) ?>">
 <style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>}</style>
+<?php if (!empty($portalBlocks)): ?>
+<?php // Страница из блоков конструктора: свои стили блоков портала, затем
+      // собственные файлы типов на странице и scoped CSS блоков. ?>
+<link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/tokens.css'), ENT_QUOTES) ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/portal/blocks.css'), ENT_QUOTES) ?>">
+<?= \App\Core\AssetCollector::renderThemeStyles() ?>
+<?= \App\Core\AssetCollector::renderStyles() ?>
+<link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/portal/blocks-after.css'), ENT_QUOTES) ?>">
+<?php $portalBlockCss = trim((string) ($blockCss ?? '')); ?>
+<?php $portalBlockCssUrl = $portalBlockCss !== '' ? \App\Core\GeneratedCss::publish($portalBlockCss, 'page') : null; ?>
+<?php if ($portalBlockCssUrl !== null): ?>
+<link rel="stylesheet" href="<?= htmlspecialchars($portalBlockCssUrl, ENT_QUOTES) ?>">
+<?php endif; ?>
+<?php endif; ?>
 </head>
 <body class="pt">
 <a class="pt-skip skip-link" href="#main-content"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>

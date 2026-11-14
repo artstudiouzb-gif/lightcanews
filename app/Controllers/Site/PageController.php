@@ -116,7 +116,7 @@ final class PageController
         // Виджеты собираются вне кэша блоков: правка виджета видна сразу.
         $sidebar = \App\Core\WidgetRenderer::sidebarFor($layoutType, $lang);
 
-        View::render('site/page', [
+        View::render(\App\Core\Portal\Portal::enabled() ? 'portal/page' : 'site/page', [
             'page' => $page,
             'content' => $rendered['html'],
             'blockCss' => $rendered['css'],

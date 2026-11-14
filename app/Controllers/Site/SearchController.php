@@ -33,7 +33,7 @@ final class SearchController
             }
         }
 
-        View::render('site/search', [
+        View::render(\App\Core\Portal\Portal::enabled() ? 'portal/search' : 'site/search', [
             'query' => $query,
             'results' => $results,
         ]);

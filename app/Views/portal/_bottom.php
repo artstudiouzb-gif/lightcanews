@@ -97,5 +97,6 @@ $footBrand = (string) preg_replace('/\.(news)$/i', '<span>.</span>$1', htmlspeci
     </div>
 </footer>
 <script src="<?= htmlspecialchars(Asset::url('/assets/portal/portal.js'), ENT_QUOTES) ?>" defer></script>
+<?= \App\Core\AssetCollector::renderScripts() /* скрипты блоков на странице — по одному разу */ ?>
 </body>
 </html>
