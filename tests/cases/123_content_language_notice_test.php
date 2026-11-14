@@ -8,7 +8,7 @@ test('Материал без перевода не подменяется ба�
     assert_contains('LocalePreference::QUERY', $notice);
     assert_contains('Locale::setContentLangs($availableCodes)', $notice);
     assert_contains("http_response_code(404)", $notice);
-    assert_contains("View::render('site/translation_unavailable'", $notice);
+    assert_contains("'portal/translation_unavailable' : 'site/translation_unavailable'", $notice);
 
     foreach (['PageController.php', 'NewsController.php', 'AlbumController.php', 'ContentController.php'] as $controller) {
         $source = (string) file_get_contents(APP_ROOT . '/app/Controllers/Site/' . $controller);

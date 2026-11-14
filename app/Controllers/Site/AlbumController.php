@@ -21,7 +21,7 @@ final class AlbumController
         }
         unset($album);
 
-        View::render('site/albums', ['albums' => $albums]);
+        View::render(\App\Core\Portal\Portal::enabled() ? 'portal/albums' : 'site/albums', ['albums' => $albums]);
     }
 
     /** @param array<string, string> $params */
@@ -40,7 +40,7 @@ final class AlbumController
             return;
         }
 
-        View::render('site/album', [
+        View::render(\App\Core\Portal\Portal::enabled() ? 'portal/album' : 'site/album', [
             'album' => $album,
             'images' => PhotoAlbum::images((int) $album['id']),
             'newsUrl' => NewsAlbum::newsUrl($album, Locale::current()),

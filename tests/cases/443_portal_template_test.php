@@ -107,3 +107,23 @@ test('Портал: страница из блоков получает стил
     assert_contains('class="pt-blocks"', $html);
     assert_not_contains('gov-theme', $html);
 });
+
+test('Портал: поиск и альбомы собраны шаблоном портала', function (): void {
+    $_SERVER['REQUEST_URI'] = '/search?q=ткань';
+    $html = render_view('app/Views/portal/search.php', [
+        'query' => 'ткань',
+        'results' => [['type' => 'Новость', 'url' => '/news/a', 'title' => 'Ткань года', 'excerpt' => 'Анонс']],
+    ]);
+    assert_contains('class="pt-results"', $html);
+    assert_contains('Ткань года', $html);
+    assert_contains('noindex', $html);
+    assert_not_contains('public.min.css', $html);
+
+    $_SERVER['REQUEST_URI'] = '/albums';
+    $html = render_view('app/Views/portal/albums.php', [
+        'albums' => [['slug' => 'expo', 'title' => 'Выставка', 'cover' => '', 'images_count' => 3]],
+    ]);
+    assert_contains('href="/albums/expo"', $html);
+    assert_contains('data-empty', $html);
+    assert_not_contains('public.min.css', $html);
+});
