@@ -8,7 +8,11 @@ use App\Core\Auth;
 use App\Core\Backup;
 use App\Core\Cache;
 use App\Core\Csrf;
+use App\Core\Flash;
+use App\Core\Input;
+use App\Core\LegacyCategoryLinker;
 use App\Core\LegacyWxrImporter;
+use App\Core\Redirect;
 use App\Core\View;
 
 final class NewsImportController
@@ -218,6 +222,7 @@ final class NewsImportController
             'to_import' => (int) ($dry['imported'] ?? 0),
             'already_exists' => (int) ($dry['skipped'] ?? 0),
             'attachments' => count($data['attachments']),
+            'categories' => count(LegacyCategoryLinker::sourceCategories($data)),
             'gallery_posts' => $galleryPosts,
             'gallery_images' => count($galleryIds),
             'languages' => $languageCounts,
@@ -353,6 +358,83 @@ final class NewsImportController
                 'backup' => (string) ($state['backup'] ?? ''),
             ],
         ]);
+    }
+
+    /**
+     * Связка рубрик: тот же загруженный файл, но вместо переноса новостей —
+     * раздача разделов тем, что уже перенесены. Нужна архивам, импортированным
+     * до того, как импорт научился рубрикам: перебирать сотни новостей руками
+     * незачем, соответствие задаётся один раз на рубрику.
+     */
+    public function categories(): void
+    {
+        Auth::requireSuperAdmin();
+        $token = strtolower(Input::query()->str('token', '', 64));
+        $data = self::loadData($token);
+        $source = $data !== null ? LegacyCategoryLinker::sourceCategories($data) : [];
+        View::render('admin/news/import_categories', [
+            'token' => $token,
+            'missingFile' => $data === null,
+            'source' => $source,
+            'sections' => LegacyCategoryLinker::sections(),
+            'auto' => LegacyCategoryLinker::autoMatch($source),
+        ]);
+    }
+
+    public function linkCategories(): void
+    {
+        Auth::requireSuperAdmin();
+        Csrf::verifyRequest();
+        $input = Input::post();
+        $token = strtolower($input->str('token', '', 64));
+        $back = '/admin/news/import/categories?token=' . rawurlencode($token);
+        $data = self::loadData($token);
+        if ($data === null) {
+            Flash::error('Загруженный файл не найден или изменился. Загрузите экспорт заново.');
+            Redirect::to('/admin/news/import');
+        }
+
+        $map = [];
+        foreach ($input->group('map') as $slug => $id) {
+            if (is_string($id) && ctype_digit($id) && (int) $id > 0) {
+                $map[(string) $slug] = (int) $id;
+            }
+        }
+        if ($map === []) {
+            Flash::warning('Ни одной рубрике не выбран раздел — связывать нечего.');
+            Redirect::to($back);
+        }
+
+        $langs = ['uz' => 'uz', 'ru' => 'ru', 'en' => 'en'];
+        $result = LegacyCategoryLinker::link(LegacyWxrImporter::plan($data, $langs), $langs, $map, $input->bool('overwrite'));
+        $message = 'Новостей найдено: ' . $result['news'] . '. Получили раздел: ' . $result['linked']
+            . ' (рубрика — ' . $result['rubrics'] . ', страны — ' . $result['countries'] . ').';
+        if ($result['kept'] > 0) {
+            $message .= ' Уже были заполнены, не тронуты: ' . $result['kept'] . '.';
+        }
+        if ($result['unmapped'] > 0) {
+            $message .= ' Без выбранного раздела: ' . $result['unmapped'] . '.';
+        }
+        if ($result['missing'] > 0) {
+            $message .= ' Не найдены на сайте (не импортированы или удалены): ' . $result['missing'] . '.';
+        }
+        Flash::success($message);
+        Redirect::to($back);
+    }
+
+    /** @return array{site:string,attachments:array<int,string>,posts:array<int,array<string,mixed>>,comments:int}|null */
+    private static function loadData(string $token): ?array
+    {
+        $state = self::state($token);
+        $path = self::validToken($token) ? self::xmlPath($token) : '';
+        if ($state === null || $path === '' || !is_file($path)
+            || !hash_equals((string) ($state['sha256'] ?? ''), hash_file('sha256', $path) ?: '')) {
+            return null;
+        }
+        $xml = file_get_contents($path);
+        $data = $xml === false ? null : LegacyWxrImporter::parse($xml);
+
+        return $data !== null && $data['posts'] !== [] ? $data : null;
     }
 
     public function discard(): never
