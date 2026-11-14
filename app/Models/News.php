@@ -372,6 +372,53 @@ final class News
      * (новости на главной и т.п.) кэшируются в составе HTML страницы, поэтому
      * при изменении новостей их нужно пересобрать.
      */
+    /**
+     * Сменить язык самой записи (не перевода). Нужна, когда новость пришла
+     * не на том языке — например, перевод старого сайта без однозначного
+     * оригинала импортёр переносит отдельной новостью.
+     *
+     * Два запрета, и оба — против двух записей одного языка у одной новости:
+     * в группе перевода (механизм Б) этот язык уже занят другой записью, или
+     * у самой новости есть перевод полями (механизм А) на этот язык — после
+     * смены он накладывался бы на базовый текст того же языка.
+     *
+     * @return string|null текст ошибки или null, если язык сменён
+     */
+    public static function changeLang(int $id, string $lang): ?string
+    {
+        if (!Language::isActive($lang)) {
+            return 'Такого языка нет среди активных.';
+        }
+        $news = self::findById($id);
+        if ($news === null) {
+            return 'Новость не найдена.';
+        }
+        if ((string) ($news['lang'] ?? '') === $lang) {
+            return null;
+        }
+        $pdo = Database::pdo();
+        $group = (int) ($news['translation_group_id'] ?? 0);
+        if ($group > 0) {
+            $stmt = $pdo->prepare(
+                'SELECT COUNT(*) FROM news WHERE id <> :id AND lang = :lang AND deleted_at IS NULL
+                 AND (translation_group_id = :g OR id = :g2)'
+            );
+            $stmt->execute(['id' => $id, 'lang' => $lang, 'g' => $group, 'g2' => $group]);
+            if ((int) $stmt->fetchColumn() > 0) {
+                return 'У этой новости уже есть версия на выбранном языке — отдельной записью.';
+            }
+        }
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM news_translations WHERE news_id = :id AND lang = :lang');
+        $stmt->execute(['id' => $id, 'lang' => $lang]);
+        if ((int) $stmt->fetchColumn() > 0) {
+            return 'У новости есть перевод на выбранный язык. Удалите его текст во вкладке перевода или перенесите, затем смените язык.';
+        }
+        $pdo->prepare('UPDATE news SET lang = :lang, updated_at = NOW() WHERE id = :id')->execute(['lang' => $lang, 'id' => $id]);
+        self::bustPageCache();
+
+        return null;
+    }
+
     private static function bustPageCache(): void
     {
         self::$publishedRequestCache = [];
