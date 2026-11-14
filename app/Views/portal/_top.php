@@ -46,7 +46,7 @@ $contentLangs = Locale::contentLangs();
 if ($contentLangs !== null) {
     $hrefLangs = array_values(array_filter($hrefLangs, static fn (array $l): bool => in_array((string) $l['code'], $contentLangs, true)));
 }
-$ogAlternate = array_map(static fn (array $l): string => (string) $l['code'], $hrefLangs);
+$ogAlternate = array_values(array_map(static fn (array $l): string => (string) $l['code'], $hrefLangs));
 
 $defaultOg = Setting::get('default_og_image', '');
 $ogImageRaw = (string) (($ogImage ?? '') !== '' ? $ogImage : $defaultOg);
