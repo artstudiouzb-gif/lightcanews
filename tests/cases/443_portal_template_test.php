@@ -127,3 +127,24 @@ test('Портал: поиск и альбомы собраны шаблоном
     assert_contains('data-empty', $html);
     assert_not_contains('public.min.css', $html);
 });
+
+test('Портал: рекламная зона выводится только включённой и заполненной', function (): void {
+    \App\Core\Portal\PortalAds::save([]);
+    $cards = Portal::cards(sample_news_rows(5), 'ru');
+    $home = ['lead' => $cards[0], 'grid' => [], 'also' => [], 'feed' => $cards, 'picks' => [], 'regions' => [], 'voices' => []];
+    $html = portal_home_html($home);
+    assert_not_contains('pt-ad', $html, 'выключенная зона не оставляет пустой рамки');
+
+    \App\Core\Portal\PortalAds::save([
+        'top' => ['enabled' => '1', 'sponsor' => 'CAITME', 'title' => 'Выставка оборудования', 'url' => 'https://example.org/expo', 'cta' => 'Бейдж'],
+        'mid' => ['enabled' => '1', 'title' => 'Без ссылки', 'url' => 'javascript:alert(1)'],
+        'feed' => ['enabled' => '1', 'title' => 'Прядильные линии', 'url' => '/expo', 'image' => '/uploads/public/a.jpg', 'sponsor' => 'uztex.uz'],
+    ]);
+    $html = portal_home_html($home);
+    assert_contains('Выставка оборудования', $html);
+    assert_contains('rel="sponsored noopener" target="_blank"', $html);
+    assert_contains('class="pt-feed__ad"', $html);
+    assert_not_contains('javascript:', $html, 'чужая схема ссылки отбрасывается');
+    assert_not_contains('Без ссылки', $html, 'зона без ссылки не выводится');
+    assert_same(1, substr_count($html, 'class="pt-feed__ad"'), 'объявление в ленте одно');
+});

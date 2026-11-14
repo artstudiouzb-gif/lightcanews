@@ -526,4 +526,10 @@ return [
     'Содержание' => 'Contents',
     'Читайте также' => 'Read also',
     'страница %d' => 'page %d',
+    'Реклама' => 'Advertisement',
+    'Партнёрский материал' => 'Partner content',
+    'Партнёрский блок' => 'Partner block',
+    'Telegram-канал' => 'Telegram channel',
+    'Ежедневно' => 'Daily',
+    'Оперативные сводки в Telegram: котировки хлопка и пряжи, прямые включения с выставок и новости маркетплейсов.' => 'Quick briefings on Telegram: cotton and yarn prices, live reports from trade shows and marketplace news.',
 ];

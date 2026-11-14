@@ -185,6 +185,7 @@ require __DIR__ . '/_top.php';
     </article>
 
     <aside class="pt-art__side">
+        <?php $adKey = 'article'; require __DIR__ . '/_ad.php'; ?>
         <?php if ($related !== []): ?>
         <div class="pt-side-card">
             <div class="pt-side-card__head"><?= htmlspecialchars(t('Читайте также'), ENT_QUOTES) ?></div>

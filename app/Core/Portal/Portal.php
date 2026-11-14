@@ -109,6 +109,7 @@ final class Portal
                 'date' => self::date($published, $lang),
                 'time' => self::time($published),
                 'day' => $published !== '' ? DateFormatter::format($published, 'd.m') : '',
+                'day_full' => $published !== '' ? DateFormatter::format($published, 'd.m.Y') : '',
                 'datetime' => $published !== '' ? DateFormatter::format($published, 'c') : '',
                 'is_today' => $published !== '' && DateFormatter::format($published, 'Y-m-d') === DateFormatter::format('now', 'Y-m-d'),
                 'reading' => self::readingMinutes($row),
