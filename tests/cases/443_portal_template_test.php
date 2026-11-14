@@ -193,3 +193,23 @@ test('Портал: статья сохраняет аудио, хронолог
     assert_contains('<dt>Место</dt><dd>Ташкент</dd>', $html);
     assert_contains('href="/uploads/public/release.pdf"', $html);
 });
+
+test('Портал: снимки статьи идут галереей с миниатюрами, а не сеткой', function (): void {
+    $_SERVER['REQUEST_URI'] = '/news/probe-news-0';
+    $news = sample_news_rows(1)[0];
+    $news = array_merge($news, [
+        'image' => '/uploads/public/cover.jpg', 'content' => '<p>Текст.</p>', 'meta_title' => '', 'meta_description' => '',
+        'lead_html' => '', 'key_points' => '', 'hashtags' => '', 'docs' => '[]', 'video_url' => '', 'updated_at' => '2026-07-19 10:00:00', 'lang' => 'ru',
+    ]);
+    $gallery = [
+        ['path' => '/uploads/public/cover.jpg', 'caption' => 'Обложка', 'credit' => ''],
+        ['path' => '/uploads/public/two.jpg', 'caption' => 'Цех', 'credit' => 'Пресс-служба'],
+        ['path' => '/uploads/public/three.jpg', 'caption' => '', 'credit' => ''],
+    ];
+    $html = render_view('app/Views/portal/news_show.php', ['news' => $news, 'gallery' => $gallery, 'related' => [], 'nextNews' => null]);
+    assert_contains('data-pt-gallery', $html);
+    assert_same(3, substr_count($html, 'class="pt-gal__slide"'), 'обложка первым кадром, затем остальные');
+    assert_same(3, substr_count($html, 'data-pt-gal-thumb='), 'у каждого кадра миниатюра');
+    assert_contains('Цех Пресс-служба', $html);
+    assert_contains('href="/uploads/public/two.jpg" data-pt-gal-zoom', $html, 'кадр без скрипта ведёт на файл');
+});

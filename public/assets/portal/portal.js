@@ -216,3 +216,100 @@
         });
     });
 })();
+
+/* Галерея статьи: стрелки, счётчик, миниатюры и просмотр на весь экран.
+   Лента кадров — обычная прокрутка с привязкой, скрипт только двигает её
+   и следит, какой кадр в центре. */
+(function () {
+    'use strict';
+    document.querySelectorAll('[data-pt-gallery]').forEach(function (gal) {
+        var track = gal.querySelector('[data-pt-gal-track]');
+        if (!track) { return; }
+        var slides = Array.prototype.slice.call(track.children);
+        var thumbs = Array.prototype.slice.call(gal.querySelectorAll('[data-pt-gal-thumb]'));
+        var current = gal.querySelector('[data-pt-gal-current]');
+        var prev = gal.querySelector('[data-pt-gal-prev]');
+        var next = gal.querySelector('[data-pt-gal-next]');
+        var index = 0;
+        var go = function (i) {
+            index = Math.max(0, Math.min(slides.length - 1, i));
+            track.scrollTo({ left: slides[index].offsetLeft - track.offsetLeft, behavior: 'smooth' });
+        };
+        var mark = function (i) {
+            index = i;
+            if (current) { current.textContent = String(i + 1); }
+            thumbs.forEach(function (t, n) {
+                t.classList.toggle('is-active', n === i);
+                if (n === i) { t.setAttribute('aria-current', 'true'); } else { t.removeAttribute('aria-current'); }
+            });
+            var thumb = thumbs[i];
+            if (thumb && thumb.parentElement) {
+                var bar = thumb.parentElement;
+                var left = thumb.offsetLeft - bar.offsetLeft - (bar.clientWidth - thumb.clientWidth) / 2;
+                bar.scrollTo({ left: left, behavior: 'smooth' });
+            }
+            if (prev) { prev.disabled = i === 0; }
+            if (next) { next.disabled = i === slides.length - 1; }
+        };
+        if (prev && next) {
+            prev.hidden = false; next.hidden = false;
+            prev.addEventListener('click', function () { go(index - 1); });
+            next.addEventListener('click', function () { go(index + 1); });
+        }
+        thumbs.forEach(function (t, n) {
+            t.addEventListener('click', function (e) { e.preventDefault(); go(n); });
+        });
+        track.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); go(index - 1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); go(index + 1); }
+        });
+        var queued = false;
+        track.addEventListener('scroll', function () {
+            if (queued) { return; }
+            queued = true;
+            requestAnimationFrame(function () {
+                queued = false;
+                var i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+                if (i !== index) { mark(Math.max(0, Math.min(slides.length - 1, i))); }
+            });
+        }, { passive: true });
+        mark(0);
+
+        // Просмотр на весь экран: кадр открывается в окне, листается стрелками.
+        if (typeof HTMLDialogElement !== 'function') { return; }
+        var box = document.createElement('dialog');
+        box.className = 'pt-zoom';
+        var img = document.createElement('img');
+        img.alt = '';
+        var cap = document.createElement('p');
+        cap.className = 'pt-zoom__cap';
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'pt-zoom__close';
+        close.textContent = '×';
+        close.setAttribute('aria-label', 'Esc');
+        box.appendChild(close); box.appendChild(img); box.appendChild(cap);
+        document.body.appendChild(box);
+        var show = function (i) {
+            index = Math.max(0, Math.min(slides.length - 1, i));
+            var link = slides[index].querySelector('[data-pt-gal-zoom]');
+            var pic = slides[index].querySelector('img');
+            var fc = slides[index].querySelector('figcaption');
+            img.src = link ? link.getAttribute('href') : '';
+            img.alt = pic ? pic.alt : '';
+            cap.textContent = (fc ? fc.textContent + ' · ' : '') + (index + 1) + ' / ' + slides.length;
+        };
+        slides.forEach(function (slide, n) {
+            var link = slide.querySelector('[data-pt-gal-zoom]');
+            if (!link) { return; }
+            link.addEventListener('click', function (e) { e.preventDefault(); show(n); box.showModal(); });
+        });
+        close.addEventListener('click', function () { box.close(); });
+        box.addEventListener('click', function (e) { if (e.target === box) { box.close(); } });
+        box.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') { show(index - 1); }
+            if (e.key === 'ArrowRight') { show(index + 1); }
+        });
+        box.addEventListener('close', function () { go(index); });
+    });
+})();

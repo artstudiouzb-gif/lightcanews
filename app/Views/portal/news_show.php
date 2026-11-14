@@ -99,6 +99,24 @@ foreach ($gallery as $image) {
         $extraPhotos[] = $image;
     }
 }
+// Кадры галереи: обложка первой, затем остальные снимки новости. Когда у
+// новости есть ролик, он стоит наверху, а галерея из прочих снимков — под
+// текстом; без ролика галерея занимает место обложки.
+$photoSlide = static fn (array $img, string $path, string $caption): array => [
+    'path' => $path,
+    'alt' => (string) ($img['alt'] ?? ''),
+    'caption' => $caption,
+    'focal_x' => isset($img['focal_x']) ? (int) $img['focal_x'] : null,
+    'focal_y' => isset($img['focal_y']) ? (int) $img['focal_y'] : null,
+];
+$extraSlides = array_map(
+    static fn (array $img): array => $photoSlide($img, (string) $img['path'], trim((string) ($img['caption'] ?? '') . ' ' . (string) ($img['credit'] ?? ''))),
+    $extraPhotos
+);
+$coverSlide = $cover !== '' ? $photoSlide(['alt' => (string) $news['title'], 'focal_x' => $news['focal_x'] ?? null, 'focal_y' => $news['focal_y'] ?? null], $cover, $coverCaption) : null;
+$hasVideo = $videoId !== null || $videoFile;
+$topSlides = !$hasVideo && $coverSlide !== null && $extraSlides !== [] ? array_merge([$coverSlide], $extraSlides) : [];
+$bottomSlides = $topSlides === [] ? $extraSlides : [];
 
 $related = array_slice(Portal::cards($related, $lang), 0, 4);
 $next = $nextNews !== null ? (Portal::cards([$nextNews], $lang)[0] ?? null) : null;
@@ -160,6 +178,8 @@ require __DIR__ . '/_top.php';
             <figure class="pt-art__figure">
                 <video class="pt-art__video-file" src="<?= htmlspecialchars($videoUrl, ENT_QUOTES) ?>" controls preload="metadata"<?= $cover !== '' ? ' poster="' . htmlspecialchars($cover, ENT_QUOTES) . '"' : '' ?>></video>
             </figure>
+        <?php elseif ($topSlides !== []): ?>
+            <?php $gallerySlides = $topSlides; $galleryEager = true; require __DIR__ . '/_gallery.php'; ?>
         <?php elseif ($cover !== ''): ?>
             <figure class="pt-art__figure">
                 <div class="pt-ph pt-ph--16x9"><?= Media::picture($cover, (string) $news['title'], isset($news['focal_x']) ? (int) $news['focal_x'] : null, isset($news['focal_y']) ? (int) $news['focal_y'] : null, '', false, '(max-width: 760px) 100vw, 760px', true) ?></div>
@@ -206,16 +226,8 @@ require __DIR__ . '/_top.php';
         <?php endif; ?>
         <?php $adKey = 'mid'; require __DIR__ . '/_ad.php'; ?>
 
-        <?php if ($extraPhotos !== []): ?>
-            <div class="pt-art__photos">
-                <?php foreach ($extraPhotos as $photo): ?>
-                    <figure class="pt-art__figure">
-                        <div class="pt-ph"><?= Media::picture((string) $photo['path'], (string) ($photo['alt'] ?? ''), isset($photo['focal_x']) ? (int) $photo['focal_x'] : null, isset($photo['focal_y']) ? (int) $photo['focal_y'] : null, '', true, '(max-width: 760px) 100vw, 380px') ?></div>
-                        <?php $photoCaption = trim((string) ($photo['caption'] ?? '') . ' ' . (string) ($photo['credit'] ?? '')); ?>
-                        <?php if ($photoCaption !== ''): ?><figcaption><?= htmlspecialchars($photoCaption, ENT_QUOTES) ?></figcaption><?php endif; ?>
-                    </figure>
-                <?php endforeach; ?>
-            </div>
+        <?php if ($bottomSlides !== []): ?>
+            <?php $gallerySlides = $bottomSlides; $galleryEager = false; require __DIR__ . '/_gallery.php'; ?>
         <?php endif; ?>
 
         <?php if ($docs !== []): ?>
