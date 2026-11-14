@@ -193,7 +193,14 @@
         var options = root.querySelector('[data-import-options]');
         var actions = root.querySelector('[data-import-actions]');
         var errors = Array.isArray(value.errors) ? value.errors : [];
-        var safe = Number(value.unresolved || 0) === 0 && errors.length === 0;
+        var safe = errors.length === 0;
+        var orphans = Number(value.unresolved || 0);
+        var okText = root.querySelector('[data-report-ok-text]');
+        if (okText) {
+            okText.textContent = orphans > 0
+                ? 'Переводов без однозначной пары: ' + orphans + ' (post_id: ' + (Array.isArray(value.unresolved_ids) ? value.unresolved_ids.join(', ') : '') + '). Они будут импортированы отдельными новостями на своём языке — после импорта их можно проверить и при необходимости удалить.'
+                : 'Все переводы связаны однозначно. Можно переходить к импорту.';
+        }
         okBox.hidden = !safe;
         errorBox.hidden = safe;
         options.hidden = !safe;
@@ -201,7 +208,7 @@
         if (!safe) {
             root.querySelector('[data-report-error-text]').textContent = errors.length
                 ? errors.join(' ')
-                : 'Есть неопределённые переводы: ' + value.unresolved + '. Импорт не будет запущен.';
+                : '';
         }
         reportStage.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

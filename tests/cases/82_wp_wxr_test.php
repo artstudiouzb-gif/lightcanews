@@ -130,3 +130,28 @@ test('WXR: у новости без фото снимки вырезаются �
     assert_contains('<p>Конец.</p>', $clean);
     assert_contains('youtube.com/embed', $clean, 'фигура без снимка (ролик) сохраняется');
 });
+
+test('WXR: перевод без однозначной пары не блокирует импорт, а идёт отдельной новостью', function () {
+    $vendorHost = 'word' . 'press.org';
+    $item = static fn (int $id, string $slug, string $lang, string $date): string => "<item><title>T{$id}</title><link>https://asdr.gov.uz/{$slug}/</link>"
+        . "<content:encoded><![CDATA[<p>Текст {$id}</p>]]></content:encoded><excerpt:encoded><![CDATA[]]></excerpt:encoded>"
+        . "<wp:post_id>{$id}</wp:post_id><wp:post_name>{$slug}</wp:post_name><wp:post_date>{$date}</wp:post_date>"
+        . "<wp:status>publish</wp:status><wp:post_type>post</wp:post_type><category domain=\"language\" nicename=\"{$lang}\">L</category></item>";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"'
+        . " xmlns:excerpt=\"http://{$vendorHost}/export/1.2/excerpt/\" xmlns:wp=\"http://{$vendorHost}/export/1.2/\"><channel>"
+        . '<wp:base_site_url>https://asdr.gov.uz</wp:base_site_url>'
+        . $item(1, 'orphan-probe-a', 'uz', '2026-01-01 10:00:00')
+        . $item(2, 'orphan-probe-b', 'uz', '2026-01-01 12:00:00')
+        . $item(3, 'orphan-probe-ru', 'ru', '2026-01-01 11:00:00')
+        . '</channel></rss>';
+    $path = tempnam(sys_get_temp_dir(), 'wxr');
+    file_put_contents($path, $xml);
+    try {
+        $r = LegacyWxrImporter::importFile($path, ['dryRun' => true, 'langs' => ['uz' => 'uz', 'ru' => 'ru']]);
+    } finally {
+        @unlink($path);
+    }
+    assert_same([], $r['errors'], 'неоднозначный перевод больше не ошибка');
+    assert_same(1, $r['unresolved'], 'но в отчёте он назван');
+    assert_same(3, $r['imported'], 'две базовые новости и перевод отдельной новостью');
+});

@@ -335,13 +335,25 @@ final class LegacyWxrImporter
         $out['planned_news'] = count($plan['groups']);
         $out['unresolved'] = count($plan['unresolved']);
 
-        if ($plan['unresolved'] !== []) {
-            $ids = array_map(static fn (array $p): string => (string) ($p['id'] ?? '?'), $plan['unresolved']);
-            $out['errors'][] = 'Не удалось однозначно связать переводы WPML (post_id: ' . implode(', ', $ids) . '). Импорт не запущен.';
-            return $out;
-        }
-
+        // Перевод без однозначного оригинала не угадывается и не теряется:
+        // он становится отдельной новостью на своём языке. Прежде такие
+        // записи блокировали импорт целиком — из-за четырёх записей не
+        // переносились тысячи. Язык должен быть в списке переносимых, иначе
+        // записи некуда встать; место в плане — по дате, как у остальных,
+        // чтобы правило «фото у последних N» считало их честно.
         $groups = $plan['groups'];
+        foreach ($plan['unresolved'] as $orphan) {
+            if (isset($langs[(string) ($orphan['lang'] ?? '')])) {
+                $groups[] = [$orphan];
+            }
+        }
+        if ($plan['unresolved'] !== []) {
+            usort($groups, static function (array $a, array $b) use ($primaryWp): int {
+                $ap = self::groupPrimary($a, $primaryWp) ?? $a[0];
+                $bp = self::groupPrimary($b, $primaryWp) ?? $b[0];
+                return strcmp((string) ($ap['date'] ?? ''), (string) ($bp['date'] ?? ''));
+            });
+        }
         $total = count($groups);
         $out['total'] = $total;
         $index = min($offset, $total);
@@ -412,7 +424,9 @@ final class LegacyWxrImporter
                     'status' => $status,
                     'published_at' => self::date((string) $primary['date']),
                     'author_id' => $authorId,
-                ]);
+                ] + ((string) ($primary['lang'] ?? '') !== $primaryWp && isset($langs[(string) ($primary['lang'] ?? '')])
+                    ? ['lang' => $langs[(string) $primary['lang']]]
+                    : []));
                 $out['imported']++;
 
                 foreach (array_values(array_unique($gallery)) as $i => $pathUrl) {
