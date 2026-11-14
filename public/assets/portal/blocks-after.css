@@ -1,0 +1,16 @@
+/* LightCA.News — правки поверх собственных файлов блоков.
+   Файлы типов (таблица, кнопки, показатели…) подключаются после blocks.css и
+   кое-где задают своё скругление, тени и подложки. Здесь они приводятся к
+   языку портала: линейки вместо теней, прямые углы, акцент из «Дизайна». */
+
+.pt-blocks .block-table__grid th { background: var(--paper); font-weight: 800; }
+.pt-blocks .block-table__scroll { border: 1px solid var(--rule); border-radius: var(--r); }
+
+.pt-blocks .block-buttons__btn { border-radius: var(--r); box-shadow: none; }
+
+.pt-blocks .block-counters__grid { box-shadow: none; }
+.pt-blocks .counter__value, .pt-blocks .counter__suffix { color: var(--link); }
+
+.pt-blocks .mediacard { border-radius: var(--r); box-shadow: none; }
+
+.pt-blocks .block-embed__frame { border: 1px solid var(--rule); border-radius: var(--r); overflow: hidden; }

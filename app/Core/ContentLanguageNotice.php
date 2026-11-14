@@ -44,7 +44,7 @@ final class ContentLanguageNotice
         }
 
         http_response_code(404);
-        View::render('site/translation_unavailable', ['alternatives' => $alternatives]);
+        View::render(\App\Core\Portal\Portal::enabled() ? 'portal/translation_unavailable' : 'site/translation_unavailable', ['alternatives' => $alternatives]);
 
         return true;
     }

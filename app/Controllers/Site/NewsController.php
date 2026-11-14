@@ -113,6 +113,10 @@ final class NewsController
         // Лента использует тот же feature-card interaction, что новости на
         // главной: общие рамка, акцентный край, hover и spotlight. Регистрация
         // news_feature заодно подключает стили .relnews-card, нужные контенту.
+        if (\App\Core\Portal\Portal::enabled()) {
+            View::render('portal/news_index', $vars);
+            return;
+        }
         \App\Core\AssetCollector::requireJs('news_feature');
         \App\Core\AssetCollector::requireCss('news-index-pagination', '/assets/css/news-index-pagination.css');
 
@@ -265,6 +269,16 @@ final class NewsController
             }
         }
         OpenGraphHelper::setAdditionalImages($socialImages);
+
+        if (\App\Core\Portal\Portal::enabled()) {
+            View::render('portal/news_show', [
+                'news' => $news,
+                'gallery' => $gallery,
+                'related' => News::related((int) $news['id'], 4, $lang),
+                'nextNews' => $adjacent['next'],
+            ]);
+            return;
+        }
 
         // Стили детальной новости (.newsdetail-*, .relnews-*) вынесены из
         // общего бандла: 42 КБ правил, нужных только здесь, приезжали на

@@ -2,61 +2,57 @@
   ".site-header": "нет на странице",
   ".site-header__logo": "нет на странице",
   ".cms-block--cards_grid .section-head__title": {
-    "color": "rgb(255, 255, 255)",
-    "fontSize": "32px",
-    "fontWeight": "700",
-    "letterSpacing": "-0.64px",
-    "paddingLeft": "18px",
+    "color": "rgb(232, 239, 238)",
+    "fontSize": "23.2px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "paddingLeft": "12px",
     "marginBottom": "0px"
   },
   ".counter__value": {
-    "color": "rgb(255, 255, 255)",
+    "color": "color(srgb 0.55 0.701765 0.691176)",
     "fontSize": "28.8px",
-    "fontWeight": "700",
+    "fontWeight": "800",
     "lineHeight": "28.8px"
   },
   ".counter__label": {
-    "color": "rgb(203, 213, 225)",
+    "color": "rgb(156, 176, 173)",
     "fontSize": "15.2px",
     "lineHeight": "20.52px"
   },
   ".cms-block--cards_grid .feature-card": {
-    "backgroundColor": "rgb(41, 53, 77)",
-    "borderRadius": "14px",
-    "borderTopWidth": "1px",
-    "borderTopColor": "rgba(255, 255, 255, 0.12)",
-    "boxShadow": "rgba(16, 24, 40, 0.06) 0px 1px 3px 0px, rgba(16, 24, 40, 0.05) 0px 6px 18px 0px",
-    "padding": "24px"
+    "backgroundColor": "rgb(20, 33, 32)",
+    "borderRadius": "2px",
+    "borderTopWidth": "3px",
+    "borderTopColor": "rgb(0, 86, 80)",
+    "boxShadow": "none",
+    "padding": "20px"
   },
   ".faq-item": {
-    "backgroundColor": "rgb(41, 53, 77)",
-    "borderRadius": "14px",
-    "borderTopColor": "rgba(255, 255, 255, 0.12)"
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px",
+    "borderTopColor": "rgb(232, 239, 238)"
   },
   ".faq-item__q": {
-    "color": "rgb(255, 255, 255)",
-    "fontSize": "16px",
+    "color": "rgb(232, 239, 238)",
+    "fontSize": "16.32px",
     "fontWeight": "700",
-    "padding": "20px 24px"
+    "padding": "16px 0px"
   },
   ".stage": {
-    "gap": "9px",
-    "paddingTop": "22px",
-    "display": "flex"
+    "gap": "normal",
+    "paddingTop": "0px",
+    "display": "list-item"
   },
   ".contact-card": {
-    "backgroundColor": "rgb(41, 53, 77)",
-    "borderRadius": "14px",
-    "padding": "24px"
+    "backgroundColor": "rgb(20, 33, 32)",
+    "borderRadius": "2px",
+    "padding": "20px"
   },
   ".cms-block--cta": {
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "paddingTop": "0px",
-    "paddingBottom": "28px"
+    "paddingTop": "32px",
+    "paddingBottom": "0px"
   },
-  ".site-footer": {
-    "backgroundColor": "color(srgb 0.0541176 0.155137 0.252549)",
-    "color": "rgba(255, 255, 255, 0.85)",
-    "paddingTop": "36px"
-  }
+  ".site-footer": "нет на странице"
 }
