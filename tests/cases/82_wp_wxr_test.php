@@ -200,3 +200,21 @@ test('WXR: рубрики старого сайта связываются с у
     \App\Core\LegacyCategoryLinker::link($plan, $langs, $auto, true);
     assert_same($rubric, $cat($b), 'с перезаписью — заменена');
 });
+
+test('WXR: главная рубрика записи («Primary») идёт первой', function () {
+    $vendorHost = 'word' . 'press.org';
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"'
+        . " xmlns:excerpt=\"http://{$vendorHost}/export/1.2/excerpt/\" xmlns:wp=\"http://{$vendorHost}/export/1.2/\"><channel>"
+        . '<wp:category><wp:term_id>7</wp:term_id><wp:category_nicename>analytics</wp:category_nicename></wp:category>'
+        . '<wp:category><wp:term_id>9</wp:term_id><wp:category_nicename>marketplaces</wp:category_nicename></wp:category>'
+        . '<item><title>T</title><link>https://old.example/t/</link><content:encoded><![CDATA[x]]></content:encoded>'
+        . '<wp:post_id>1</wp:post_id><wp:post_name>t</wp:post_name><wp:post_date>2025-01-01 10:00:00</wp:post_date>'
+        . '<wp:status>publish</wp:status><wp:post_type>post</wp:post_type>'
+        . '<category domain="category" nicename="analytics"><![CDATA[Аналитика]]></category>'
+        . '<category domain="category" nicename="uzbekistan"><![CDATA[Узбекистан]]></category>'
+        . '<category domain="category" nicename="marketplaces"><![CDATA[Marketplaces]]></category>'
+        . '<wp:postmeta><wp:meta_key>_yoast_wpseo_primary_category</wp:meta_key><wp:meta_value>9</wp:meta_value></wp:postmeta>'
+        . '</item></channel></rss>';
+    $post = LegacyWxrImporter::parse($xml)['posts'][0];
+    assert_same(['marketplaces', 'analytics', 'uzbekistan'], array_keys($post['categories']), 'главная рубрика первой, остальные по порядку');
+});
