@@ -173,3 +173,23 @@ test('Портал: рекламная зона показывается тол�
     ]);
     assert_contains('pt-ad--mid', $html, 'баннер встаёт между первой новостью и сеткой');
 });
+
+test('Портал: статья сохраняет аудио, хронологию, источник, мероприятие и пресс-релиз', function (): void {
+    $_SERVER['REQUEST_URI'] = '/news/probe-news-0';
+    $news = sample_news_rows(1)[0] + [
+        'content' => '<p>Текст.</p>', 'meta_title' => '', 'meta_description' => '', 'lead_html' => '', 'key_points' => '',
+        'hashtags' => '', 'docs' => '[]', 'video_url' => 'https://example.org/clip.mp4', 'updated_at' => '2026-07-19 10:00:00', 'lang' => 'ru',
+        'audio_url' => '/uploads/public/podcast.mp3', 'audio_title' => 'Подкаст выпуска',
+        'source_note' => 'Источник: пресс-служба', 'event_meta' => "Дата: 20 ноября\nМесто: Ташкент",
+        'timeline_json' => '[{"date":"2026","title":"Запуск фабрики","text":"Первая очередь"}]',
+        'press_release_url' => '/uploads/public/release.pdf', 'poll_question' => '', 'poll_options_json' => '',
+    ];
+    $html = render_view('app/Views/portal/news_show.php', ['news' => $news, 'gallery' => [], 'related' => [], 'nextNews' => null]);
+    assert_contains('<audio src="/uploads/public/podcast.mp3"', $html);
+    assert_contains('Подкаст выпуска', $html);
+    assert_contains('<video class="pt-art__video-file" src="https://example.org/clip.mp4"', $html, 'ролик-файл играет встроенный плеер');
+    assert_contains('Запуск фабрики', $html);
+    assert_contains('Источник: пресс-служба', $html);
+    assert_contains('<dt>Место</dt><dd>Ташкент</dd>', $html);
+    assert_contains('href="/uploads/public/release.pdf"', $html);
+});

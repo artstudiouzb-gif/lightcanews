@@ -161,3 +161,58 @@
         });
     }
 })();
+
+/* Опрос в статье: голос уходит тем же адресом, что и в прежнем шаблоне,
+   результаты собираются из ответа узлами, без разметки из строки. */
+(function () {
+    'use strict';
+    document.querySelectorAll('[data-pt-poll]').forEach(function (card) {
+        var form = card.querySelector('.pt-poll__form');
+        var box = card.querySelector('.pt-poll__results');
+        if (!form || !box) { return; }
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var picked = form.querySelector('input[name="poll_option"]:checked');
+            if (!picked) { return; }
+            var button = form.querySelector('button');
+            if (button) { button.disabled = true; }
+            var body = new URLSearchParams();
+            body.append('option', picked.value);
+            var csrf = form.querySelector('input[name="csrf_token"]');
+            if (csrf) { body.append('csrf_token', csrf.value); }
+            fetch('/api/polls/' + encodeURIComponent(card.getAttribute('data-pt-poll')) + '/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok || !data.ok || !data.results) { throw new Error(data.error || 'HTTP ' + res.status); }
+                    return data.results;
+                });
+            }).then(function (results) {
+                box.textContent = '';
+                (Array.isArray(results.items) ? results.items : []).forEach(function (item) {
+                    var pct = Math.min(100, Math.max(0, Number(item.percent) || 0));
+                    var row = document.createElement('div');
+                    row.className = 'pt-poll__row';
+                    var label = document.createElement('span');
+                    label.textContent = String(item.label == null ? '' : item.label);
+                    var value = document.createElement('b');
+                    value.textContent = pct + '%';
+                    var bar = document.createElement('progress');
+                    bar.max = 100; bar.value = pct;
+                    row.appendChild(label); row.appendChild(value); row.appendChild(bar);
+                    box.appendChild(row);
+                });
+                var total = document.createElement('p');
+                total.className = 'pt-meta';
+                total.textContent = (box.getAttribute('data-total-label') || '') + ' ' + (parseInt(results.total, 10) || 0);
+                box.appendChild(total);
+                form.hidden = true;
+                box.hidden = false;
+            }).catch(function () {
+                if (button) { button.disabled = false; }
+            });
+        });
+    });
+})();
