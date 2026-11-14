@@ -40,7 +40,7 @@ final class View
             throw $e;
         }
 
-        if (str_starts_with($template, 'site/') && Asset::cdnBase() !== '') {
+        if (self::isPublic($template) && !str_starts_with($template, 'errors/') && !str_starts_with($template, 'repo/') && Asset::cdnBase() !== '') {
             $html = Asset::rewriteMedia($html);
         }
         // Геометрия иконок встраивается в готовую страницу: так браузер не
@@ -77,6 +77,7 @@ final class View
     private static function isPublic(string $template): bool
     {
         return str_starts_with($template, 'site/')
+            || str_starts_with($template, 'portal/')
             || str_starts_with($template, 'repo/')
             || str_starts_with($template, 'errors/');
     }

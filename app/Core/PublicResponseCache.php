@@ -46,7 +46,8 @@ final class PublicResponseCache
     {
         self::$cacheable = false;
         self::$snapshotable = false;
-        if (!str_starts_with($template, 'site/')) {
+        // Публичные шаблоны — прежний (site/) и шаблон портала (portal/).
+        if (!str_starts_with($template, 'site/') && !str_starts_with($template, 'portal/')) {
             return;
         }
 
