@@ -115,3 +115,18 @@ test('WXR WPML plan не угадывает неоднозначный пере�
     assert_same(1, count($plan['unresolved']), 'равноудалённый RU не привязывается случайно');
     assert_same(3, $plan['unresolved'][0]['id'], 'неоднозначный post_id возвращён в отчёте');
 });
+
+test('WXR: у новости без фото снимки вырезаются из текста, ролики и текст остаются', function () {
+    $html = '<p>Начало.</p><figure class="wp-block-image"><img src="https://old.example/a.jpg" alt=""><figcaption>Подпись</figcaption></figure>'
+        . '<p><a href="https://old.example/b.jpg"><img src="https://old.example/b-300x200.jpg"></a></p>'
+        . '[caption id="x"]<img src="https://old.example/c.jpg"> Старая подпись[/caption]'
+        . '<figure class="wp-block-embed"><iframe src="https://www.youtube.com/embed/x"></iframe></figure>'
+        . '[gallery ids="1,2"]<p>Конец.</p>';
+    $clean = \App\Core\LegacyWxrImporter::stripImages($html);
+    assert_not_contains('<img', $clean);
+    assert_not_contains('Подпись', $clean, 'подпись без снимка не остаётся');
+    assert_not_contains('[gallery', $clean);
+    assert_contains('<p>Начало.</p>', $clean);
+    assert_contains('<p>Конец.</p>', $clean);
+    assert_contains('youtube.com/embed', $clean, 'фигура без снимка (ролик) сохраняется');
+});

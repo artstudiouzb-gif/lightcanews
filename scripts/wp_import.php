@@ -16,6 +16,7 @@ declare(strict_types=1);
  *   --lang OLD:ART   код языка источника → код языка ArtStudio (повторяемо).
  *                    Первый язык считается основным. Например:
  *                    --lang uz:uz --lang ru:ru --lang en:en
+ *   --photos N       фото только у N самых свежих новостей (0 = у всех, только WXR)
  *   --uploads DIR    локальная папка старого wp-content/uploads; если файла
  *                    там нет, импортёр попробует скачать его со старого сайта
  *   --dry-run        построить полный план импорта без записи данных
@@ -48,6 +49,8 @@ for ($i = 0; $i < count($args); $i++) {
         if ($wp !== '' && $art !== '') {
             $opts['langs'][$wp] = $art;
         }
+    } elseif ($a === '--photos' && isset($args[$i + 1])) {
+        $opts['photosLimit'] = max(0, (int) $args[++$i]);
     } elseif ($a === '--uploads' && isset($args[$i + 1])) {
         $opts['uploadsDir'] = $args[++$i];
     } elseif ($a === '--dry-run') {
