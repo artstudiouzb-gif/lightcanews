@@ -82,6 +82,11 @@ require __DIR__ . '/../layout/header.php';
             <div><strong>Импорт заблокирован</strong><span data-report-error-text></span></div>
         </div>
 
+        <div class="news-import__notice" data-category-link hidden>
+            <?= AdminUi::icon('category', 20) ?>
+            <div><strong>Рубрик в файле: <span data-category-count>0</span></strong><span>Новости уже перенесены без разделов? Свяжите их с рубриками старого сайта разом, без переноса заново. <a href="/admin/news/import/categories">Связать рубрики</a></span></div>
+        </div>
+
         <div class="news-import__options" data-import-options hidden>
             <div class="form-field">
                 <label for="import_status">Статус новых новостей</label>

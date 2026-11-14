@@ -7,6 +7,7 @@ namespace App\Core;
 use App\Models\News;
 use App\Models\NewsImage;
 use App\Models\NewsTranslation;
+use App\Models\NewsCategory;
 use App\Models\Redirect;
 
 /**
@@ -72,6 +73,7 @@ final class LegacyWxrImporter
             $lang = '';
             $group = '';
             $categoryLabels = [];
+            $categories = [];
             foreach ($item->category as $cat) {
                 $domain = (string) $cat['domain'];
                 $nicename = (string) $cat['nicename'];
@@ -81,6 +83,9 @@ final class LegacyWxrImporter
                     $group = $nicename;
                 } elseif ($domain === 'category') {
                     $categoryLabels[] = trim((string) $cat);
+                    if ($nicename !== '') {
+                        $categories[$nicename] = trim((string) $cat);
+                    }
                 }
             }
 
@@ -110,6 +115,9 @@ final class LegacyWxrImporter
                 'group' => $group,
                 'thumb_id' => $thumbId,
                 'gallery_ids' => self::extractGalleryIds($body),
+                // Рубрики старого сайта: slug → название. Язык ими не
+                // определяется, они нужны, чтобы новость пришла в раздел.
+                'categories' => $categories,
             ];
             $comments += count($w->comment);
         }
@@ -335,25 +343,10 @@ final class LegacyWxrImporter
         $out['planned_news'] = count($plan['groups']);
         $out['unresolved'] = count($plan['unresolved']);
 
-        // Перевод без однозначного оригинала не угадывается и не теряется:
-        // он становится отдельной новостью на своём языке. Прежде такие
-        // записи блокировали импорт целиком — из-за четырёх записей не
-        // переносились тысячи. Язык должен быть в списке переносимых, иначе
-        // записи некуда встать; место в плане — по дате, как у остальных,
-        // чтобы правило «фото у последних N» считало их честно.
-        $groups = $plan['groups'];
-        foreach ($plan['unresolved'] as $orphan) {
-            if (isset($langs[(string) ($orphan['lang'] ?? '')])) {
-                $groups[] = [$orphan];
-            }
-        }
-        if ($plan['unresolved'] !== []) {
-            usort($groups, static function (array $a, array $b) use ($primaryWp): int {
-                $ap = self::groupPrimary($a, $primaryWp) ?? $a[0];
-                $bp = self::groupPrimary($b, $primaryWp) ?? $b[0];
-                return strcmp((string) ($ap['date'] ?? ''), (string) ($bp['date'] ?? ''));
-            });
-        }
+        $groups = self::importGroups($plan, $langs);
+        // Рубрики старого сайта встают в разделы с тем же slug или названием;
+        // неочевидные соответствия выбираются потом, в связке рубрик.
+        $categoryMap = $dryRun ? [] : LegacyCategoryLinker::autoMatch(LegacyCategoryLinker::sourceCategories($data));
         $total = count($groups);
         $out['total'] = $total;
         $index = min($offset, $total);
@@ -376,10 +369,7 @@ final class LegacyWxrImporter
             $group = $groups[$index];
             $processed++;
             $primary = self::groupPrimary($group, $primaryWp) ?? $group[0];
-            $slug = (string) ($primary['slug'] ?? '');
-            if ($slug === '') {
-                $slug = Slug::make((string) ($primary['title'] ?? ''));
-            }
+            $slug = self::groupSlug($group, $primaryWp);
             if ($slug === '') {
                 $out['skipped']++;
                 continue;
@@ -415,8 +405,23 @@ final class LegacyWxrImporter
                     $cover = $gallery[0];
                 }
 
+                $rubricId = null;
+                $countryIds = [];
+                foreach (self::groupCategories($group) as $cat) {
+                    $catId = (int) ($categoryMap[$cat] ?? 0);
+                    if ($catId <= 0) {
+                        continue;
+                    }
+                    if (NewsCategory::axisOf($catId) === NewsCategory::AXIS_COUNTRY) {
+                        $countryIds[] = $catId;
+                    } elseif ($rubricId === null) {
+                        $rubricId = $catId;
+                    }
+                }
+
                 $newsId = News::create([
                     'title' => self::plain((string) $primary['title']),
+                    'category_id' => $rubricId,
                     'slug' => $slug,
                     'excerpt' => mb_substr(self::plain((string) $primary['excerpt']), 0, 300),
                     'content' => $body,
@@ -428,6 +433,9 @@ final class LegacyWxrImporter
                     ? ['lang' => $langs[(string) $primary['lang']]]
                     : []));
                 $out['imported']++;
+                if ($countryIds !== []) {
+                    NewsCategory::setCountries($newsId, $countryIds);
+                }
 
                 foreach (array_values(array_unique($gallery)) as $i => $pathUrl) {
                     NewsImage::create($newsId, $pathUrl, null, $i);
@@ -582,6 +590,75 @@ final class LegacyWxrImporter
             }
         }
         return null;
+    }
+
+    /**
+     * Группы, которые импорт превращает в новости, в его порядке: план плюс
+     * переводы без оригинала отдельными новостями. Тот же список читает
+     * связка рубрик уже перенесённых новостей — второй способ собрать группы
+     * разошёлся бы с импортом, и рубрика ушла бы не той новости.
+     *
+     * @param array{groups:array<int,array<int,array<string,mixed>>>,unresolved:array<int,array<string,mixed>>} $plan
+     * @param array<string,string> $langs
+     * @return array<int,array<int,array<string,mixed>>>
+     */
+    public static function importGroups(array $plan, array $langs): array
+    {
+        $primaryWp = $langs !== [] ? (string) array_key_first($langs) : 'uz';
+        // Перевод без однозначного оригинала не угадывается и не теряется:
+        // он становится отдельной новостью на своём языке. Прежде такие
+        // записи блокировали импорт целиком — из-за четырёх записей не
+        // переносились тысячи. Язык должен быть в списке переносимых, иначе
+        // записи некуда встать; место в плане — по дате, как у остальных,
+        // чтобы правило «фото у последних N» считало их честно.
+        $groups = $plan['groups'];
+        foreach ($plan['unresolved'] as $orphan) {
+            if (isset($langs[(string) ($orphan['lang'] ?? '')])) {
+                $groups[] = [$orphan];
+            }
+        }
+        if ($plan['unresolved'] !== []) {
+            usort($groups, static function (array $a, array $b) use ($primaryWp): int {
+                $ap = self::groupPrimary($a, $primaryWp) ?? $a[0];
+                $bp = self::groupPrimary($b, $primaryWp) ?? $b[0];
+                return strcmp((string) ($ap['date'] ?? ''), (string) ($bp['date'] ?? ''));
+            });
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Адрес новости, в которую импорт превращает группу (пусто — группа не
+     * переносится). Правило одно на импорт и на связку рубрик.
+     *
+     * @param array<int,array<string,mixed>> $group
+     */
+    public static function groupSlug(array $group, string $primaryWp): string
+    {
+        $primary = self::groupPrimary($group, $primaryWp) ?? $group[0];
+        $slug = (string) ($primary['slug'] ?? '');
+
+        return $slug !== '' ? $slug : Slug::make((string) ($primary['title'] ?? ''));
+    }
+
+    /**
+     * Рубрики группы со всех её языков: на старом сайте перевод мог стоять в
+     * своей рубрике, а у новости здесь набор один.
+     *
+     * @param array<int,array<string,mixed>> $group
+     * @return list<string>
+     */
+    public static function groupCategories(array $group): array
+    {
+        $slugs = [];
+        foreach ($group as $p) {
+            foreach (array_keys((array) ($p['categories'] ?? [])) as $slug) {
+                $slugs[(string) $slug] = true;
+            }
+        }
+
+        return array_keys($slugs);
     }
 
     /** @param array<int,array<string,mixed>> $group */

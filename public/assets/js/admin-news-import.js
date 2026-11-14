@@ -210,6 +210,14 @@
                 ? errors.join(' ')
                 : '';
         }
+        var categoryLink = root.querySelector('[data-category-link]');
+        if (categoryLink) {
+            var categoryCount = Number(value.categories || 0);
+            categoryLink.hidden = categoryCount < 1;
+            categoryLink.querySelector('a').href = '/admin/news/import/categories?token=' + encodeURIComponent(token);
+            var countField = categoryLink.querySelector('[data-category-count]');
+            if (countField) countField.textContent = String(categoryCount);
+        }
         reportStage.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 

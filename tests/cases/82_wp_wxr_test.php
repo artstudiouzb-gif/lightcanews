@@ -155,3 +155,48 @@ test('WXR: перевод без однозначной пары не блоки
     assert_same(1, $r['unresolved'], 'но в отчёте он назван');
     assert_same(3, $r['imported'], 'две базовые новости и перевод отдельной новостью');
 });
+
+test('WXR: рубрики старого сайта связываются с уже перенесёнными новостями', function () {
+    ensure_test_db();
+    $vendorHost = 'word' . 'press.org';
+    $sfx = bin2hex(random_bytes(3));
+    $rubric = (int) \App\Models\NewsCategory::create('Аналитика ' . $sfx, 'analitika-' . $sfx);
+    $country = (int) \App\Models\NewsCategory::create('Казахстан ' . $sfx, 'kz-' . $sfx, true, 0, '', \App\Models\NewsCategory::AXIS_COUNTRY);
+    $manual = (int) \App\Models\NewsCategory::create('Ручная ' . $sfx);
+
+    $item = static fn (int $id, string $slug, string $cats): string => "<item><title>T{$id}</title><link>https://old.example/{$slug}/</link>"
+        . '<content:encoded><![CDATA[<p>x</p>]]></content:encoded><excerpt:encoded><![CDATA[]]></excerpt:encoded>'
+        . "<wp:post_id>{$id}</wp:post_id><wp:post_name>{$slug}</wp:post_name><wp:post_date>2025-0{$id}-01 10:00:00</wp:post_date>"
+        . "<wp:status>publish</wp:status><wp:post_type>post</wp:post_type><category domain=\"language\" nicename=\"ru\">Русский</category>{$cats}</item>";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"'
+        . " xmlns:excerpt=\"http://{$vendorHost}/export/1.2/excerpt/\" xmlns:wp=\"http://{$vendorHost}/export/1.2/\"><channel>"
+        . $item(1, 'cat-a-' . $sfx, "<category domain=\"category\" nicename=\"analytics-old\"><![CDATA[Аналитика {$sfx}]]></category><category domain=\"category\" nicename=\"kz-{$sfx}\"><![CDATA[KZ]]></category>")
+        . $item(2, 'cat-b-' . $sfx, '<category domain="category" nicename="analytics-old"><![CDATA[Аналитика ' . $sfx . ']]></category>')
+        . $item(3, 'cat-c-' . $sfx, '<category domain="category" nicename="misc"><![CDATA[Разное]]></category>')
+        . '</channel></rss>';
+    $data = LegacyWxrImporter::parse($xml);
+    assert_same(['analytics-old' => 'Аналитика ' . $sfx, 'kz-' . $sfx => 'KZ'], $data['posts'][0]['categories'], 'рубрики поста разобраны');
+
+    $source = \App\Core\LegacyCategoryLinker::sourceCategories($data);
+    assert_same(2, $source['analytics-old']['count'], 'число записей рубрики');
+    $auto = \App\Core\LegacyCategoryLinker::autoMatch($source);
+    assert_same($rubric, $auto['analytics-old'] ?? 0, 'совпадение по названию');
+    assert_same($country, $auto['kz-' . $sfx] ?? 0, 'совпадение по slug');
+    assert_true(!isset($auto['misc']), 'неочевидное не угадывается');
+
+    $a = (int) \App\Models\News::create(['title' => 'A', 'slug' => 'cat-a-' . $sfx, 'content' => 'x', 'status' => 'published']);
+    $b = (int) \App\Models\News::create(['title' => 'B', 'slug' => 'cat-b-' . $sfx, 'content' => 'x', 'status' => 'published', 'category_id' => $manual]);
+
+    $langs = ['ru' => 'ru'];
+    $plan = LegacyWxrImporter::plan($data, $langs);
+    $r = \App\Core\LegacyCategoryLinker::link($plan, $langs, $auto);
+    assert_same(2, $r['news'], 'обе перенесённые новости найдены');
+    assert_same(1, $r['missing'], 'неперенесённая названа');
+    $cat = static fn (int $id): int => (int) \App\Core\Database::pdo()->query('SELECT category_id FROM news WHERE id = ' . $id)->fetchColumn();
+    assert_same($rubric, $cat($a), 'пустая рубрика заполнена');
+    assert_same([$country], \App\Models\NewsCategory::countryIdsFor([$a])[$a] ?? [], 'страна добавлена');
+    assert_same($manual, $cat($b), 'ручная рубрика не затёрта');
+
+    \App\Core\LegacyCategoryLinker::link($plan, $langs, $auto, true);
+    assert_same($rubric, $cat($b), 'с перезаписью — заменена');
+});
