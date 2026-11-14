@@ -218,3 +218,46 @@ test('WXR: главная рубрика записи («Primary») идёт п�
     $post = LegacyWxrImporter::parse($xml)['posts'][0];
     assert_same(['marketplaces', 'analytics', 'uzbekistan'], array_keys($post['categories']), 'главная рубрика первой, остальные по порядку');
 });
+
+test('WXR: язык записи без пометки читается по письменности текста', function () {
+    assert_same('ru', LegacyWxrImporter::textLanguage('<p>Министерство подписало соглашение о поставках хлопка и текстиля</p>'), 'русская кириллица');
+    assert_same('uz', LegacyWxrImporter::textLanguage('<p>Вазирлик пахта ва тўқимачилик маҳсулотлари етказиб бериш бўйича келишув имзолади</p>'), 'узбекская кириллица');
+    assert_same('uz', LegacyWxrImporter::textLanguage('<p>Vazirlik paxta va toʻqimachilik mahsulotlari yetkazib berish boʻyicha kelishuv imzoladi</p>'), 'узбекская латиница');
+    assert_same('', LegacyWxrImporter::textLanguage('<img src="x.jpg">'), 'без текста не судим');
+    assert_same('ru', LegacyWxrImporter::inferWpmlLanguage('https://old.example/post/?lang=ru', [], 'Vazirlik paxta va kelishuv imzoladi va boshqalar'), 'параметр адреса главнее текста');
+});
+
+test('WXR: исправление языков связывает перенесённые порознь переводы', function () {
+    ensure_test_db();
+    $vendorHost = 'word' . 'press.org';
+    $sfx = bin2hex(random_bytes(3));
+    $item = static fn (int $id, string $slug, string $title, string $text): string => "<item><title>{$title}</title><link>https://old.example/{$slug}/</link>"
+        . "<content:encoded><![CDATA[<p>{$text}</p>]]></content:encoded><excerpt:encoded><![CDATA[]]></excerpt:encoded>"
+        . "<wp:post_id>{$id}</wp:post_id><wp:post_name>{$slug}</wp:post_name><wp:post_date>2025-03-03 10:00:00</wp:post_date>"
+        . '<wp:status>publish</wp:status><wp:post_type>post</wp:post_type></item>';
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"'
+        . " xmlns:excerpt=\"http://{$vendorHost}/export/1.2/excerpt/\" xmlns:wp=\"http://{$vendorHost}/export/1.2/\"><channel>"
+        . $item(1, 'lp-uz-' . $sfx, 'Kelishuv', 'Vazirlik paxta va toʻqimachilik mahsulotlari boʻyicha kelishuv imzoladi')
+        . $item(2, 'lp-ru-' . $sfx, 'Соглашение', 'Министерство подписало соглашение о поставках хлопка и текстиля')
+        . '</channel></rss>';
+    $data = LegacyWxrImporter::parse($xml);
+    assert_same(['uz', 'ru'], array_column($data['posts'], 'lang'), 'языки определены по тексту');
+
+    // Так их перенёс прежний импорт: две отдельные узбекские новости.
+    $uz = (int) \App\Models\News::create(['title' => 'Kelishuv', 'slug' => 'lp-uz-' . $sfx, 'content' => 'x', 'status' => 'published', 'lang' => 'uz']);
+    $ru = (int) \App\Models\News::create(['title' => 'Соглашение', 'slug' => 'lp-ru-' . $sfx, 'content' => 'x', 'status' => 'published', 'lang' => 'uz']);
+
+    $langs = ['uz' => 'uz', 'ru' => 'ru', 'en' => 'en'];
+    $plan = LegacyWxrImporter::plan($data, $langs);
+    $preview = \App\Core\LegacyLanguageRepair::run($plan, $langs, true);
+    assert_same([1, 1], [$preview['lang_changed'], $preview['linked']], 'предпросмотр называет правку');
+    $row = static fn (int $id): array => \App\Core\Database::pdo()->query('SELECT lang, translation_group_id FROM news WHERE id = ' . $id)->fetch();
+    assert_same('uz', $row($ru)['lang'], 'предпросмотр ничего не меняет');
+
+    \App\Core\LegacyLanguageRepair::run($plan, $langs);
+    assert_same('ru', $row($ru)['lang'], 'русская новость стала русской');
+    assert_same($uz, (int) $row($ru)['translation_group_id'], 'и связана с узбекской');
+    assert_same('uz', $row($uz)['lang'], 'основная осталась узбекской');
+    $again = \App\Core\LegacyLanguageRepair::run($plan, $langs, true);
+    assert_same([0, 0], [$again['lang_changed'], $again['linked']], 'повторный проход ничего не меняет');
+});

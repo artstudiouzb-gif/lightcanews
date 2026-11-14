@@ -12,10 +12,26 @@ use App\Core\UzCyrillic;
  */
 
 test('Отображение: пустой cookie — обычная страница', function () {
-    assert_same(A11ySettings::DEFAULTS, A11ySettings::fromCookie(null));
-    assert_same(A11ySettings::DEFAULTS, A11ySettings::fromCookie(''));
-    assert_false(A11ySettings::isActive(A11ySettings::DEFAULTS));
-    assert_same('', A11ySettings::htmlAttributes(A11ySettings::DEFAULTS));
+    assert_same(A11ySettings::defaults(), A11ySettings::fromCookie(null));
+    assert_same(A11ySettings::defaults(), A11ySettings::fromCookie(''));
+    assert_false(A11ySettings::isActive(A11ySettings::defaults()));
+    assert_same('', A11ySettings::htmlAttributes(A11ySettings::defaults()));
+});
+
+test('Отображение: узбекский по умолчанию кириллицей, выбор посетителя главнее', function () {
+    ensure_test_db();
+    \App\Models\Setting::set(\App\Core\UzCyrillic::SETTING, '1');
+    \App\Models\Setting::set(\App\Core\UzCyrillic::DEFAULT_SETTING, 'cyrl');
+    assert_same('cyrl', A11ySettings::fromCookie(null)['script'], 'без выбора — кириллица');
+    assert_same('cyrl', A11ySettings::fromCookie('size=120')['script'], 'cookie без письменности — тоже умолчание');
+    assert_same('latn', A11ySettings::fromCookie('script=latn')['script'], 'выбранная латиница главнее');
+    assert_false(A11ySettings::isActive(A11ySettings::fromCookie(null)), 'умолчание не делает ответ личным');
+
+    \App\Models\Setting::set(\App\Core\UzCyrillic::DEFAULT_SETTING, 'latn');
+    assert_same('latn', A11ySettings::fromCookie(null)['script'], 'владелец выбрал латиницу');
+    \App\Models\Setting::set(\App\Core\UzCyrillic::DEFAULT_SETTING, 'cyrl');
+    \App\Models\Setting::set(\App\Core\UzCyrillic::SETTING, '0');
+    assert_same('latn', A11ySettings::fromCookie(null)['script'], 'кириллица выключена — латиница');
 });
 
 test('Отображение: значения из cookie нормализуются', function () {

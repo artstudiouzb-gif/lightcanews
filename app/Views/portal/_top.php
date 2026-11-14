@@ -71,23 +71,35 @@ $isCurrent = static function (string $url) use ($requestPath): bool {
     return $requestPath !== '' && $requestPath === rtrim((string) parse_url($url, PHP_URL_PATH), '/');
 };
 
+$uzScript = \App\Core\A11ySettings::fromCookie($_COOKIE[\App\Core\A11ySettings::COOKIE] ?? null)['script'];
 $langLinks = [];
 foreach (Language::site() as $language) {
     $code = (string) $language['code'];
     $langLinks[] = [
         'code' => $code,
-        'label' => Language::shortLabel($language),
-        'url' => (static function (string $code): string {
+        'url' => (static function (string $code) use ($uzScript): string {
             // `?_lang=` перезаписывает запомненный язык (cookie site_lang):
             // без него ссылка на основной язык (без префикса) уводила обратно
             // на язык из cookie. Материала нет на выбранном языке — адрес тот
             // же, и страница сама скажет, что перевода нет.
             $href = Locale::url(Locale::alternatePath($code), $code) . '?' . \App\Core\LocalePreference::QUERY . '=' . rawurlencode($code);
-            // На узбекский возвращаемся в латинице, как прежний переключатель.
-            return $code === 'uz' && \App\Core\UzCyrillic::enabled() ? '/script/latn?to=' . rawurlencode($href) : $href;
+            // Выбранная посетителем письменность главнее умолчания сайта.
+            return $code === 'uz' && \App\Core\UzCyrillic::enabled() ? '/script/' . $uzScript . '?to=' . rawurlencode($href) : $href;
         })($code),
+        // Подпись узбекского — в той письменности, в которой он откроется.
+        'label' => $code === 'uz' && $uzScript === 'cyrl' ? \App\Core\UzCyrillic::text(Language::shortLabel($language)) : Language::shortLabel($language),
         'current' => $code === $currentLang,
     ];
+}
+// Переключатель письменности — на узбекских страницах: кириллица по умолчанию,
+// латиница по выбору. Подпись не транслитерируется (data-no-translit), иначе
+// «Lotincha» на кириллической странице стала бы «Лотинча».
+$scriptLink = null;
+if ($currentLang === 'uz' && \App\Core\UzCyrillic::enabled()) {
+    $here = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+    $scriptLink = $uzScript === 'cyrl'
+        ? ['url' => '/script/latn?to=' . rawurlencode($here), 'label' => 'Lotincha']
+        : ['url' => '/script/cyrl?to=' . rawurlencode($here), 'label' => 'Кириллча'];
 }
 $currentLangLabel = '';
 foreach ($langLinks as $langLink) {
@@ -176,6 +188,9 @@ foreach ($langLinks as $langLink) {
                         <?php foreach ($langLinks as $langLink): ?>
                             <li><a href="<?= htmlspecialchars($langLink['url'], ENT_QUOTES) ?>" hreflang="<?= htmlspecialchars($langLink['code'], ENT_QUOTES) ?>"<?= $langLink['current'] ? ' aria-current="true"' : '' ?>><?= htmlspecialchars($langLink['label'], ENT_QUOTES) ?></a></li>
                         <?php endforeach; ?>
+                        <?php if ($scriptLink !== null): ?>
+                            <li><a href="<?= htmlspecialchars($scriptLink['url'], ENT_QUOTES) ?>" rel="nofollow" data-no-translit><?= htmlspecialchars($scriptLink['label'], ENT_QUOTES) ?></a></li>
+                        <?php endif; ?>
                     </ul>
                 </details>
                 <?php endif; ?>

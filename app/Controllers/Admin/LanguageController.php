@@ -157,6 +157,7 @@ final class LanguageController
         $enabled = Input::post()->bool('uz_cyrillic');
         Setting::set(UzCyrillic::SETTING, $enabled ? '1' : '0');
         Setting::set(\App\Core\UzLatin::SETTING, Input::post()->bool('uz_latin_new') ? '1' : '0');
+        Setting::set(UzCyrillic::DEFAULT_SETTING, Input::post()->oneOf('uz_script_default', ['cyrl', 'latn'], 'cyrl'));
         // Пункт «Ўзбекча» печатает шапка, а она лежит в кэше страниц.
         Cache::forgetPrefix('page:');
         Flash::success('Письменности сохранены. ' . ($enabled ? 'Кириллица включена.' : 'Кириллица выключена: пункт «Ўзбекча» убран из переключателя языков.'));
