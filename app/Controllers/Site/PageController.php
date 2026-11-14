@@ -18,6 +18,17 @@ final class PageController
         $lang = Locale::current();
         $page = Page::findHome($lang);
 
+        // Новый шаблон портала собирает главную из новостей. Страница-главная
+        // из конструктора остаётся источником заголовка и описания для поиска.
+        if (\App\Core\Portal\Portal::enabled()) {
+            View::render('portal/home', [
+                'home' => \App\Core\Portal\Portal::home($lang),
+                'metaTitle' => (string) ($page['meta_title'] ?? ''),
+                'metaDescription' => (string) ($page['meta_description'] ?? ($page['lead'] ?? '')),
+            ]);
+            return;
+        }
+
         if (!$page) {
             http_response_code(404);
             View::render('errors/404');
