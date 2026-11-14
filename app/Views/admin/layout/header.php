@@ -69,6 +69,7 @@ if ($navIsSuper) {
         'widgets' => ['/admin/widgets', t('Виджеты')],
         'header' => ['/admin/header', t('Шапка сайта')],
         'footer' => ['/admin/footer', t('Подвал сайта')],
+        'ads' => ['/admin/ads', t('Реклама')],
     ];
     $navSystem = [
         'health' => ['/admin/health', t('Состояние системы')],

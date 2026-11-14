@@ -21,6 +21,7 @@ $voices = (array) ($home['voices'] ?? []);
 $rates = \App\Core\CurrencyRates::current();
 $newsUrl = Locale::url('news');
 
+$adPlace = 'home';
 require __DIR__ . '/_top.php';
 ?>
 <h1 class="pt-visually-hidden"><?= htmlspecialchars($metaTitle !== '' ? $metaTitle : t('Главное в отрасли'), ENT_QUOTES) ?></h1>
@@ -80,19 +81,25 @@ require __DIR__ . '/_top.php';
             <h2 id="pt-feed-title"><?= htmlspecialchars(t('Лента новостей'), ENT_QUOTES) ?></h2>
         </header>
         <ol class="pt-feed__list">
-            <?php foreach ($feed as $card): ?>
+            <?php foreach ($feed as $feedIndex => $card): ?>
                 <li>
                     <a href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
-                        <time datetime="<?= htmlspecialchars((string) $card['datetime'], ENT_QUOTES) ?>"><?= htmlspecialchars($card['is_today'] ? (string) $card['time'] : (string) $card['day'], ENT_QUOTES) ?></time>
+                        <span class="pt-feed__stamp">
+                            <time datetime="<?= htmlspecialchars((string) $card['datetime'], ENT_QUOTES) ?>"><?= htmlspecialchars((string) $card['time'], ENT_QUOTES) ?></time>
+                            <span class="pt-feed__date"><?= htmlspecialchars((string) $card['day_full'], ENT_QUOTES) ?></span>
+                        </span>
                         <span>
-                            <?php if ($card['rubric'] !== ''): ?><span class="pt-feed__rubric"><?= htmlspecialchars((string) $card['rubric'], ENT_QUOTES) ?></span><?php endif; ?>
+                            <?php $feedKicker = trim($card['rubric'] . ($card['countries'] !== [] ? ' · ' . implode(', ', $card['countries']) : ''), ' ·'); ?>
+                            <?php if ($feedKicker !== ''): ?><span class="pt-feed__rubric"><?= htmlspecialchars($feedKicker, ENT_QUOTES) ?></span><?php endif; ?>
                             <span class="pt-hl"><?= htmlspecialchars((string) $card['title'], ENT_QUOTES) ?></span>
                         </span>
                     </a>
                 </li>
+                <?php if ($feedIndex === 2): $adKey = 'feed'; require __DIR__ . '/_ad.php'; endif; ?>
             <?php endforeach; ?>
         </ol>
         <a class="pt-btn pt-btn--wide" href="<?= htmlspecialchars($newsUrl, ENT_QUOTES) ?>"><?= htmlspecialchars(t('Вся лента'), ENT_QUOTES) ?></a>
+        <?php $adKey = 'partner'; require __DIR__ . '/_ad.php'; ?>
     </aside>
 </div>
 
@@ -128,6 +135,8 @@ require __DIR__ . '/_top.php';
     </div>
 </section>
 <?php endif; ?>
+
+<?php $adKey = 'mid'; require __DIR__ . '/_ad.php'; ?>
 
 <?php if ($regions !== []): ?>
 <section class="pt-wrap pt-sec" aria-labelledby="pt-reg-title" data-pt-regions>
@@ -179,6 +188,33 @@ require __DIR__ . '/_top.php';
 </section>
 <?php endif; ?>
 
+<?php
+// Канал в Telegram берётся из соцкнопок шапки — тех же, что в подвале. Нет
+// канала — остаётся подписка на почту, пустого баннера не бывает.
+$tgUrl = '';
+foreach ((array) (\App\Core\HeaderConfig::get()['social_buttons'] ?? []) as $tgBtn) {
+    $tgCandidate = (string) ($tgBtn['url'] ?? '');
+    if (strtolower((string) ($tgBtn['network'] ?? '')) === 'telegram' && $tgCandidate !== '' && \App\Core\UrlGuard::isSafeLink($tgCandidate)) {
+        $tgUrl = $tgCandidate;
+        break;
+    }
+}
+$tgHandle = preg_match('~t\.me/([A-Za-z0-9_]{3,})~', $tgUrl, $tgMatch) ? '@' . $tgMatch[1] : 'Telegram';
+?>
+<?php if ($tgUrl !== ''): ?>
+<section class="pt-subscribe" aria-labelledby="pt-sub-title">
+    <div class="pt-wrap">
+        <div class="pt-tg">
+            <div class="pt-tg__body">
+                <p class="pt-tg__top"><span class="pt-tg__kicker"><?= htmlspecialchars(t('Telegram-канал'), ENT_QUOTES) ?></span><span class="pt-tg__pill"><?= htmlspecialchars(t('Ежедневно'), ENT_QUOTES) ?></span></p>
+                <h2 id="pt-sub-title"><?= htmlspecialchars(t('Новости отрасли — туда, где вы их читаете'), ENT_QUOTES) ?></h2>
+                <p><?= htmlspecialchars(t('Оперативные сводки в Telegram: котировки хлопка и пряжи, прямые включения с выставок и новости маркетплейсов.'), ENT_QUOTES) ?></p>
+            </div>
+            <a class="pt-btn pt-btn--brand pt-tg__cta" href="<?= htmlspecialchars($tgUrl, ENT_QUOTES) ?>" target="_blank" rel="noopener"><?= htmlspecialchars(t('Открыть'), ENT_QUOTES) ?> <?= htmlspecialchars($tgHandle, ENT_QUOTES) ?></a>
+        </div>
+    </div>
+</section>
+<?php else: ?>
 <section class="pt-subscribe" aria-labelledby="pt-sub-title">
     <div class="pt-wrap pt-subscribe__row">
         <div class="pt-subscribe__intro">
@@ -198,5 +234,6 @@ require __DIR__ . '/_top.php';
         </form>
     </div>
 </section>
+<?php endif; ?>
 
 <?php require __DIR__ . '/_bottom.php'; ?>

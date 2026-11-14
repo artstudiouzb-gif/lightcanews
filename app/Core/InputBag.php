@@ -133,6 +133,20 @@ final class InputBag
     }
 
     /**
+     * Вложенная группа полей (`name[key][field]`) — для форм, где ключи
+     * объявлены списком на стороне сервера, а значения разбирает он же.
+     * Не массив — пустая группа.
+     *
+     * @return array<mixed>
+     */
+    public function group(string $key): array
+    {
+        $value = $this->data[$key] ?? [];
+
+        return is_array($value) ? $value : [];
+    }
+
+    /**
      * Список положительных id (массовые действия). Мусор и повторы выпадают.
      *
      * @return list<int>

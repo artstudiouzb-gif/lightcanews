@@ -202,4 +202,6 @@ foreach ($langLinks as $langLink) {
     </form>
 </dialog>
 
+<?php $adKey = 'top'; require __DIR__ . '/_ad.php'; ?>
+
 <main id="main-content">
