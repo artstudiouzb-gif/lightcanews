@@ -130,7 +130,7 @@ foreach ($langLinks as $langLink) {
 <style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>}</style>
 </head>
 <body class="pt">
-<a class="pt-skip" href="#main"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>
+<a class="pt-skip skip-link" href="#main-content"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>
 
 <header class="pt-mast">
     <div class="pt-mast__hem" aria-hidden="true"></div>
@@ -157,7 +157,7 @@ foreach ($langLinks as $langLink) {
                     </ul>
                 </details>
                 <?php endif; ?>
-                <a class="pt-btn pt-btn--search" href="<?= htmlspecialchars(Locale::url('search'), ENT_QUOTES) ?>" data-pt-search>
+                <a class="pt-btn pt-btn--search" href="<?= htmlspecialchars(Locale::url('search'), ENT_QUOTES) ?>" data-pt-search aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                     <span><?= htmlspecialchars(t('Поиск'), ENT_QUOTES) ?></span>
                 </a>
@@ -180,12 +180,12 @@ foreach ($langLinks as $langLink) {
     </div>
 </header>
 
-<dialog class="pt-search" id="pt-search" aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
+<dialog class="pt-search" id="site-quick-search-modal" aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
     <form class="pt-search__box" action="<?= htmlspecialchars(Locale::url('search'), ENT_QUOTES) ?>" method="get" role="search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="search" name="q" minlength="2" required autocomplete="off" placeholder="<?= htmlspecialchars(t('Поиск по статьям, рубрикам и тегам'), ENT_QUOTES) ?>" aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
+        <input type="search" id="site-quick-search-input" name="q" minlength="2" required autocomplete="off" placeholder="<?= htmlspecialchars(t('Поиск по статьям, рубрикам и тегам'), ENT_QUOTES) ?>" aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
         <button type="button" class="pt-search__close" data-pt-search-close>Esc</button>
     </form>
 </dialog>
 
-<main id="main">
+<main id="main-content">

@@ -20,7 +20,7 @@
     }
 
     // Поиск окном, Ctrl+K открывает его с клавиатуры.
-    var dialog = document.getElementById('pt-search');
+    var dialog = document.getElementById('site-quick-search-modal');
     var trigger = document.querySelector('[data-pt-search]');
     if (dialog && typeof dialog.showModal === 'function') {
         var open = function (event) {

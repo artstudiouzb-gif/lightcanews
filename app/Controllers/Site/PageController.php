@@ -23,7 +23,7 @@ final class PageController
         if (\App\Core\Portal\Portal::enabled()) {
             View::render('portal/home', [
                 'home' => \App\Core\Portal\Portal::home($lang),
-                'metaTitle' => (string) ($page['meta_title'] ?? ''),
+                'metaTitle' => (string) (($page['meta_title'] ?? '') !== '' ? $page['meta_title'] : ($page['title'] ?? '')),
                 'metaDescription' => (string) ($page['meta_description'] ?? ($page['lead'] ?? '')),
             ]);
             return;
