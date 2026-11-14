@@ -196,3 +196,30 @@ test('Новости: публичные списки, рубрики и свя�
         }
     }
 });
+
+test('Новости: язык записи меняется, но не на занятый переводом или версией группы', function (): void {
+    ensure_test_db();
+    $pdo = Database::pdo();
+    $active = array_map(static fn (array $l): string => (string) $l['code'], \App\Models\Language::active());
+    if (!in_array('ru', $active, true) || !in_array('uz', $active, true)) {
+        return; // в тестовой базе нет двух активных языков — проверять нечего
+    }
+    $suffix = bin2hex(random_bytes(4));
+    $ins = $pdo->prepare("INSERT INTO news (title, slug, content, status, published_at, lang, translation_group_id, created_at)
+        VALUES (:t, :s, '', 'draft', NOW(), :lang, :g, NOW())");
+    $ins->execute(['t' => 'Сирота', 's' => 'orphan-' . $suffix, 'lang' => 'uz', 'g' => null]);
+    $orphan = (int) $pdo->lastInsertId();
+
+    assert_same(null, News::changeLang($orphan, 'ru'), 'одиночная запись меняет язык');
+    assert_same('ru', (string) News::findById($orphan)['lang']);
+
+    NewsTranslation::upsert($orphan, 'uz', ['title' => 'Tarjima', 'excerpt' => '', 'content' => '']);
+    assert_true(News::changeLang($orphan, 'uz') !== null, 'на язык своего перевода — отказ');
+    assert_same('ru', (string) News::findById($orphan)['lang'], 'язык не тронут');
+
+    $ins->execute(['t' => 'База', 's' => 'base-' . $suffix, 'lang' => 'uz', 'g' => null]);
+    $base = (int) $pdo->lastInsertId();
+    $ins->execute(['t' => 'Версия', 's' => 'ver-' . $suffix, 'lang' => 'ru', 'g' => $base]);
+    $version = (int) $pdo->lastInsertId();
+    assert_true(News::changeLang($version, 'uz') !== null, 'язык, занятый другой записью группы, — отказ');
+});

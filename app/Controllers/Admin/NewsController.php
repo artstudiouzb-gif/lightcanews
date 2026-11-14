@@ -134,6 +134,11 @@ final class NewsController
         // Альбом пересобирается до чистки: снятые из галереи фото иначе
         // остались бы «используемыми» старым составом альбома.
         self::syncAlbum($id);
+        // Язык самой записи меняется отдельно от полей: у смены свои запреты
+        // (занятый язык в группе, перевод на тот же язык), и отказ не должен
+        // откатывать остальное сохранение — он приходит предупреждением.
+        $recordLang = trim((string) ($_POST['record_lang'] ?? ''));
+        $langError = $recordLang !== '' ? News::changeLang($id, $recordLang) : null;
         if ($purgeAfterCommit !== []) {
             \App\Core\MediaCleaner::purgeUnreferenced($purgeAfterCommit);
         }
@@ -345,7 +350,11 @@ final class NewsController
         }
 
         $langParam = $activeLang !== '' ? '&lang=' . urlencode($activeLang) : '';
-        Flash::success('Новость обновлена.');
+        if ($langError !== null) {
+            Flash::error('Новость сохранена, но язык не изменён: ' . $langError);
+        } else {
+            Flash::success('Новость обновлена.');
+        }
         header('Location: /admin/news/' . $id . '/edit?draft_saved=news%3A' . $id . $langParam);
         exit;
     }

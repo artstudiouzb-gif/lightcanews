@@ -600,6 +600,17 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                         <label class="u-inline-0b87e9e0af" for="published_at">Дата публикации</label>
                         <input type="datetime-local" id="published_at" name="published_at" value="<?= htmlspecialchars($publishedAtValue, ENT_QUOTES) ?>">
                     </div>
+                    <?php if ($isEdit): ?>
+                    <div class="form-field">
+                        <label class="u-inline-0b87e9e0af" for="record_lang">Язык новости</label>
+                        <select id="record_lang" name="record_lang">
+                            <?php foreach (\App\Models\Language::active() as $recLang): ?>
+                                <option value="<?= htmlspecialchars((string) $recLang['code'], ENT_QUOTES) ?>"<?= (string) $recLang['code'] === (string) ($news['lang'] ?? \App\Models\Language::defaultCode()) ? ' selected' : '' ?>><?= htmlspecialchars((string) $recLang['name'], ENT_QUOTES) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <span class="form-hint">Язык самой записи, а не перевода. Меняйте, если новость пришла не на том языке.</span>
+                    </div>
+                    <?php endif; ?>
                     <div class="form-field">
                         <label class="u-inline-0b87e9e0af" for="layout_type">Тип макета статьи</label>
                         <select id="layout_type" name="layout_type">
