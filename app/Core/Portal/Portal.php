@@ -187,6 +187,7 @@ final class Portal
                 // Те же страны разметкой: код или флаг, по настройке «Дизайна».
                 'country_marks' => $marks,
                 'badge' => trim((string) ($row['badge'] ?? '')),
+                'partner' => !empty($row['is_partner']),
                 'date' => self::date($published, $lang),
                 'time' => self::time($published),
                 'day' => $published !== '' ? DateFormatter::format($published, 'd.m') : '',

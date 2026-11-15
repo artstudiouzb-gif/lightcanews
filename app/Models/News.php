@@ -31,7 +31,7 @@ final class News
         'card_title', 'card_badge', 'card_stats', 'card_signature', 'card_note',
         'category_id', 'image', 'video_url', 'audio_url', 'audio_title',
         'hashtags', 'press_release_url', 'key_points', 'event_meta',
-        'timeline_json', 'docs', 'source_note', 'views', 'is_editor_pick', 'layout_type',
+        'timeline_json', 'docs', 'source_note', 'views', 'is_editor_pick', 'is_partner', 'layout_type',
         'sidebar_layout', 'focal_x', 'focal_y', 'meta_title', 'meta_description',
         'status', 'published_at', 'author_id', 'created_at', 'updated_at',
         'lock_version', 'deleted_at', 'lang', 'translation_group_id',
@@ -687,6 +687,22 @@ final class News
      * Отметка «Выбор редакции» сразу всей группе перевода: иначе отмеченная
      * русская версия попала бы в подборку, а узбекская — нет.
      */
+    /**
+     * Отметка «Партнёрский материал»: общая для группы перевода, как выбор
+     * редакции, — оплаченный материал не перестаёт быть таким на другом языке.
+     */
+    public static function setPartner(int $id, bool $partner): void
+    {
+        $row = self::findById($id);
+        if ($row === null) {
+            return;
+        }
+        Database::pdo()->prepare(
+            'UPDATE news SET is_partner = :v WHERE ' . self::groupKey('news') . ' = :g'
+        )->execute([':v' => $partner ? 1 : 0, ':g' => self::groupKeyOf($row)]);
+        self::bustPageCache();
+    }
+
     public static function setEditorPick(int $id, bool $pick): void
     {
         $row = self::findById($id);

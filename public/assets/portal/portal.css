@@ -447,6 +447,8 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 /* Рекламные зоны. Подпись «Реклама» обязательна и стоит над зоной; высота
    задана заранее, чтобы зона не сдвигала страницу при загрузке. */
 .pt-ad-mark { font-size: 10px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+/* Метка партнёрского материала у новости: рамкой, чтобы не спутать с рубрикой. */
+.pt-sponsored { display: inline-flex; align-items: center; padding: 2px 6px; border: 1px solid var(--rule); border-radius: var(--r); }
 .pt-ad-band { background: var(--paper); border-bottom: 1px solid var(--rule); padding-block: 14px 10px; }
 .pt-ad--mid { padding-block: 22px; }
 .pt-ad__meta { margin: 0 0 5px; display: flex; justify-content: flex-end; }
@@ -472,6 +474,8 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-feed-ad__img { object-fit: cover; border-radius: var(--r); }
 .pt-feed-ad__top { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; color: var(--ink-3); margin-bottom: 3px; }
 .pt-feed-ad__title { display: block; font-size: .88rem; font-weight: 800; line-height: 1.3; color: var(--ink); }
+/* Креативы зоны: виден один, остальные ждут своей очереди (portal.js). */
+[data-ad][hidden] { display: none; }
 .pt-partner { margin-top: 18px; background: var(--paper); border: 1px solid var(--rule); border-top: 3px solid var(--brand); padding: 18px; border-radius: var(--r); display: grid; gap: 12px; }
 .pt-partner__mark { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
 .pt-partner__mark::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); }
