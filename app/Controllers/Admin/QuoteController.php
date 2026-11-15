@@ -7,6 +7,7 @@ namespace App\Controllers\Admin;
 use App\Core\Auth;
 use App\Core\Cache;
 use App\Core\Csrf;
+use App\Core\CurrencyRates;
 use App\Core\Flash;
 use App\Core\Input;
 use App\Core\Portal\MarketQuotes;
@@ -23,6 +24,7 @@ final class QuoteController
         View::render('admin/quotes/index', [
             'quotes' => MarketQuotes::all(),
             'languages' => Language::active(),
+            'ratesAt' => CurrencyRates::fetchedAt(),
         ]);
     }
 
@@ -37,6 +39,21 @@ final class QuoteController
         Cache::forgetPrefix('page:');
 
         Flash::success('Котировки сохранены.');
+        Redirect::to('/admin/quotes');
+    }
+
+    /** «Обновить курсы сейчас»: тот же путь, что у воркера и обновления после ответа. */
+    public function refreshRates(): void
+    {
+        Auth::requireLogin();
+        Csrf::verifyRequest();
+
+        $result = CurrencyRates::update();
+        if ($result['ok']) {
+            Flash::success('Курсы ЦБ обновлены.');
+        } else {
+            Flash::error('Курсы ЦБ не обновлены: ' . $result['error']);
+        }
         Redirect::to('/admin/quotes');
     }
 }

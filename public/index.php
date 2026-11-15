@@ -331,6 +331,7 @@ $router->get('/admin/ads', [\App\Controllers\Admin\AdController::class, 'index']
 $router->post('/admin/ads', [\App\Controllers\Admin\AdController::class, 'update']);
 $router->get('/admin/quotes', [\App\Controllers\Admin\QuoteController::class, 'index']);
 $router->post('/admin/quotes', [\App\Controllers\Admin\QuoteController::class, 'update']);
+$router->post('/admin/quotes/rates', [\App\Controllers\Admin\QuoteController::class, 'refreshRates']);
 
 // --- Admin: производительность ---
 $router->get('/admin/update', [\App\Controllers\Admin\UpdateController::class, 'index']);
@@ -593,5 +594,13 @@ if (str_starts_with($guardPath, '/admin')
 // тянет таблицу стилей и шрифт. Адреса берутся оттуда же, откуда их печатает
 // разметка, — иначе preload не засчитывается и файл качается дважды.
 \App\Core\EarlyHints::send();
+
+// Курсы валют без cron: устаревшая копия обновляется после ответа первому
+// посетителю (сам он ничего не ждёт). Служебные адреса не в счёт.
+if (in_array($requestMethod, ['GET', 'HEAD'], true)
+    && !str_starts_with($requestPath, '/admin')
+    && !str_starts_with($requestPath, '/assets')) {
+    \App\Core\CurrencyRates::afterResponse();
+}
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

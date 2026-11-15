@@ -18,7 +18,6 @@ require __DIR__ . '/../Core/Cli.php';
 
 require __DIR__ . '/../Core/bootstrap.php';
 
-use App\Core\Cache;
 use App\Core\CurrencyRates;
 use App\Core\ProcessLock;
 
@@ -29,14 +28,11 @@ if ($lock === null) {
 }
 
 try {
-    $result = CurrencyRates::refresh();
+    $result = CurrencyRates::update();
     if (!$result['ok']) {
         fwrite(STDERR, 'Курсы не обновлены: ' . $result['error'] . PHP_EOL);
         exit(1);
     }
-    // Шапка входит в кэш страниц: без сброса новые курсы появились бы только
-    // после следующей правки контента.
-    Cache::forgetPrefix('page:');
     fwrite(STDOUT, 'Курсы валют обновлены.' . PHP_EOL);
 } finally {
     ProcessLock::release($lock);
