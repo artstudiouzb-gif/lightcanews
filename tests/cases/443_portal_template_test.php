@@ -373,6 +373,21 @@ test('Портал: элементы прототипа — цифры, вкла
     assert_same('', trim(render_view('app/Views/portal/_home_media.php', ['sec' => ['media' => []], 'secTitle' => ''])), 'без выпусков секции нет');
 });
 
+test('Портал: Instagram-ролики — вертикальная полоса, ролики первыми', function (): void {
+    ensure_test_db();
+    \App\Models\Setting::set('instagram_feed_posts', json_encode([
+        ['id' => '1', 'type' => 'IMAGE', 'caption' => 'Фото дня', 'title' => 'Фото дня', 'permalink' => 'https://www.instagram.com/p/AAA/', 'image' => '/uploads/public/a.jpg', 'timestamp' => ''],
+        ['id' => '2', 'type' => 'VIDEO', 'caption' => 'Ролик с фабрики', 'title' => 'Ролик с фабрики', 'permalink' => 'https://www.instagram.com/reel/BBB/', 'image' => '/uploads/public/b.jpg', 'timestamp' => ''],
+    ]));
+    $reels = Portal::reels(8);
+    assert_same(['VIDEO', 'IMAGE'], array_column($reels, 'type'), 'ролики первыми, фото добирают полосу');
+    $html = render_view('app/Views/portal/_home_reels.php', ['sec' => ['reels' => $reels], 'secTitle' => '']);
+    assert_contains('class="pt-reels__row" tabindex="0"', $html, 'полоса доступна с клавиатуры');
+    assert_contains('href="https://www.instagram.com/reel/BBB/" target="_blank" rel="noopener noreferrer"', $html);
+    assert_same(1, substr_count($html, 'pt-reel__play'), 'значок ролика только у видео');
+    assert_same('', trim(render_view('app/Views/portal/_home_reels.php', ['sec' => ['reels' => []], 'secTitle' => ''])), 'без публикаций секции нет');
+});
+
 test('Портал: главное, лента и партнёрские материалы — отдельные секции', function (): void {
     $cards = Portal::cards(sample_news_rows(10), 'ru');
     $sec = ['lead' => $cards[0], 'grid' => array_slice($cards, 1, 3), 'also' => [], 'feed' => array_slice($cards, 0, 5)];

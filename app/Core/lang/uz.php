@@ -549,4 +549,6 @@ return [
     'Подкасты' => 'Podkastlar',
     'Подкаст' => 'Podkast',
     'Все выпуски на YouTube' => 'YouTubedagi barcha sonlar',
+    'Мы в Instagram' => 'Biz Instagramda',
+    'Все публикации в Instagram' => 'Instagramdagi barcha postlar',
 ];

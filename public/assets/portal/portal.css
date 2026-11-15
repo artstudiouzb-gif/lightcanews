@@ -612,7 +612,7 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-media__all:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pt-media__grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 24px; align-items: start; }
 .pt-media__main { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid rgba(255, 255, 255, .14); border-radius: var(--r); background: #131c1a; color: #fff; }
-.pt-media__main picture, .pt-media__img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pt-media__main picture, .pt .pt-media__img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .pt-media__img { object-fit: cover; }
 .pt-media__main::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13, 19, 18, .18) 0%, rgba(13, 19, 18, .5) 45%, rgba(13, 19, 18, .95) 100%); }
 .pt-media__top { position: absolute; left: 18px; right: 18px; top: 16px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -661,3 +661,21 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-region__body li a::after { content: "→"; position: absolute; right: 0; top: .1em; color: var(--ink-3); }
 .pt-region__body li a:hover::after { color: var(--link); }
 .pt-picks--partners .pt-pcard__meta, .pt-picks--partners .pt-pcard__meta span.pt-sponsored { color: var(--ink-3); font-weight: 600; }
+
+/* «Instagram — ролики»: полоса вертикальных карточек 9:16, как Reels.
+   Листается обычной прокруткой с привязкой — скрипт не нужен. */
+.pt-reels { padding-block: 40px; background: var(--band); }
+.pt-reels .pt-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pt-reels__row { list-style: none; margin: 0; padding: 4px 0 12px; display: grid; grid-auto-flow: column; grid-auto-columns: clamp(150px, 16vw, 220px); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.pt-reels__row:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; }
+.pt-reels__row > li { scroll-snap-align: start; }
+.pt-reel { position: relative; display: block; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 10px; background: var(--dark-band); color: #fff; }
+.pt-reel picture, .pt .pt-reel__img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pt-reel__img { object-fit: cover; }
+.pt-reel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .82) 100%); }
+.pt-reel__play { position: absolute; top: 10px; right: 10px; z-index: 2; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(0, 0, 0, .55); font-size: .78rem; }
+.pt-reel__title { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2; font-size: .86rem; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pt-reel:hover .pt-reel__title { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 720px) {
+    .pt-reels__row { grid-auto-columns: 44vw; }
+}
