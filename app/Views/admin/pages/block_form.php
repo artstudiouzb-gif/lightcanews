@@ -617,6 +617,10 @@ $backLabel = 'Назад к странице';
             <?= \App\Core\BlockData\BlockFieldSchema::formHtml('news_latest', $data) ?>
         <?php endif; ?>
 
+        <?php if ($type === 'portal_section'): ?>
+            <?= \App\Core\BlockData\BlockFieldSchema::formHtml('portal_section', $data) ?>
+        <?php endif; ?>
+
         <?php if (in_array($type, ['news_latest', 'news_feature', 'news_front', 'news_docs'], true)): ?>
             <?php
             // Выборка по рубрике: один и тот же список для всех трёх блоков

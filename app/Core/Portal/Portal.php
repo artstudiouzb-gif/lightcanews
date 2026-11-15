@@ -158,46 +158,90 @@ final class Portal
     }
 
     /**
-     * Данные главной: главная новость, три рядом, «также в центре внимания»,
-     * лента, выбор редакции, новости по странам и колонки.
+     * Секции главной портала: ключ → подпись для редактора. Порядок — порядок
+     * главной по умолчанию (её и собирает «Собрать главную из блоков»).
+     * Секция — это и часть фиксированной главной, и вариант блока «Секция
+     * портала»: разметка у них общая (`portal/_home_<ключ>.php`).
+     */
+    public const SECTIONS = [
+        'lead' => 'Главное в отрасли и лента новостей',
+        'rates' => 'Курсы валют',
+        'picks' => 'Выбор редакции',
+        'ad' => 'Широкий рекламный баннер',
+        'regions' => 'Нити региона (по странам)',
+        'voices' => 'Точка зрения',
+        'subscribe' => 'Подписка',
+    ];
+
+    /** Сколько материалов секция показывает, если редактор не задал своё. */
+    public const SECTION_LIMITS = ['picks' => 4, 'regions' => 4, 'voices' => 3];
+
+    /**
+     * Данные одной секции главной.
+     *
+     * @return array<string, mixed>
+     */
+    public static function section(string $name, string $lang, int $limit = 0): array
+    {
+        $limit = $limit > 0 ? min($limit, 12) : (self::SECTION_LIMITS[$name] ?? 0);
+        switch ($name) {
+            case 'lead':
+                $latest = self::cards(News::published(24, 0, $lang), $lang);
+
+                return [
+                    'lead' => $latest[0] ?? null,
+                    'grid' => array_slice($latest, 1, 3),
+                    'also' => array_slice($latest, 4, 4),
+                    'feed' => array_slice($latest, 0, 8),
+                ];
+            case 'rates':
+                return ['rates' => \App\Core\CurrencyRates::current()];
+            case 'picks':
+                return ['picks' => self::cards(News::editorPicks($limit, $lang), $lang)];
+            case 'regions':
+                $regions = [];
+                foreach (NewsCategory::all($lang, true, NewsCategory::AXIS_COUNTRY) as $country) {
+                    $items = self::cards(News::published($limit, 0, $lang, (int) $country['id']), $lang);
+                    if ($items === []) {
+                        continue;
+                    }
+                    $regions[] = [
+                        'code' => self::countryCode($country),
+                        'name' => (string) $country['name'],
+                        'url' => Locale::url(NewsCategory::path($country)),
+                        'items' => $items,
+                    ];
+                }
+
+                return ['regions' => $regions];
+            case 'voices':
+                $opinion = NewsCategory::findBySlug(self::OPINION_SLUG, true, NewsCategory::AXIS_RUBRIC);
+                if ($opinion === null) {
+                    return ['voices' => []];
+                }
+                $opinion = NewsCategory::localize($opinion, $lang);
+
+                return ['voices' => [
+                    'title' => (string) $opinion['name'],
+                    'url' => Locale::url(NewsCategory::path($opinion)),
+                    'items' => self::cards(News::published($limit, 0, $lang, (int) $opinion['id']), $lang),
+                ]];
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * Все секции фиксированной главной разом.
      *
      * @return array<string, mixed>
      */
     public static function home(string $lang): array
     {
-        $latest = self::cards(News::published(24, 0, $lang), $lang);
-        $lead = $latest[0] ?? null;
-        $grid = array_slice($latest, 1, 3);
-        $also = array_slice($latest, 4, 4);
-        $feed = array_slice($latest, 0, 8);
-
-        $picks = self::cards(News::editorPicks(4, $lang), $lang);
-
-        $regions = [];
-        foreach (NewsCategory::all($lang, true, NewsCategory::AXIS_COUNTRY) as $country) {
-            $items = self::cards(News::published(4, 0, $lang, (int) $country['id']), $lang);
-            if ($items === []) {
-                continue;
-            }
-            $regions[] = [
-                'code' => self::countryCode($country),
-                'name' => (string) $country['name'],
-                'url' => Locale::url(NewsCategory::path($country)),
-                'items' => $items,
-            ];
-        }
-
-        $voices = [];
-        $opinion = NewsCategory::findBySlug(self::OPINION_SLUG, true, NewsCategory::AXIS_RUBRIC);
-        if ($opinion !== null) {
-            $opinion = NewsCategory::localize($opinion, $lang);
-            $voices = [
-                'title' => (string) $opinion['name'],
-                'url' => Locale::url(NewsCategory::path($opinion)),
-                'items' => self::cards(News::published(3, 0, $lang, (int) $opinion['id']), $lang),
-            ];
-        }
-
-        return compact('lead', 'grid', 'also', 'feed', 'picks', 'regions', 'voices');
+        return self::section('lead', $lang)
+            + ['rates' => \App\Core\CurrencyRates::current()]
+            + self::section('picks', $lang)
+            + self::section('regions', $lang)
+            + self::section('voices', $lang);
     }
 }

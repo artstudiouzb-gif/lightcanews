@@ -691,6 +691,8 @@ final class BlockController
                 return BlockFieldSchema::normalize('chart', $_POST, $locale);
             case 'divider':
                 return BlockFieldSchema::normalize('divider', $_POST, $locale);
+            case 'portal_section':
+                return BlockFieldSchema::normalize('portal_section', \App\Core\Input::post()->raw(), $locale);
             case 'buttons':
                 return \App\Core\BlockData\ButtonsBlockNormalizer::normalize($_POST, $locale);
             case 'counters':

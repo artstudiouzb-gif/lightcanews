@@ -76,6 +76,7 @@ final class BlockSamples
             ]],
             // Блоки-обёртки наполняются из базы: образцу достаточно заголовка.
             'news_latest' => ['title' => 'Последние новости', 'limit' => 3],
+            'portal_section' => ['section' => 'lead', 'heading' => '', 'limit' => 0],
             'news_feature' => ['title' => 'Новости и аналитика', 'all_text' => 'Все новости', 'limit' => 6],
             'news_front' => ['layout' => 'main'],
             'news_docs' => [

@@ -40,6 +40,7 @@ final class BlockTypeRegistry
         'testimonials' => [], // схема: BlockFieldSchema
         'counters' => [], // схема: BlockFieldSchema
         'news_latest' => [], // схема: BlockFieldSchema
+        'portal_section' => [], // схема: BlockFieldSchema
         'partners' => [], // схема: BlockFieldSchema
         'subscribe' => [], // схема: BlockFieldSchema
         'faq' => [], // схема: BlockFieldSchema
@@ -77,7 +78,7 @@ final class BlockTypeRegistry
         'slider' => 'Слайдер',
         'form' => 'Форма', 'columns' => 'Колонки', 'tabs' => 'Вкладки', 'testimonials' => 'Отзывы',
         'counters' => 'Счётчики',
-        'news_latest' => 'Последние новости', 'partners' => 'Партнёры',
+        'news_latest' => 'Последние новости', 'portal_section' => 'Секция портала', 'partners' => 'Партнёры',
         'subscribe' => 'Подписка', 'faq' => 'Вопросы и ответы', 'contact_cards' => 'Контакты',
         'hero' => 'Обложка',
         'cards_grid' => 'Карточки', 'media_gallery' => 'Медиагалерея',
@@ -151,7 +152,7 @@ final class BlockTypeRegistry
         ],
         'Первый экран и действия' => ['hero', 'cta', 'buttons', 'subscribe', 'form'],
         'Цифры и данные' => ['counters', 'chart', 'table', 'map_point'],
-        'Новости' => ['news_latest', 'news_feature', 'news_front', 'news_docs'],
+        'Новости' => ['portal_section', 'news_latest', 'news_feature', 'news_front', 'news_docs'],
         'Люди' => ['bio_education'],
         'Раскладка страницы' => ['columns', 'tabs', 'anchor_nav', 'divider'],
     ];
@@ -185,6 +186,7 @@ final class BlockTypeRegistry
         'table' => 'Строки и столбцы: тарифы, реквизиты, график',
         'map_point' => 'Карта с отметкой адреса',
         'news_latest' => 'Свежие новости, обновляются сами',
+        'portal_section' => 'Секция главной портала: лента, выбор редакции, страны, подписка',
         'news_feature' => 'Главная новость крупно и список рядом',
         'news_front' => 'Разделы главной портала: главное, страны, самое читаемое',
         'news_docs' => 'Новости и документы в две колонки',

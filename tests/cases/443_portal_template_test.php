@@ -239,3 +239,35 @@ test('Портал: ссылки языкового меню переписыв�
     // Без ?_lang= ссылка на основной язык уводила обратно на язык из cookie.
     assert_contains('?' . \App\Core\LocalePreference::QUERY . '=ru"', $html);
 });
+
+test('Портал: главная собирается из блоков «Секция портала», когда они стоят на странице', function (): void {
+    ensure_test_db();
+    $_SERVER['REQUEST_URI'] = '/';
+    $pdo = \App\Core\Database::pdo();
+    $pdo->prepare("INSERT INTO pages (title, slug, status, lang, entity_type, created_at) VALUES ('Главная', :s, 'published', 'ru', 'page', NOW())")
+        ->execute([':s' => 'home-' . bin2hex(random_bytes(3))]);
+    $pageId = (int) $pdo->lastInsertId();
+    \App\Models\Block::create($pageId, 'ru', 'text', 'Старый блок', ['content' => '<p>x</p>'], '');
+
+    $blocks = static fn (): array => \App\Models\Block::forPage($pageId, 'ru', true);
+    assert_false(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'прежние блоки демо-главной не переводят её на конструктор');
+
+    assert_same(count(\App\Core\Portal\Portal::SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
+    assert_true(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'с секциями главная из конструктора');
+    assert_same(1 + count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
+
+    \App\Core\Portal\PortalHome::seed($pageId, 'ru', true);
+    assert_same(count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
+
+    $html = render_view('templates/blocks/portal_section.php', [
+        'data' => ['section' => 'lead', 'heading' => 'Свежее', 'limit' => 0],
+        'blockId' => 1,
+    ]);
+    assert_contains('pt-home-top', $html, 'секция печатает разметку главной');
+    assert_contains('Свежее', $html, 'свой заголовок секции');
+    $sub = render_view('templates/blocks/portal_section.php', [
+        'data' => ['section' => 'subscribe', 'heading' => '', 'limit' => 0],
+        'blockId' => 2,
+    ]);
+    assert_contains('pt-subscribe', $sub, 'подписка');
+});

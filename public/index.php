@@ -246,6 +246,7 @@ $router->get('/admin/pages/{id}/preview', [AdminPageController::class, 'preview'
 $router->post('/admin/pages/{id}/edit', [AdminPageController::class, 'update']);
 $router->post('/admin/pages/{id}/delete', [AdminPageController::class, 'destroy']);
 $router->post('/admin/pages/{id}/make-home', [AdminPageController::class, 'makeHome']);
+$router->post('/admin/pages/{id}/portal-home', [AdminPageController::class, 'portalHome']);
 $router->post('/admin/pages/{id}/copy-language-blocks', [AdminPageController::class, 'copyLanguageBlocks']);
 $router->post('/admin/pages/{id}/create-translation', [AdminPageController::class, 'createTranslation']);
 $router->post('/admin/pages/{id}/duplicate', [AdminPageController::class, 'duplicate']);
