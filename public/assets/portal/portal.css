@@ -182,6 +182,9 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-also__item .pt-hl { font-size: .96rem; font-weight: 600; line-height: 1.35; }
 
 .pt-feed .pt-sec-head { margin-bottom: 0; }
+/* «Главное» и «Лента» отдельными блоками: каждая во всю колонку сайта. */
+.pt-home-main, .pt-feed-solo { padding-block: 24px 32px; }
+.pt-feed-solo .pt-feed { border-left: 0; padding-left: 0; }
 .pt-feed__list { list-style: none; margin: 0; padding: 0; }
 .pt-feed__list li { border-bottom: 1px solid var(--rule); }
 .pt-feed__list a { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; padding-block: 11px; }

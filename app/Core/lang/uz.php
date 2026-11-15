@@ -529,6 +529,7 @@ return [
     'страница %d' => '%d-sahifa',
     'Реклама' => 'Reklama',
     'Партнёрский материал' => 'Hamkorlik materiali',
+    'Партнёрские материалы' => 'Hamkorlik materiallari',
     'Партнёрский блок' => 'Hamkorlik bloki',
     'Telegram-канал' => 'Telegram-kanal',
     'Ежедневно' => 'Har kuni',

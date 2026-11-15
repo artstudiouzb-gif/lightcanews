@@ -241,17 +241,27 @@ final class Portal
      * портала»: разметка у них общая (`portal/_home_<ключ>.php`).
      */
     public const SECTIONS = [
-        'lead' => 'Главное в отрасли и лента новостей',
+        'lead' => 'Главное в отрасли и лента новостей (две колонки)',
+        'main' => 'Главное в отрасли (без ленты)',
+        'feed' => 'Лента новостей',
         'rates' => 'Курсы валют',
         'picks' => 'Выбор редакции',
+        'partners' => 'Партнёрские материалы',
         'ad' => 'Широкий рекламный баннер',
         'regions' => 'Нити региона (по странам)',
         'voices' => 'Точка зрения',
         'subscribe' => 'Подписка',
     ];
 
+    /**
+     * Секции, которые «Собрать главную из блоков» ставит по умолчанию: та же
+     * главная, что и фиксированным шаблоном. Остальные (лента и главное по
+     * отдельности, партнёрские материалы) редактор добавляет сам.
+     */
+    public const DEFAULT_SECTIONS = ['lead', 'rates', 'picks', 'ad', 'regions', 'voices', 'subscribe'];
+
     /** Сколько материалов секция показывает, если редактор не задал своё. */
-    public const SECTION_LIMITS = ['picks' => 4, 'regions' => 4, 'voices' => 3];
+    public const SECTION_LIMITS = ['picks' => 4, 'partners' => 4, 'regions' => 4, 'voices' => 3, 'feed' => 8, 'lead' => 8];
 
     /**
      * Данные одной секции главной.
@@ -263,14 +273,20 @@ final class Portal
         $limit = $limit > 0 ? min($limit, 12) : (self::SECTION_LIMITS[$name] ?? 0);
         switch ($name) {
             case 'lead':
-                $latest = self::cards(News::published(24, 0, $lang), $lang);
+            case 'main':
+            case 'feed':
+                // Число у «Главного» и у общей секции — длина ленты; раскладка
+                // главного (крупная, три, четыре) задана прототипом.
+                $latest = self::cards(News::published(max(8, $limit), 0, $lang), $lang);
 
                 return [
                     'lead' => $latest[0] ?? null,
                     'grid' => array_slice($latest, 1, 3),
                     'also' => array_slice($latest, 4, 4),
-                    'feed' => array_slice($latest, 0, 8),
+                    'feed' => array_slice($latest, 0, $limit > 0 ? $limit : 8),
                 ];
+            case 'partners':
+                return ['partners' => self::cards(News::partnerMaterials($limit, $lang), $lang)];
             case 'rates':
                 return ['rates' => \App\Core\CurrencyRates::current()];
             case 'picks':

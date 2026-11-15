@@ -17,6 +17,8 @@ use App\Core\Portal\Portal;
 $secKey = $data['section'];
 $sec = Portal::section($secKey, \App\Core\Locale::current(), $data['limit']);
 $secTitle = trim($data['heading']);
+// Id заголовков секции: блоков одной секции на странице бывает несколько.
+$secUid = 'b' . (int) ($blockId ?? 0);
 // Рекламные зоны внутри секций спрашивают тип страницы — это главная.
 $adPlace = 'home';
 require dirname(__DIR__, 2) . '/app/Views/portal/_home_' . $secKey . '.php';

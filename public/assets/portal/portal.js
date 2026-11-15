@@ -317,13 +317,21 @@
     // кэшируется, поэтому «что сейчас в периоде» и «какой показать» решает
     // браузер: случайный при каждой загрузке или по очереди через интервал.
     // Смена по таймеру ждёт, пока курсор или фокус внутри креатива.
-    var adGroups = {};
+    // Группа — соседи одного родителя: лента бывает на главной дважды (общая
+    // секция и отдельный блок), и у каждой копии зоны своя очередь.
+    var adGroups = [];
     document.querySelectorAll('[data-ad]').forEach(function (el) {
-        var key = el.getAttribute('data-ad');
-        (adGroups[key] = adGroups[key] || []).push(el);
+        var group = adGroups.filter(function (g) {
+            return g.parent === el.parentElement && g.key === el.getAttribute('data-ad');
+        })[0];
+        if (!group) {
+            group = { parent: el.parentElement, key: el.getAttribute('data-ad'), items: [] };
+            adGroups.push(group);
+        }
+        group.items.push(el);
     });
-    Object.keys(adGroups).forEach(function (key) {
-        var all = adGroups[key];
+    adGroups.forEach(function (group) {
+        var all = group.items;
         var now = Date.now() / 1000;
         var live = all.filter(function (el) {
             var from = Number(el.getAttribute('data-ad-from') || 0);

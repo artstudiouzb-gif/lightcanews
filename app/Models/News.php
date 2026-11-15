@@ -664,13 +664,36 @@ final class News
      */
     public static function editorPicks(int $limit, ?string $lang = null): array
     {
+        return self::flagged('is_editor_pick', $limit, $lang);
+    }
+
+    /**
+     * «Партнёрские материалы»: новости с отметкой партнёрского материала,
+     * свежие первыми.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function partnerMaterials(int $limit, ?string $lang = null): array
+    {
+        return self::flagged('is_partner', $limit, $lang);
+    }
+
+    /**
+     * Опубликованные новости языка с ручной отметкой (колонка из закрытого
+     * списка — она уходит в текст запроса).
+     *
+     * @param 'is_editor_pick'|'is_partner' $flag
+     * @return list<array<string, mixed>>
+     */
+    private static function flagged(string $flag, int $limit, ?string $lang): array
+    {
         $lang = $lang ?? Language::defaultCode();
         $parts = self::publicLanguageParts($lang, 'n', 'picks');
         $stmt = Database::pdo()->prepare(
             "SELECT " . self::listColumns('n') . "
              FROM news n{$parts['join']}
              WHERE n.status = 'published' AND n.published_at <= NOW() AND n.deleted_at IS NULL
-               AND n.is_editor_pick = 1 AND {$parts['where']}
+               AND n.{$flag} = 1 AND {$parts['where']}
              ORDER BY n.published_at DESC, n.id DESC
              LIMIT :limit"
         );
@@ -683,10 +706,6 @@ final class News
         return self::localizePublicRows(Database::rows($stmt), $lang);
     }
 
-    /**
-     * Отметка «Выбор редакции» сразу всей группе перевода: иначе отмеченная
-     * русская версия попала бы в подборку, а узбекская — нет.
-     */
     /**
      * Отметка «Партнёрский материал»: общая для группы перевода, как выбор
      * редакции, — оплаченный материал не перестаёт быть таким на другом языке.
@@ -703,6 +722,10 @@ final class News
         self::bustPageCache();
     }
 
+    /**
+     * Отметка «Выбор редакции» сразу всей группе перевода: иначе отмеченная
+     * русская версия попала бы в подборку, а узбекская — нет.
+     */
     public static function setEditorPick(int $id, bool $pick): void
     {
         $row = self::findById($id);

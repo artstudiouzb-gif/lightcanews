@@ -528,6 +528,7 @@ return [
     'страница %d' => 'page %d',
     'Реклама' => 'Advertisement',
     'Партнёрский материал' => 'Partner content',
+    'Партнёрские материалы' => 'Partner content',
     'Партнёрский блок' => 'Partner block',
     'Telegram-канал' => 'Telegram channel',
     'Ежедневно' => 'Daily',

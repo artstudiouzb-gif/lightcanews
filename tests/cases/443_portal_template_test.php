@@ -317,12 +317,12 @@ test('Портал: главная собирается из блоков «Се
     $blocks = static fn (): array => \App\Models\Block::forPage($pageId, 'ru', true);
     assert_false(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'прежние блоки демо-главной не переводят её на конструктор');
 
-    assert_same(count(\App\Core\Portal\Portal::SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
+    assert_same(count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
     assert_true(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'с секциями главная из конструктора');
-    assert_same(1 + count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
+    assert_same(1 + count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
 
     \App\Core\Portal\PortalHome::seed($pageId, 'ru', true);
-    assert_same(count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
+    assert_same(count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
 
     $html = render_view('templates/blocks/portal_section.php', [
         'data' => ['section' => 'lead', 'heading' => 'Свежее', 'limit' => 0],
@@ -335,6 +335,34 @@ test('Портал: главная собирается из блоков «Се
         'blockId' => 2,
     ]);
     assert_contains('pt-subscribe', $sub, 'подписка');
+});
+
+test('Портал: главное, лента и партнёрские материалы — отдельные секции', function (): void {
+    $cards = Portal::cards(sample_news_rows(10), 'ru');
+    $sec = ['lead' => $cards[0], 'grid' => array_slice($cards, 1, 3), 'also' => [], 'feed' => array_slice($cards, 0, 5)];
+    $feed = render_view('app/Views/portal/_home_feed.php', ['sec' => $sec, 'secTitle' => 'Свежее', 'secUid' => 'b7']);
+    assert_contains('pt-feed-solo', $feed, 'лента своей обёрткой');
+    assert_contains('Свежее', $feed, 'свой заголовок у отдельной ленты');
+    assert_contains('id="pt-feed-title-b7"', $feed, 'id заголовка не совпадает у двух блоков');
+    assert_same(5, substr_count($feed, '<li>'), 'длина ленты — из данных секции');
+    assert_not_contains('pt-pkg', $feed, 'в ленте нет главного');
+
+    $main = render_view('app/Views/portal/_home_main.php', ['sec' => $sec, 'secTitle' => '']);
+    assert_contains('pt-home-main', $main);
+    assert_contains('pt-pkg', $main);
+    assert_not_contains('pt-feed__list', $main, 'в главном нет ленты');
+
+    $lead = render_view('app/Views/portal/_home_lead.php', ['sec' => $sec, 'secTitle' => '']);
+    assert_contains('pt-home-top', $lead);
+    assert_not_contains('pt-feed-solo', $lead, 'внутри общей секции у частей нет своих обёрток');
+
+    $rows = sample_news_rows(2);
+    $rows[0]['is_partner'] = 1;
+    $partners = render_view('app/Views/portal/_home_partners.php', ['sec' => ['partners' => Portal::cards($rows, 'ru')], 'secTitle' => '']);
+    assert_contains('Партнёрские материалы', $partners);
+    assert_contains('pt-sponsored', $partners);
+    assert_same('', trim(render_view('app/Views/portal/_home_partners.php', ['sec' => ['partners' => []], 'secTitle' => ''])), 'пустая секция не печатается');
+    assert_true(array_diff(\App\Core\Portal\Portal::DEFAULT_SECTIONS, array_keys(\App\Core\Portal\Portal::SECTIONS)) === [], 'умолчание — из объявленных секций');
 });
 
 test('Портал: сохранение «Дизайна» не перекрашивает сайт, подложка логотипа — своя настройка', function (): void {
