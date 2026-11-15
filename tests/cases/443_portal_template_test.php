@@ -493,3 +493,37 @@ test('Портал: сохранение «Дизайна» не перекра�
     Setting::forgetCache();
     assert_true(!str_contains(portal_home_html(['lead' => null, 'feed' => []]), '--logo-plate'), '«как основной цвет» — переменной нет');
 });
+
+test('Портал: котировки сырья — ручной ввод, изменение считается от прежнего значения', function (): void {
+    ensure_test_db();
+    \App\Core\Database::pdo()->exec("DELETE FROM settings WHERE `key` = 'market_quotes'");
+    Setting::forgetCache();
+    $mq = \App\Core\Portal\MarketQuotes::class;
+    assert_same([], $mq::current('ru'), 'без цифр строк на сайте нет');
+
+    $row = ['names' => ['ru' => 'Хлопок ICE', 'uz' => 'Пахта ICE'], 'unit' => '¢/lb', 'value' => '70'];
+    $mq::save([$row, ['names' => ['ru' => ''], 'value' => '']], 'ICE', strtotime('2026-11-10 12:00'));
+    Setting::forgetCache();
+    $first = $mq::current('ru');
+    assert_same(1, count($first), 'пустая строка отброшена');
+    assert_same(null, $first[0]['change'], 'первое значение — без изменения');
+
+    $mq::save([['value' => '71,75'] + $row], 'ICE', strtotime('2026-11-15 12:00'));
+    Setting::forgetCache();
+    $q = $mq::current('uz')[0];
+    assert_same('Пахта ICE', $q['name'], 'название на языке страницы');
+    assert_same('2026-11-15', $q['updated']);
+    assert_true(abs((float) $q['change'] - 2.5) < 0.001, 'изменение от прежних 70');
+    $mq::save([['value' => '71,75'] + $row], 'ICE', strtotime('2026-11-16 12:00'));
+    Setting::forgetCache();
+    assert_same('2026-11-15', $mq::current('en', 'ru')[0]['updated'], 'неизменная цифра не сдвигает дату');
+    assert_same('Хлопок ICE', $mq::current('en', 'ru')[0]['name'], 'нет перевода — основной язык');
+
+    $html = render_view('app/Views/portal/_home_rates.php', ['sec' => ['rates' => null, 'quotes' => $mq::current('ru'), 'quotes_source' => 'ICE'], 'secTitle' => '']);
+    assert_contains('Хлопок ICE', $html);
+    assert_contains("71,75", $html);
+    assert_contains('pt-fx__chg--up', $html);
+    assert_contains('+2,5', $html);
+    assert_contains('Источник: ICE', $html);
+    assert_same('', trim(render_view('app/Views/portal/_home_rates.php', ['sec' => ['rates' => null, 'quotes' => []], 'secTitle' => ''])), 'нечего показать — секции нет');
+});
