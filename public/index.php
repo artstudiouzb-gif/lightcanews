@@ -329,6 +329,8 @@ $router->get('/admin/footer', [\App\Controllers\Admin\FooterController::class, '
 $router->post('/admin/footer', [\App\Controllers\Admin\FooterController::class, 'update']);
 $router->get('/admin/ads', [\App\Controllers\Admin\AdController::class, 'index']);
 $router->post('/admin/ads', [\App\Controllers\Admin\AdController::class, 'update']);
+$router->get('/admin/quotes', [\App\Controllers\Admin\QuoteController::class, 'index']);
+$router->post('/admin/quotes', [\App\Controllers\Admin\QuoteController::class, 'update']);
 
 // --- Admin: производительность ---
 $router->get('/admin/update', [\App\Controllers\Admin\UpdateController::class, 'index']);
