@@ -213,7 +213,7 @@
         var categoryLink = root.querySelector('[data-category-link]');
         if (categoryLink) {
             var categoryCount = Number(value.categories || 0);
-            categoryLink.hidden = categoryCount < 1;
+            categoryLink.hidden = false;
             categoryLink.querySelector('a').href = '/admin/news/import/categories?token=' + encodeURIComponent(token);
             var countField = categoryLink.querySelector('[data-category-count]');
             if (countField) countField.textContent = String(categoryCount);

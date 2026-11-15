@@ -58,7 +58,7 @@ final class A11ySettings
     {
         $raw = trim((string) $raw);
         if ($raw === '') {
-            return self::DEFAULTS;
+            return self::defaults();
         }
 
         // Cookie прежней версии: «cw:l:on» — переносим, чтобы у посетителя не
@@ -68,8 +68,22 @@ final class A11ySettings
         }
 
         parse_str($raw, $parsed);
+        // Письменность, которую посетитель не выбирал, — умолчание сайта.
+        if (!array_key_exists('script', $parsed)) {
+            $parsed['script'] = UzCyrillic::defaultScript();
+        }
 
         return self::normalize($parsed);
+    }
+
+    /**
+     * Умолчания с письменностью узбекского, выбранной для сайта.
+     *
+     * @return array<string, int|string>
+     */
+    public static function defaults(): array
+    {
+        return ['script' => UzCyrillic::defaultScript()] + self::DEFAULTS;
     }
 
     public static function normalize(array $values): array
@@ -96,7 +110,14 @@ final class A11ySettings
     /** Хоть что-то отличается от обычного вида страницы. */
     public static function isActive(array $settings): bool
     {
-        return self::normalize($settings) !== self::DEFAULTS;
+        // Письменность здесь не в счёт: узбекский ответ и так не идёт в общий
+        // кеш (PublicResponseCache::sharedCacheable), а умолчание-кириллица
+        // иначе сделало бы личным ответ на каждой русской странице.
+        $settings = self::normalize($settings);
+        $defaults = self::DEFAULTS;
+        unset($settings['script'], $defaults['script']);
+
+        return $settings !== $defaults;
     }
 
     /**
@@ -106,13 +127,14 @@ final class A11ySettings
     public static function htmlAttributes(array $settings): string
     {
         $settings = self::normalize($settings);
-        if ($settings === self::DEFAULTS) {
+        $defaults = self::defaults();
+        if ($settings == $defaults) {
             return '';
         }
 
         $attributes = ['data-a11y="1"'];
         foreach ($settings as $key => $value) {
-            if ($value === self::DEFAULTS[$key]) {
+            if ($value === $defaults[$key]) {
                 continue;
             }
             $attributes[] = 'data-a11y-' . $key . '="' . htmlspecialchars((string) $value, ENT_QUOTES) . '"';

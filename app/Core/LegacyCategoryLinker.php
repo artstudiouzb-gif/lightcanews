@@ -117,11 +117,17 @@ final class LegacyCategoryLinker
             $axes[$section['id']] = $section['axis'];
         }
 
-        // Группа → адрес новости и набор разделов.
-        $wanted = [];
+        // Группа → адреса её версий и набор разделов. Версии бывают отдельными
+        // новостями (после исправления языков — связанными записями), поэтому
+        // новость ищется по адресу любой из них, а раздел ставится всей группе.
+        $groups = [];
+        $allSlugs = [];
         foreach (LegacyWxrImporter::importGroups($plan, $langs) as $group) {
-            $slug = LegacyWxrImporter::groupSlug($group, $primaryWp);
-            if ($slug === '') {
+            $slugs = array_values(array_unique(array_filter(array_merge(
+                [LegacyWxrImporter::groupSlug($group, $primaryWp)],
+                array_map(static fn (array $p): string => (string) ($p['slug'] ?? ''), $group)
+            ))));
+            if ($slugs === []) {
                 continue;
             }
             $ids = [];
@@ -131,20 +137,35 @@ final class LegacyCategoryLinker
                     $ids[$id] = true;
                 }
             }
-            $wanted[$slug] = array_merge($wanted[$slug] ?? [], array_keys($ids));
+            $groups[] = ['slugs' => $slugs, 'ids' => array_keys($ids)];
+            array_push($allSlugs, ...$slugs);
         }
 
-        $news = self::newsBySlug(array_keys($wanted));
+        $news = self::newsBySlug(array_values(array_unique($allSlugs)));
         $countriesOf = NewsCategory::countryIdsFor(array_column($news, 'key'));
         $pdo = Database::pdo();
         $setRubric = $pdo->prepare('UPDATE news SET category_id = :c WHERE ' . News::groupKey('news') . ' = :k AND deleted_at IS NULL');
 
-        foreach ($wanted as $slug => $ids) {
-            $row = $news[$slug] ?? null;
-            if ($row === null) {
-                $out['missing']++;
-                continue;
+        $wanted = [];
+        foreach ($groups as $group) {
+            // Каждая найденная версия: связанные дают один ключ группы, ещё не
+            // связанные — свои, и раздел получает каждая.
+            $found = false;
+            foreach ($group['slugs'] as $slug) {
+                $row = $news[$slug] ?? null;
+                if ($row === null) {
+                    continue;
+                }
+                $found = true;
+                $key = $row['key'];
+                $wanted[$key] = ['row' => $row, 'ids' => array_values(array_unique(array_merge($wanted[$key]['ids'] ?? [], $group['ids'])))];
             }
+            if (!$found) {
+                $out['missing']++;
+            }
+        }
+
+        foreach ($wanted as ['row' => $row, 'ids' => $ids]) {
             $out['news']++;
             if ($ids === []) {
                 $out['unmapped']++;

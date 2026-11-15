@@ -59,6 +59,15 @@ require __DIR__ . '/../layout/header.php';
             <label for="uz_cyrillic">Показывать «Ўзбекча» в переключателе языков</label>
         </div>
         <p class="form-hint">Кириллица получается транслитерацией узбекского текста. Выключенная — пункт исчезает из переключателя, а посетители, выбравшие её раньше, видят латиницу.</p>
+        <div class="form-field">
+            <label for="uz_script_default">Письменность узбекских страниц по умолчанию</label>
+            <?php $uzDefault = \App\Models\Setting::get(\App\Core\UzCyrillic::DEFAULT_SETTING, 'cyrl') === 'latn' ? 'latn' : 'cyrl'; ?>
+            <select id="uz_script_default" name="uz_script_default">
+                <option value="cyrl"<?= $uzDefault === 'cyrl' ? ' selected' : '' ?>>Кириллица (Ўзбекча)</option>
+                <option value="latn"<?= $uzDefault === 'latn' ? ' selected' : '' ?>>Латиница (Oʻzbekcha)</option>
+            </select>
+            <span class="form-hint">Так видит узбекские страницы посетитель, который письменность не выбирал. Выбор в переключателе языков запоминается и главнее этой настройки. При выключенной кириллице сайт всегда на латинице.</span>
+        </div>
         <div class="form-field form-field--checkbox">
             <input type="checkbox" id="uz_latin_new" name="uz_latin_new" value="1" <?= \App\Core\UzLatin::enabled() ? 'checked' : '' ?>>
             <label for="uz_latin_new">Новая латиница: Oʻ → Ö, Gʻ → Ğ, Sh → Ş, Ch → Ç</label>

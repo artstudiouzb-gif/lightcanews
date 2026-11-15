@@ -11,6 +11,7 @@ use App\Core\Csrf;
 use App\Core\Flash;
 use App\Core\Input;
 use App\Core\LegacyCategoryLinker;
+use App\Core\LegacyLanguageRepair;
 use App\Core\LegacyWxrImporter;
 use App\Core\Redirect;
 use App\Core\View;
@@ -372,13 +373,44 @@ final class NewsImportController
         $token = strtolower(Input::query()->str('token', '', 64));
         $data = self::loadData($token);
         $source = $data !== null ? LegacyCategoryLinker::sourceCategories($data) : [];
+        $langs = ['uz' => 'uz', 'ru' => 'ru', 'en' => 'en'];
+        $languagePreview = $data !== null
+            ? LegacyLanguageRepair::run(LegacyWxrImporter::plan($data, $langs), $langs, true)
+            : null;
         View::render('admin/news/import_categories', [
+            'languagePreview' => $languagePreview,
             'token' => $token,
             'missingFile' => $data === null,
             'source' => $source,
             'sections' => LegacyCategoryLinker::sections(),
             'auto' => LegacyCategoryLinker::autoMatch($source),
         ]);
+    }
+
+    /**
+     * Языки перенесённых новостей: тот же файл, язык каждой записи по тексту,
+     * пары переводов — связанными записями. Нужна архивам, перенесённым до
+     * того, как импорт научился языкам записей WPML.
+     */
+    public function repairLanguages(): void
+    {
+        Auth::requireSuperAdmin();
+        Csrf::verifyRequest();
+        $token = strtolower(Input::post()->str('token', '', 64));
+        $data = self::loadData($token);
+        if ($data === null) {
+            Flash::error('Загруженный файл не найден или изменился. Загрузите экспорт заново.');
+            Redirect::to('/admin/news/import');
+        }
+        $langs = ['uz' => 'uz', 'ru' => 'ru', 'en' => 'en'];
+        $r = LegacyLanguageRepair::run(LegacyWxrImporter::plan($data, $langs), $langs);
+        $message = 'Новостей найдено: ' . $r['found'] . '. Язык исправлен: ' . $r['lang_changed']
+            . '. Связано переводов: ' . $r['linked'] . '.';
+        if ($r['conflicts'] > 0) {
+            $message .= ' Не изменены (адрес уже занят на этом языке): ' . $r['conflicts'] . '.';
+        }
+        Flash::success($message);
+        Redirect::to('/admin/news/import/categories?token=' . rawurlencode($token));
     }
 
     public function linkCategories(): void
