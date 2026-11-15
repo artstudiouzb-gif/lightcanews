@@ -36,7 +36,7 @@ $widgetSelect = function (string $name, string $current, bool $optional = false)
                     <option value="columns" <?= $config['style'] === 'columns' ? 'selected' : '' ?>>Колонки (конструктор)</option>
                     <option value="minimal" <?= $config['style'] === 'minimal' ? 'selected' : '' ?>>Минимальный (только копирайт)</option>
                 </select>
-                <span class="form-hint">В режиме «Колонки» подвал собирается из колонок ниже.</span>
+                <span class="form-hint">В режиме «Колонки» подвал собирается из колонок ниже. Цвета и вид подвала портала задаёт его шаблон: фон подвала ниже действует только в прежнем шаблоне сайта.</span>
             </div>
         </div>
 

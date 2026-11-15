@@ -58,9 +58,12 @@ final class FooterConfig
         'v' => self::VERSION,
         'style' => 'columns',                 // columns | minimal
         'columns' => [
-            ['heading' => '', 'widget' => 'about', 'text' => '', 'widget2' => '', 'text2' => ''],
-            ['heading' => 'Разделы', 'widget' => 'menu', 'text' => '', 'widget2' => '', 'text2' => ''],
-            ['heading' => 'Связь', 'widget' => 'contacts', 'text' => '', 'widget2' => '', 'text2' => ''],
+            // Набор подвала портала по прототипу: знак с описанием и
+            // соцсетями, рубрики, страны и меню редакции.
+            ['heading' => '', 'widget' => 'about', 'text' => '', 'widget2' => 'social', 'text2' => ''],
+            ['heading' => 'Рубрики', 'widget' => 'rubrics', 'text' => '', 'widget2' => '', 'text2' => ''],
+            ['heading' => 'Страны', 'widget' => 'countries', 'text' => '', 'widget2' => '', 'text2' => ''],
+            ['heading' => 'Редакция', 'widget' => 'menu', 'text' => '', 'widget2' => '', 'text2' => ''],
         ],
         // Плейсхолдеры: {year} — текущий год, {site} — название сайта.
         'bottom' => '© {year} {site}',
