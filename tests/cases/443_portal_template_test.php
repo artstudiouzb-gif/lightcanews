@@ -58,9 +58,24 @@ test('Портал: акцент и основной цвет приходят �
     assert_contains('Пока нет опубликованных новостей.', $html);
 });
 
+test('Портал: ширина сайта и колонки ленты — из «Дизайна»', function (): void {
+    ensure_test_db();
+    reset_design_state();
+    Setting::set('design_container_custom', '1300px');
+    Setting::set('design_portal_feed_width', '340');
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--wrap:1300px', $html, 'ширина контейнера доходит до портала');
+    assert_contains('--pt-feed-w:340px', $html, 'ширина ленты новостей');
+    Setting::set('design_portal_feed_width', '9000');
+    Setting::set('design_container_custom', '');
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_true(!str_contains($html, '--pt-feed-w'), 'вне пределов — треть, как в прототипе');
+    assert_contains('--wrap:1440px', $html, 'без своей ширины — пресет');
+});
+
 test('Портал: код страны — по slug, для незнакомой страны — из названия', function (): void {
     assert_same('UZ', Portal::countryCode(['slug' => 'uzbekistan', 'name' => 'Узбекистан']));
-    assert_same('МИР', Portal::countryCode(['slug' => 'world', 'name' => 'В мире']));
+    assert_same('МИР', Portal::countryCode(['slug' => 'world', 'name' => 'В мире']), 'на русском — МИР');
     assert_same('МО', Portal::countryCode(['slug' => 'mongolia', 'name' => 'Монголия']));
 });
 

@@ -166,9 +166,9 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-sec-head--sm h2 { font-size: 1.2rem; }
 
 /* --- Первый экран: главное + лента ------------------------------------------- */
-.pt-home-top { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); padding-block: 24px 32px; }
-.pt-lead-ed { grid-column: span 8; min-width: 0; }
-.pt-feed { grid-column: span 4; min-width: 0; border-left: 1px solid var(--rule); padding-left: 24px; display: flex; flex-direction: column; gap: 16px; }
+.pt-home-top { display: grid; grid-template-columns: minmax(0, 1fr) var(--pt-feed-w, minmax(0, .5fr)); gap: var(--gap); padding-block: 24px 32px; }
+.pt-lead-ed { min-width: 0; }
+.pt-feed { min-width: 0; border-left: 1px solid var(--rule); padding-left: 24px; display: flex; flex-direction: column; gap: 16px; }
 .pt-pkg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: start; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
 .pt-pkg__text { display: grid; gap: 10px; align-content: start; }
 .pt-pkg__title { font-size: clamp(1.55rem, 2.3vw, 2.15rem); line-height: 1.12; }
@@ -273,7 +273,7 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 
 /* --- Адаптив ------------------------------------------------------------------- */
 @media (max-width: 1080px) {
-    .pt-lead-ed, .pt-feed { grid-column: span 12; }
+    .pt-home-top { grid-template-columns: minmax(0, 1fr); }
     .pt-feed { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 20px; }
     .pt-picks__row, .pt-regions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pt-subscribe__row, .pt-foot__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

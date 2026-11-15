@@ -53,6 +53,11 @@ final class Portal
     public static function countryCode(array $category): string
     {
         $slug = (string) ($category['slug'] ?? '');
+        // Коды стран — ISO и на всех языках одни; «МИР» — слово, поэтому идёт
+        // через словари публичной части (uz.php, en.php), как любая подпись.
+        if ($slug === 'world') {
+            return t(self::COUNTRY_CODES['world']);
+        }
 
         return self::COUNTRY_CODES[$slug] ?? mb_strtoupper(mb_substr((string) ($category['name'] ?? ''), 0, 2));
     }

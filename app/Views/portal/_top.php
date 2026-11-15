@@ -147,7 +147,13 @@ foreach ($langLinks as $langLink) {
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/medeo-sans.css'), ENT_QUOTES) ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/noto-serif.css'), ENT_QUOTES) ?>">
 <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/portal/portal.css'), ENT_QUOTES) ?>">
-<style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>}</style>
+<?php
+// Ширина сайта и колонки ленты — из «Дизайна»: значения уже нормализованы
+// (DesignSettings::containerWidth/portalFeedWidth), в CSS идут как есть.
+$portalWrap = \App\Core\DesignSettings::containerWidth();
+$portalFeed = \App\Core\DesignSettings::portalFeedWidth();
+?>
+<style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>;--wrap:<?= htmlspecialchars($portalWrap, ENT_QUOTES) ?><?= $portalFeed !== '' ? ';--pt-feed-w:' . htmlspecialchars($portalFeed, ENT_QUOTES) : '' ?>}</style>
 <?php if (!empty($portalBlocks)): ?>
 <?php // Страница из блоков конструктора: свои стили блоков портала, затем
       // собственные файлы типов на странице и scoped CSS блоков. ?>

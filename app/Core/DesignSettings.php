@@ -310,6 +310,15 @@ final class DesignSettings
         return self::normalizeWidth($raw);
     }
 
+    /**
+     * Ширина колонки «Лента новостей» на главной портала (260–560 px): пусто —
+     * треть первого экрана, как в прототипе. Остальное занимает главное.
+     */
+    public static function portalFeedWidth(): string
+    {
+        return CssValue::pixels((string) Setting::get('design_portal_feed_width', ''), 260, 560);
+    }
+
     /** Нормализует пользовательскую ширину или возвращает '' при невалидной. */
     public static function normalizeWidth(string $raw): string
     {
@@ -601,6 +610,9 @@ final class DesignSettings
         }
         if (array_key_exists('font_size_custom', $input)) {
             Setting::set('design_font_size_custom', self::normalizeFontSize((string) $input['font_size_custom']));
+        }
+        if (array_key_exists('portal_feed_width', $input)) {
+            Setting::set('design_portal_feed_width', CssValue::pixels((string) $input['portal_feed_width'], 260, 560));
         }
         if (array_key_exists('radius_custom', $input)) {
             Setting::set('design_radius_custom', self::normalizeRadius((string) $input['radius_custom']));

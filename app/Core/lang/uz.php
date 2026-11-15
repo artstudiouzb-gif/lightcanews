@@ -533,4 +533,5 @@ return [
     'Telegram-канал' => 'Telegram-kanal',
     'Ежедневно' => 'Har kuni',
     'Оперативные сводки в Telegram: котировки хлопка и пряжи, прямые включения с выставок и новости маркетплейсов.' => 'Telegram’da tezkor xabarlar: paxta va ip narxlari, ko‘rgazmalardan to‘g‘ridan-to‘g‘ri reportajlar va marketpleys yangiliklari.',
+    'МИР' => 'DUNYO',
 ];

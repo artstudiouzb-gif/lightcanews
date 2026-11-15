@@ -189,6 +189,15 @@ foreach ($options as $key => $opt) {
             </div>
             <div class="design-opt">
                 <div class="design-opt__label">
+                    <span>Ширина ленты новостей на главной</span>
+                    <small>Правая колонка «Лента новостей» на первом экране портала, от 260 до 560 px. Пусто — треть ширины, как в прототипе.</small>
+                </div>
+                <div class="design-opt__choices">
+                    <input class="u-inline-e73ebf4146" type="text" name="portal_feed_width" value="<?= htmlspecialchars((string) \App\Models\Setting::get('design_portal_feed_width', ''), ENT_QUOTES) ?>" placeholder="напр. 340px">
+                </div>
+            </div>
+            <div class="design-opt">
+                <div class="design-opt__label">
                     <span>Точное скругление углов</span>
                     <small>От 0 до 48 px. Применяется к карточкам, полям ввода и кнопкам. Пусто — значение пресета.</small>
                 </div>
