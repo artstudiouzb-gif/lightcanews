@@ -45,6 +45,25 @@ final class HeaderConfig
      */
     public const VARIANTS = ['portal', 'classic'];
 
+    /** Знак в плашке шапки портала. */
+    public const PORTAL_LOGO_MODES = ['text', 'image'];
+
+    /** Меню шапки портала: значение => подпись в админке. */
+    public const PORTAL_NAV = [
+        'rubrics' => 'Рубрики новостей',
+        'menu' => 'Основное меню',
+        'both' => 'Основное меню, затем рубрики',
+    ];
+
+    /** Элементы шапки портала, которые можно скрыть: ключ => подпись. */
+    public const PORTAL_TOGGLES = [
+        'show_countries' => 'Полоса стран',
+        'show_date' => 'Дата в полосе стран',
+        'show_lang' => 'Переключатель языков',
+        'show_search' => 'Поиск',
+        'show_theme' => 'Тёмная тема',
+    ];
+
     /** Стили верхней/утилитарной полосы шапки. */
     public const BAR_STYLES = ['navy', 'light', 'teal'];
 
@@ -63,7 +82,16 @@ final class HeaderConfig
         // Шапка «Портал»: подпись в плашке логотипа и кнопка трансляции.
         // Пустая подпись — общая строка из словаря; кнопка без адреса не
         // выводится вовсе.
-        'portal' => ['tagline' => '', 'live_text' => '', 'live_url' => ''],
+        'portal' => [
+            'tagline' => '', 'live_text' => '', 'live_url' => '',
+            // Знак в плашке: текстом (название сайта) или картинкой логотипа.
+            'logo_mode' => 'text',
+            // Меню шапки: рубрики новостей, основное меню или оба подряд.
+            'nav' => 'rubrics',
+            // Что показывать в шапке портала — раскладку задаёт шаблон.
+            'show_countries' => true, 'show_date' => true, 'show_lang' => true,
+            'show_search' => true, 'show_theme' => true,
+        ],
         'logo_position' => 'left',            // left | center
         'logo_width' => 240,                  // px, 40..600
         'logo_height' => 48,                  // px, 20..200
@@ -426,7 +454,13 @@ final class HeaderConfig
             'tagline' => mb_substr(trim(strip_tags((string) ($portal['tagline'] ?? ''))), 0, 120),
             'live_text' => mb_substr(trim(strip_tags((string) ($portal['live_text'] ?? ''))), 0, 24),
             'live_url' => $liveUrl !== '' && UrlGuard::isSafeLink($liveUrl) ? mb_substr($liveUrl, 0, 500) : '',
+            'logo_mode' => in_array($portal['logo_mode'] ?? '', self::PORTAL_LOGO_MODES, true) ? (string) $portal['logo_mode'] : 'text',
+            'nav' => isset(self::PORTAL_NAV[$portal['nav'] ?? '']) ? (string) $portal['nav'] : 'rubrics',
         ];
+        // Переключатели: ключа нет (запись старше настройки) — как по умолчанию.
+        foreach (self::PORTAL_TOGGLES as $toggle => $label) {
+            $result['portal'][$toggle] = array_key_exists($toggle, $portal) ? !empty($portal[$toggle]) : true;
+        }
 
         $styles = (array) ($config['styles'] ?? []);
         $boundedInt = static function (mixed $value, int $default, int $min, int $max): int {

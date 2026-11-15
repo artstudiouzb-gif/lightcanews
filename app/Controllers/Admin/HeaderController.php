@@ -140,7 +140,7 @@ final class HeaderController
                 'tagline' => (string) ($_POST['portal_tagline'] ?? ''),
                 'live_text' => (string) ($_POST['portal_live_text'] ?? ''),
                 'live_url' => (string) ($_POST['portal_live_url'] ?? ''),
-            ],
+            ] + $this->portalOptions(),
             'contacts' => [
                 'phone' => $_POST['contact_phone'] ?? '',
                 'email' => $_POST['contact_email'] ?? '',
@@ -199,5 +199,26 @@ final class HeaderController
         Flash::success('Настройки шапки сохранены.');
         header('Location: /admin/header');
         exit;
+    }
+
+    /**
+     * Знак, меню и переключатели шапки портала. Галочка без отметки не
+     * приходит вовсе, поэтому снятая галочка — это ключ со значением false,
+     * а не пропущенный ключ (тот читается как «по умолчанию включено»).
+     *
+     * @return array<string, mixed>
+     */
+    private function portalOptions(): array
+    {
+        $in = \App\Core\Input::post();
+        $out = [
+            'logo_mode' => $in->oneOf('portal_logo_mode', HeaderConfig::PORTAL_LOGO_MODES, 'text'),
+            'nav' => $in->oneOf('portal_nav', array_keys(HeaderConfig::PORTAL_NAV), 'rubrics'),
+        ];
+        foreach (array_keys(HeaderConfig::PORTAL_TOGGLES) as $toggle) {
+            $out[$toggle] = $in->bool('portal_' . $toggle);
+        }
+
+        return $out;
     }
 }
