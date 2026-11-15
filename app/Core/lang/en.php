@@ -548,4 +548,6 @@ return [
     'Подкасты' => 'Podcasts',
     'Подкаст' => 'Podcast',
     'Все выпуски на YouTube' => 'All episodes on YouTube',
+    'Мы в Instagram' => 'We are on Instagram',
+    'Все публикации в Instagram' => 'All posts on Instagram',
 ];

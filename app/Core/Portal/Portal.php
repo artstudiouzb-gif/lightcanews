@@ -253,6 +253,7 @@ final class Portal
         'ad' => 'Широкий рекламный баннер',
         'regions' => 'Нити региона (по странам)',
         'media' => 'Видео и подкасты',
+        'reels' => 'Instagram — ролики',
         'voices' => 'Точка зрения',
         'subscribe' => 'Подписка',
     ];
@@ -265,7 +266,7 @@ final class Portal
     public const DEFAULT_SECTIONS = ['lead', 'rates', 'picks', 'ad', 'regions', 'media', 'voices', 'subscribe'];
 
     /** Сколько материалов секция показывает, если редактор не задал своё. */
-    public const SECTION_LIMITS = ['picks' => 4, 'partners' => 4, 'regions' => 4, 'voices' => 3, 'feed' => 8, 'lead' => 8];
+    public const SECTION_LIMITS = ['reels' => 8, 'picks' => 4, 'partners' => 4, 'regions' => 4, 'voices' => 3, 'feed' => 8, 'lead' => 8];
 
     /**
      * Данные одной секции главной.
@@ -295,6 +296,8 @@ final class Portal
                 ];
             case 'media':
                 return ['media' => self::media($lang, $limit > 0 ? $limit : 4)];
+            case 'reels':
+                return ['reels' => self::reels($limit)];
             case 'partners':
                 return ['partners' => self::cards(News::partnerMaterials($limit, $lang), $lang)];
             case 'rates':
@@ -389,6 +392,35 @@ final class Portal
         usort($items, static fn (array $a, array $b): int => strcmp($b['date'], $a['date']));
 
         return array_merge([$lead], array_slice($items, 0, max(0, $limit - 1)));
+    }
+
+    /**
+     * «Instagram — ролики»: публикации из сохранённой копии ленты
+     * (InstagramFeed — её забирает воркер, страница в сеть не ходит). Ролики
+     * первыми: секция задумана как полоса вертикальных роликов; не хватает
+     * роликов — добирают фото, чтобы полоса не обрывалась.
+     *
+     * @return list<array{type:string, title:string, caption:string, permalink:string, image:string, timestamp:string}>
+     */
+    public static function reels(int $limit = 8): array
+    {
+        $limit = max(1, min(\App\Core\InstagramFeed::MAX_POSTS, $limit));
+        $posts = \App\Core\InstagramFeed::posts(\App\Core\InstagramFeed::MAX_POSTS);
+        $videos = array_values(array_filter($posts, static fn (array $p): bool => $p['type'] === 'VIDEO'));
+        $others = array_values(array_filter($posts, static fn (array $p): bool => $p['type'] !== 'VIDEO'));
+        $out = [];
+        foreach (array_slice(array_merge($videos, $others), 0, $limit) as $post) {
+            $out[] = [
+                'type' => (string) $post['type'],
+                'title' => (string) ($post['title'] ?? ''),
+                'caption' => (string) $post['caption'],
+                'permalink' => (string) $post['permalink'],
+                'image' => (string) $post['image'],
+                'timestamp' => (string) ($post['timestamp'] ?? ''),
+            ];
+        }
+
+        return $out;
     }
 
     /**
