@@ -429,6 +429,14 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                     </label>
                     <span class="form-hint">Новость попадёт в подборку «Выбор редакции» на главной. Отметка общая для всех языковых версий.</span>
                 </fieldset>
+                <fieldset class="form-field">
+                    <legend>Реклама</legend>
+                    <label class="form-check">
+                        <input type="checkbox" name="is_partner" value="1" <?= !empty($news['is_partner']) ? 'checked' : '' ?>>
+                        Партнёрский материал
+                    </label>
+                    <span class="form-hint">Материал оплачен или подготовлен с партнёром: на сайте у него будет метка «Партнёрский материал». Отметка общая для всех языковых версий.</span>
+                </fieldset>
 
                 <?php if ($newsCountries !== []): ?>
                     <fieldset class="form-field">
