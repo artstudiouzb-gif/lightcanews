@@ -17,7 +17,7 @@ $regions = (array) ($sec['regions'] ?? []);
     <div class="pt-filters" role="group" aria-label="<?= htmlspecialchars(t('Страны'), ENT_QUOTES) ?>" hidden>
         <button type="button" aria-pressed="true" data-pt-region="all"><?= htmlspecialchars(t('Все страны'), ENT_QUOTES) ?></button>
         <?php foreach ($regions as $i => $region): ?>
-            <button type="button" aria-pressed="false" data-pt-region="<?= (int) $i ?>"><b><?= htmlspecialchars((string) $region['code'], ENT_QUOTES) ?></b><?= htmlspecialchars((string) $region['name'], ENT_QUOTES) ?></button>
+            <button type="button" aria-pressed="false" data-pt-region="<?= (int) $i ?>"><?php if ($region['mark'] !== ''): ?><b><?= $region['mark'] ?></b><?php endif; ?><?= htmlspecialchars((string) $region['name'], ENT_QUOTES) ?></button>
         <?php endforeach; ?>
     </div>
     <div class="pt-regions">
@@ -26,7 +26,7 @@ $regions = (array) ($sec['regions'] ?? []);
             <article class="pt-region" data-pt-region-card="<?= (int) $i ?>">
                 <a class="pt-region__hero" href="<?= htmlspecialchars((string) $regionLead['url'], ENT_QUOTES) ?>" tabindex="-1" aria-hidden="true">
                     <?php $photoCard = $regionLead; $photoRatio = '16x9'; $photoSizes = '(max-width: 720px) 100vw, 33vw'; require __DIR__ . '/_photo.php'; ?>
-                    <span class="pt-region__id"><b><?= htmlspecialchars((string) $region['code'], ENT_QUOTES) ?></b><?= htmlspecialchars((string) $region['name'], ENT_QUOTES) ?></span>
+                    <span class="pt-region__id"><?php if ($region['mark'] !== ''): ?><b><?= $region['mark'] ?></b><?php endif; ?><?= htmlspecialchars((string) $region['name'], ENT_QUOTES) ?></span>
                 </a>
                 <div class="pt-region__body">
                     <h3 class="pt-region__lead"><a href="<?= htmlspecialchars((string) $regionLead['url'], ENT_QUOTES) ?>"><span class="pt-hl"><?= htmlspecialchars((string) $regionLead['title'], ENT_QUOTES) ?></span></a></h3>

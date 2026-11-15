@@ -158,7 +158,7 @@ require __DIR__ . '/_top.php';
         <div class="pt-tags pt-art__tags">
             <?php if ($card['badge'] !== ''): ?><span class="pt-badge"><?= htmlspecialchars((string) $card['badge'], ENT_QUOTES) ?></span><?php endif; ?>
             <?php if ($card['rubric'] !== ''): ?><a class="pt-art__badge" href="<?= htmlspecialchars((string) $card['rubric_url'], ENT_QUOTES) ?>"><?= htmlspecialchars((string) $card['rubric'], ENT_QUOTES) ?></a><?php endif; ?>
-            <?php foreach ($card['countries'] as $code): ?><span class="pt-code"><?= htmlspecialchars((string) $code, ENT_QUOTES) ?></span><?php endforeach; ?>
+            <?php foreach ($card['country_marks'] as $countryMark): ?><span class="pt-code"><?= $countryMark ?></span><?php endforeach; ?>
         </div>
         <h1 class="pt-art__title"><?= htmlspecialchars((string) $news['title'], ENT_QUOTES) ?></h1>
         <?php if ($leadHtml !== ''): ?><div class="pt-art__lead"><?= $leadHtml ?></div><?php endif; ?>

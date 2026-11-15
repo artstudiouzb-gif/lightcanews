@@ -307,6 +307,14 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 /* --- Лента рубрики и страны -------------------------------------------------- */
 .pt-sec-head--page h1 { font-size: clamp(1.6rem, 2.6vw, 2.1rem); font-weight: 800; line-height: 1.15; border-left: 4px solid var(--brand); padding-left: 12px; display: flex; align-items: center; gap: 10px; }
 .pt-code--lg { font-size: .8rem; padding: 3px 8px; }
+/* Флаг вместо кода: чип не нужен, флагу хватает тонкой обводки. */
+.pt-flag { display: inline-block; width: 1.35em; height: .9em; vertical-align: -.12em; border-radius: 2px; box-shadow: 0 0 0 1px rgba(12, 19, 18, .14); flex: none; }
+.pt-flag--globe { width: 1.05em; height: 1.05em; vertical-align: -.18em; box-shadow: none; }
+/* Чипы кодов (шапка, фильтры, подпись на фото) задают фон, отступ и тёмный
+   цвет — у флага их нет, а глобус берёт цвет окружающего текста. */
+.pt-code:has(> .pt-flag), .pt b:has(> .pt-flag), .pt-countries > a b:has(> .pt-flag), .pt-filters button b:has(> .pt-flag), .pt-region__id b:has(> .pt-flag) { background: none; border: 0; padding: 0; color: inherit; display: inline-flex; }
+.pt-countries > a:has(.pt-flag) { padding-left: 8px; }
+.pt-code--lg .pt-flag { font-size: 1.4rem; }
 .pt-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .82rem; color: var(--ink-3); margin-bottom: 14px; }
 .pt-crumbs a { color: var(--ink-2); font-weight: 600; }
 .pt-crumbs a:hover { color: var(--link); }

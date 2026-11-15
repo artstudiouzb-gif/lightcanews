@@ -49,9 +49,78 @@ final class Portal
         }
     }
 
+    /** Как метить страну рядом с названием: коды, флаги или никак. */
+    public const COUNTRY_MARKS = ['codes' => 'Коды (UZ, KZ, МИР)', 'flags' => 'Флаги и глобус', 'off' => 'Не показывать'];
+
+    /**
+     * Вид меток страны — настройка «Дизайна» `design_country_codes`. Метку
+     * отдают два метода (`countryCode` — текст, `countryMark` — разметка), и
+     * пустая она нигде не печатается, поэтому переключение действует везде.
+     */
+    public static function countryMarkMode(): string
+    {
+        $mode = (string) Setting::get('design_country_codes', 'codes');
+        if ($mode === 'on') {
+            return 'codes';
+        }
+
+        return isset(self::COUNTRY_MARKS[$mode]) ? $mode : 'codes';
+    }
+
+    public static function showCountryCodes(): bool
+    {
+        return self::countryMarkMode() !== 'off';
+    }
+
+    /**
+     * Флаги нарисованы упрощённо: на размере строки текста гербы и звёзды
+     * не читаются, узнаётся сочетание полос и цвета. Эмодзи-флаги Windows не
+     * рисует вовсе (выходят те же буквы), поэтому — SVG в разметке.
+     */
+    private const FLAGS = [
+        'uzbekistan' => '<rect width="30" height="20" fill="#1eb53a"/><rect width="30" height="13.6" fill="#fff"/><rect width="30" height="6.4" fill="#0099b5"/><rect y="6.4" width="30" height=".6" fill="#ce1126"/><rect y="13" width="30" height=".6" fill="#ce1126"/><circle cx="5" cy="3.2" r="2.2" fill="#fff"/><circle cx="5.9" cy="3.2" r="2" fill="#0099b5"/>',
+        'kazakhstan' => '<rect width="30" height="20" fill="#00afca"/><circle cx="15" cy="9" r="3.4" fill="#fec50c"/><rect x="2" y="1" width="1.6" height="18" fill="#fec50c"/>',
+        'kyrgyzstan' => '<rect width="30" height="20" fill="#e8112d"/><circle cx="15" cy="10" r="5" fill="#ffef00"/><circle cx="15" cy="10" r="2.6" fill="#e8112d"/>',
+        'tajikistan' => '<rect width="30" height="20" fill="#060"/><rect width="30" height="14.3" fill="#fff"/><rect width="30" height="5.7" fill="#c00"/><path d="M12.6 11.4h4.8l-.6-2.4-1.2 1.2-1.2-1.6-1.2 1.6-1.2-1.2z" fill="#f8c300"/>',
+        'turkmenistan' => '<rect width="30" height="20" fill="#00843d"/><rect x="3" width="5" height="20" fill="#d22630"/><circle cx="13.5" cy="5" r="2.6" fill="#fff"/><circle cx="14.6" cy="4.6" r="2.3" fill="#00843d"/>',
+    ];
+
+    /** Глобус — «В мире»: страны нет, флага тоже. Цвет — цвет текста. */
+    private const GLOBE = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3z"/>';
+
+    /**
+     * Метка страны разметкой: код, флаг или пусто. `$named` — метка стоит
+     * без названия рядом (на карточке), тогда флагу нужна подпись для
+     * диктора; рядом с названием флаг — украшение.
+     *
+     * @param array<string, mixed> $category
+     */
+    public static function countryMark(array $category, bool $named = false): string
+    {
+        $mode = self::countryMarkMode();
+        if ($mode === 'off') {
+            return '';
+        }
+        $slug = (string) ($category['slug'] ?? '');
+        $name = (string) ($category['name'] ?? '');
+        if ($mode === 'flags' && ($slug === 'world' || isset(self::FLAGS[$slug]))) {
+            $a11y = $named
+                ? ' role="img" aria-label="' . htmlspecialchars($name, ENT_QUOTES) . '"><title>' . htmlspecialchars($name, ENT_QUOTES) . '</title>'
+                : ' aria-hidden="true" focusable="false">';
+            return $slug === 'world'
+                ? '<svg class="pt-flag pt-flag--globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"' . $a11y . self::GLOBE . '</svg>'
+                : '<svg class="pt-flag" viewBox="0 0 30 20"' . $a11y . self::FLAGS[$slug] . '</svg>';
+        }
+
+        return htmlspecialchars(self::countryCode($category), ENT_QUOTES);
+    }
+
     /** @param array<string, mixed> $category */
     public static function countryCode(array $category): string
     {
+        if (!self::showCountryCodes()) {
+            return '';
+        }
         $slug = (string) ($category['slug'] ?? '');
         // Коды стран — ISO и на всех языках одни; «МИР» — слово, поэтому идёт
         // через словари публичной части (uz.php, en.php), как любая подпись.
@@ -93,9 +162,14 @@ final class Portal
             $id = (int) $row['id'];
             $rubric = $rubrics[(int) ($row['category_id'] ?? 0)] ?? null;
             $codes = [];
+            $marks = [];
             foreach ((array) ($countryIds[$id] ?? []) as $countryId) {
                 if (isset($countries[(int) $countryId])) {
-                    $codes[] = self::countryCode($countries[(int) $countryId]);
+                    $code = self::countryCode($countries[(int) $countryId]);
+                    if ($code !== '') {
+                        $codes[] = $code;
+                        $marks[] = self::countryMark($countries[(int) $countryId], true);
+                    }
                 }
             }
             $published = (string) ($row['published_at'] ?? '');
@@ -110,6 +184,8 @@ final class Portal
                 'rubric' => $rubric !== null ? (string) $rubric['name'] : '',
                 'rubric_url' => $rubric !== null ? Locale::url(NewsCategory::path($rubric)) : '',
                 'countries' => $codes,
+                // Те же страны разметкой: код или флаг, по настройке «Дизайна».
+                'country_marks' => $marks,
                 'badge' => trim((string) ($row['badge'] ?? '')),
                 'date' => self::date($published, $lang),
                 'time' => self::time($published),
@@ -207,6 +283,7 @@ final class Portal
                     }
                     $regions[] = [
                         'code' => self::countryCode($country),
+                        'mark' => self::countryMark($country),
                         'name' => (string) $country['name'],
                         'url' => Locale::url(NewsCategory::path($country)),
                         'items' => $items,
