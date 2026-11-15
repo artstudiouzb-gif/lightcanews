@@ -527,3 +527,29 @@ test('Портал: котировки сырья — ручной ввод, и�
     assert_contains('Источник: ICE', $html);
     assert_same('', trim(render_view('app/Views/portal/_home_rates.php', ['sec' => ['rates' => null, 'quotes' => []], 'secTitle' => ''])), 'нечего показать — секции нет');
 });
+
+test('Курсы ЦБ без cron: обновление после ответа — по сроку копии и не чаще попытки', function (): void {
+    ensure_test_db();
+    \App\Core\Database::pdo()->exec("DELETE FROM settings WHERE `key` IN ('currency_rates','currency_rates_attempt')");
+    Setting::forgetCache();
+    $cr = \App\Core\CurrencyRates::class;
+    $now = 1_800_000_000;
+    assert_true($cr::isDue($now), 'копии нет — пора');
+
+    Setting::set('currency_rates', json_encode(['date' => '15.11.2026', 'rates' => ['UZS' => 12000], 'fetched_at' => $now - 3600]));
+    Setting::forgetCache();
+    assert_true(!$cr::isDue($now), 'свежая копия — не пора');
+    assert_same($now - 3600, $cr::fetchedAt());
+
+    Setting::set('currency_rates', json_encode(['date' => '15.11.2026', 'rates' => ['UZS' => 12000], 'fetched_at' => $now - $cr::REFRESH_AFTER - 1]));
+    Setting::set('currency_rates_attempt', (string) ($now - 600));
+    Setting::forgetCache();
+    assert_true(!$cr::isDue($now), 'недавняя попытка — ЦБ не дёргаем');
+    Setting::set('currency_rates_attempt', (string) ($now - 7200));
+    Setting::forgetCache();
+    assert_true($cr::isDue($now), 'копия устарела, попытка давно — пора');
+
+    // Из консоли (тесты, импорт) наружу не ходим: обновление после ответа — только веб.
+    $cr::afterResponse();
+    assert_same(false, (new \ReflectionProperty($cr, 'scheduled'))->getValue());
+});
