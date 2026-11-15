@@ -189,6 +189,7 @@ final class AdminUi
             'header' => 'layout-navbar',
             'footer' => 'layout-bottombar',
             'ads' => 'ad',
+            'quotes' => 'chart-line',
             'languages' => 'language',
             'content_types' => 'list-details',
             'telegram' => 'brand-telegram',

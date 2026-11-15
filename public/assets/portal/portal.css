@@ -696,3 +696,8 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 @media (max-width: 720px) {
     .pt-reels__row { grid-auto-columns: 44vw; }
 }
+
+/* Котировки сырья в полосе курсов */
+.pt-fx__unit { font-size: .73rem; font-weight: 700; color: var(--ink-3); }
+.pt-fx__chg { display: block; font-size: .73rem; font-weight: 700; color: var(--ink-3); }
+.pt-fx__src { flex-basis: 100%; margin: 0; font-size: .73rem; color: var(--ink-3); }

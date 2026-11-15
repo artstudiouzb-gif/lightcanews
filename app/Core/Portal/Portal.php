@@ -301,7 +301,7 @@ final class Portal
             case 'partners':
                 return ['partners' => self::cards(News::partnerMaterials($limit, $lang), $lang)];
             case 'rates':
-                return ['rates' => \App\Core\CurrencyRates::current()];
+                return self::rates($lang);
             case 'picks':
                 return ['picks' => self::cards(News::editorPicks($limit, $lang), $lang)];
             case 'regions':
@@ -431,10 +431,24 @@ final class Portal
     public static function home(string $lang): array
     {
         return self::section('lead', $lang)
-            + ['rates' => \App\Core\CurrencyRates::current()]
+            + self::rates($lang)
             + self::section('picks', $lang)
             + self::section('regions', $lang)
             + self::section('media', $lang)
             + self::section('voices', $lang);
+    }
+
+    /**
+     * Полоса курсов: курсы ЦБ (воркер) и котировки сырья (редакция).
+     *
+     * @return array{rates: ?array<string, mixed>, quotes: list<array<string, mixed>>, quotes_source: string}
+     */
+    private static function rates(string $lang): array
+    {
+        return [
+            'rates' => \App\Core\CurrencyRates::current(),
+            'quotes' => MarketQuotes::current($lang, \App\Models\Language::defaultCode()),
+            'quotes_source' => MarketQuotes::source(),
+        ];
     }
 }
