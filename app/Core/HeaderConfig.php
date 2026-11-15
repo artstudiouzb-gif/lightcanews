@@ -59,6 +59,7 @@ final class HeaderConfig
     public const PORTAL_TOGGLES = [
         'show_countries' => 'Полоса стран',
         'show_date' => 'Дата в полосе стран',
+        'show_weather' => 'Погода рядом с датой',
         'show_lang' => 'Переключатель языков',
         'show_search' => 'Поиск',
         'show_theme' => 'Тёмная тема',
@@ -88,8 +89,10 @@ final class HeaderConfig
             'logo_mode' => 'text',
             // Меню шапки: рубрики новостей, основное меню или оба подряд.
             'nav' => 'rubrics',
+            // Город погоды рядом с датой (App\Core\Weather::CITIES).
+            'weather_city' => 'tashkent',
             // Что показывать в шапке портала — раскладку задаёт шаблон.
-            'show_countries' => true, 'show_date' => true, 'show_lang' => true,
+            'show_countries' => true, 'show_date' => true, 'show_weather' => true, 'show_lang' => true,
             'show_search' => true, 'show_theme' => true,
         ],
         'logo_position' => 'left',            // left | center
@@ -456,6 +459,7 @@ final class HeaderConfig
             'live_url' => $liveUrl !== '' && UrlGuard::isSafeLink($liveUrl) ? mb_substr($liveUrl, 0, 500) : '',
             'logo_mode' => in_array($portal['logo_mode'] ?? '', self::PORTAL_LOGO_MODES, true) ? (string) $portal['logo_mode'] : 'text',
             'nav' => isset(self::PORTAL_NAV[$portal['nav'] ?? '']) ? (string) $portal['nav'] : 'rubrics',
+            'weather_city' => isset(Weather::CITIES[$portal['weather_city'] ?? '']) ? (string) $portal['weather_city'] : Weather::DEFAULT_CITY,
         ];
         // Переключатели: ключа нет (запись старше настройки) — как по умолчанию.
         foreach (self::PORTAL_TOGGLES as $toggle => $label) {

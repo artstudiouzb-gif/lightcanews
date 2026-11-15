@@ -23,9 +23,9 @@ final class MarketQuotes
 
     /** Набор по умолчанию: строки уже названы, редакция вводит только цифры. */
     public const DEFAULTS = [
-        ['names' => ['ru' => 'Хлопок ICE', 'uz' => 'Пахта ICE', 'en' => 'ICE Cotton'], 'unit' => '¢/lb', 'value' => '', 'prev' => '', 'updated' => ''],
-        ['names' => ['ru' => 'Хлопковое волокно', 'uz' => 'Пахта толаси', 'en' => 'Cotton lint'], 'unit' => '$/т', 'value' => '', 'prev' => '', 'updated' => ''],
-        ['names' => ['ru' => 'Пряжа Ne 30/1', 'uz' => 'Ип Ne 30/1', 'en' => 'Yarn Ne 30/1'], 'unit' => '$/кг', 'value' => '', 'prev' => '', 'updated' => ''],
+        ['names' => ['ru' => 'Хлопок ICE', 'uz' => 'Paxta ICE', 'en' => 'ICE Cotton'], 'unit' => '¢/lb', 'value' => '', 'prev' => '', 'updated' => ''],
+        ['names' => ['ru' => 'Хлопковое волокно', 'uz' => 'Paxta tolasi', 'en' => 'Cotton lint'], 'unit' => '$/т', 'value' => '', 'prev' => '', 'updated' => ''],
+        ['names' => ['ru' => 'Пряжа Ne 30/1', 'uz' => 'Ip Ne 30/1', 'en' => 'Yarn Ne 30/1'], 'unit' => '$/кг', 'value' => '', 'prev' => '', 'updated' => ''],
     ];
 
     /**

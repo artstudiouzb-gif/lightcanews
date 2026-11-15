@@ -553,3 +553,50 @@ test('Курсы ЦБ без cron: обновление после ответа 
     $cr::afterResponse();
     assert_same(false, (new \ReflectionProperty($cr, 'scheduled'))->getValue());
 });
+
+test('Погода в шапке портала: копия Open-Meteo, город из конструктора, без копии — ничего', function (): void {
+    ensure_test_db();
+    reset_design_state();
+    \App\Core\Database::pdo()->exec("DELETE FROM settings WHERE `key` IN ('weather_current','weather_attempt','header_config')");
+    Setting::forgetCache();
+    $w = \App\Core\Weather::class;
+    $now = 1_800_000_000;
+    assert_same(null, $w::current('tashkent', $now), 'копии нет — погоды нет');
+    assert_true($w::isDue($now));
+
+    // Ответ на список координат — массив по городам в порядке CITIES.
+    $rows = [];
+    foreach (array_keys($w::CITIES) as $i => $key) {
+        $rows[] = ['current' => ['temperature_2m' => $i === 0 ? 13.6 : -2.4, 'weather_code' => $i === 0 ? 0 : 71]];
+    }
+    $parsed = $w::parse((string) json_encode($rows));
+    assert_same(['temp' => 13.6, 'code' => 0], $parsed['tashkent']);
+    assert_same(71, $parsed['bishkek']['code']);
+    assert_same(null, $w::parse('{"error":true}'), 'чужой ответ не принимается');
+    assert_contains('latitude=41.3111%2C43.238', $w::requestUrl());
+
+    Setting::set('weather_current', json_encode(['cities' => $parsed, 'fetched_at' => $now - 600]));
+    Setting::forgetCache();
+    assert_true(!$w::isDue($now), 'свежая копия — не пора');
+    $t = $w::current('tashkent', $now);
+    assert_same(['city' => 'Ташкент', 'temp' => 14, 'icon' => 'sun', 'label' => 'Ясно'], $t);
+    assert_same('−2°', $w::format($w::current('bishkek', $now)['temp']));
+    assert_same('snowflake', $w::current('bishkek', $now)['icon']);
+    assert_same('Ташкент', $w::current('нет-такого', $now)['city'], 'незнакомый город — умолчание');
+    assert_same(null, $w::current('tashkent', $now + 7 * 3600), 'устаревшая копия не показывается');
+
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    if (str_contains($html, 'pt-countries')) {
+        // Шапка печатается на текущем времени: подставим свежую копию.
+        Setting::set('weather_current', json_encode(['cities' => $parsed, 'fetched_at' => time()]));
+        Setting::forgetCache();
+        $html = portal_home_html(['lead' => null, 'feed' => []]);
+        assert_contains('pt-countries__weather', $html);
+        assert_contains('+14°', $html);
+        \App\Core\HeaderConfig::save(['portal' => ['show_weather' => false]]);
+        Setting::forgetCache();
+        assert_true(!str_contains(portal_home_html(['lead' => null, 'feed' => []]), 'pt-countries__weather'), 'переключатель выключает погоду');
+    }
+    assert_same('bishkek', \App\Core\HeaderConfig::normalize(['portal' => ['weather_city' => 'bishkek']])['portal']['weather_city']);
+    assert_same('tashkent', \App\Core\HeaderConfig::normalize(['portal' => ['weather_city' => 'x']])['portal']['weather_city']);
+});
