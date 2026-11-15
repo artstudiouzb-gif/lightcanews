@@ -185,6 +185,13 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 /* «Главное» и «Лента» отдельными блоками: каждая во всю колонку сайта. */
 .pt-home-main, .pt-feed-solo { padding-block: 24px 32px; }
 .pt-feed-solo .pt-feed { border-left: 0; padding-left: 0; }
+/* Во всю ширину партнёрский материал встаёт колонкой справа от ленты:
+   кадр 16:9 на 1200px занял бы экран целиком. */
+@media (min-width: 901px) {
+    .pt-feed-solo .pt-feed { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: var(--gap); align-content: start; }
+    .pt-feed-solo .pt-feed > :not(.pt-partner) { grid-column: 1; }
+    .pt-feed-solo .pt-feed > .pt-partner { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; align-self: start; }
+}
 .pt-feed__list { list-style: none; margin: 0; padding: 0; }
 .pt-feed__list li { border-bottom: 1px solid var(--rule); }
 .pt-feed__list a { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; padding-block: 11px; }
