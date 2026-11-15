@@ -12,6 +12,7 @@
 use App\Core\Locale;
 
 $feed = (array) ($sec['feed'] ?? []);
+$feedTop = (array) ($sec['feed_top'] ?? []);
 $newsUrl = Locale::url('news');
 // В общей секции свой заголовок принадлежит «Главному», лента — по умолчанию.
 $feedTitle = empty($secInner) && $secTitle !== '' ? $secTitle : t('Лента новостей');
@@ -21,10 +22,16 @@ $secUid = (string) ($secUid ?? 'home');
     <aside class="pt-feed" aria-labelledby="pt-feed-title-<?= $secUid ?>">
         <header class="pt-sec-head pt-sec-head--sm">
             <h2 id="pt-feed-title-<?= $secUid ?>"><?= htmlspecialchars($feedTitle, ENT_QUOTES) ?></h2>
+            <?php if ($feedTop !== []): ?>
+            <div class="pt-tabs" role="tablist" hidden data-pt-tabs>
+                <button type="button" role="tab" aria-selected="true" aria-controls="pt-feed-new-<?= $secUid ?>" id="pt-feed-tab-new-<?= $secUid ?>"><?= htmlspecialchars(t('Последние'), ENT_QUOTES) ?></button>
+                <button type="button" role="tab" aria-selected="false" aria-controls="pt-feed-top-<?= $secUid ?>" id="pt-feed-tab-top-<?= $secUid ?>"><?= htmlspecialchars(t('Главные'), ENT_QUOTES) ?></button>
+            </div>
+            <?php endif; ?>
         </header>
-        <ol class="pt-feed__list">
+        <ol class="pt-feed__list" id="pt-feed-new-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-new-<?= $secUid ?>">
             <?php foreach ($feed as $feedIndex => $card): ?>
-                <li>
+                <li<?= $feedIndex === 0 ? ' class="is-hot"' : '' ?>>
                     <a href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
                         <span class="pt-feed__stamp">
                             <time datetime="<?= htmlspecialchars((string) $card['datetime'], ENT_QUOTES) ?>"><?= htmlspecialchars((string) $card['time'], ENT_QUOTES) ?></time>
@@ -40,6 +47,24 @@ $secUid = (string) ($secUid ?? 'home');
                 <?php if ($feedIndex === 2): $adKey = 'feed'; require __DIR__ . '/_ad.php'; endif; ?>
             <?php endforeach; ?>
         </ol>
+        <?php if ($feedTop !== []): ?>
+        <ol class="pt-feed__list" id="pt-feed-top-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-top-<?= $secUid ?>" hidden>
+            <?php foreach ($feedTop as $card): ?>
+                <li>
+                    <a href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
+                        <span class="pt-feed__stamp">
+                            <time datetime="<?= htmlspecialchars((string) $card['datetime'], ENT_QUOTES) ?>"><?= htmlspecialchars((string) $card['time'], ENT_QUOTES) ?></time>
+                            <span class="pt-feed__date"><?= htmlspecialchars((string) $card['day_full'], ENT_QUOTES) ?></span>
+                        </span>
+                        <span>
+                            <?php if ($card['rubric'] !== ''): ?><span class="pt-feed__rubric"><?= htmlspecialchars((string) $card['rubric'], ENT_QUOTES) ?></span><?php endif; ?>
+                            <span class="pt-hl"><?= htmlspecialchars((string) $card['title'], ENT_QUOTES) ?></span>
+                        </span>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+        <?php endif; ?>
         <a class="pt-btn pt-btn--wide" href="<?= htmlspecialchars($newsUrl, ENT_QUOTES) ?>"><?= htmlspecialchars(t('Вся лента'), ENT_QUOTES) ?></a>
         <?php $adKey = 'partner'; require __DIR__ . '/_ad.php'; ?>
     </aside>

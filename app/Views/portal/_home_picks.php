@@ -16,9 +16,12 @@ $picks = (array) ($sec['picks'] ?? []);
     <div class="pt-wrap">
         <header class="pt-sec-head"><h2 id="pt-picks-title"><?= htmlspecialchars($secTitle !== '' ? $secTitle : t('Выбор редакции'), ENT_QUOTES) ?></h2></header>
         <div class="pt-picks__row">
-            <?php foreach ($picks as $card): ?>
+            <?php foreach ($picks as $pickIndex => $card): ?>
                 <a class="pt-pcard" href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
-                    <?php $photoCard = $card; $photoRatio = '4x3'; $photoSizes = '(max-width: 720px) 100vw, 25vw'; require __DIR__ . '/_photo.php'; ?>
+                    <span class="pt-pcard__media">
+                        <?php $photoCard = $card; $photoRatio = '4x3'; $photoSizes = '(max-width: 720px) 100vw, 25vw'; require __DIR__ . '/_photo.php'; ?>
+                        <span class="pt-pcard__num" aria-hidden="true"><?= sprintf('%02d', $pickIndex + 1) ?></span>
+                    </span>
                     <span class="pt-pcard__body">
                         <span class="pt-pcard__meta"><span><?= htmlspecialchars((string) $card['rubric'], ENT_QUOTES) ?></span><span><?= htmlspecialchars(sprintf(t('%d мин чтения'), (int) $card['reading']), ENT_QUOTES) ?></span></span>
                         <span class="pt-hl"><?= htmlspecialchars((string) $card['title'], ENT_QUOTES) ?></span>

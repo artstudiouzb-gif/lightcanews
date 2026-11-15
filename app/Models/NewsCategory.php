@@ -210,6 +210,10 @@ final class NewsCategory
         if (isset($names[(int) $row['id']])) {
             $row['name'] = $names[(int) $row['id']];
         }
+        $facts = NewsCategoryTranslation::factsForIds([(int) $row['id']], $lang);
+        if (isset($facts[(int) $row['id']])) {
+            $row['fact'] = $facts[(int) $row['id']];
+        }
 
         return $row;
     }
@@ -229,8 +233,16 @@ final class NewsCategory
             $lang
         );
 
-        return array_map(static function (array $row) use ($names): array {
+        $facts = NewsCategoryTranslation::factsForIds(
+            array_values(array_map(static fn (array $row): int => (int) $row['id'], $rows)),
+            $lang
+        );
+
+        return array_map(static function (array $row) use ($names, $facts): array {
             $id = (int) $row['id'];
+            if (isset($facts[$id])) {
+                $row['fact'] = $facts[$id];
+            }
             if (isset($names[$id])) {
                 $row['name'] = $names[$id];
             }
@@ -327,6 +339,15 @@ final class NewsCategory
             ':o' => $sortOrder,
             ':id' => $id,
         ]);
+        self::bustCache();
+    }
+
+    /** Факт на фото страны в «Нитях региона»; пусто — плашки нет. */
+    public static function setFact(int $id, string $fact): void
+    {
+        $fact = mb_substr(trim(strip_tags($fact)), 0, 80);
+        Database::pdo()->prepare('UPDATE news_categories SET fact = :f WHERE id = :id')
+            ->execute([':f' => $fact !== '' ? $fact : null, ':id' => $id]);
         self::bustCache();
     }
 

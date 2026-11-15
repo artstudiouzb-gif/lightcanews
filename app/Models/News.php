@@ -31,7 +31,7 @@ final class News
         'card_title', 'card_badge', 'card_stats', 'card_signature', 'card_note',
         'category_id', 'image', 'video_url', 'audio_url', 'audio_title',
         'hashtags', 'press_release_url', 'key_points', 'event_meta',
-        'timeline_json', 'docs', 'source_note', 'views', 'is_editor_pick', 'is_partner', 'layout_type',
+        'timeline_json', 'docs', 'source_note', 'views', 'is_editor_pick', 'is_partner', 'author_name', 'author_role', 'author_photo', 'layout_type',
         'sidebar_layout', 'focal_x', 'focal_y', 'meta_title', 'meta_description',
         'status', 'published_at', 'author_id', 'created_at', 'updated_at',
         'lock_version', 'deleted_at', 'lang', 'translation_group_id',
@@ -679,10 +679,21 @@ final class News
     }
 
     /**
+     * Подкасты: новости с аудиозаписью, свежие первыми (секция «Видео и
+     * подкасты» на главной портала).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function withAudio(int $limit, ?string $lang = null): array
+    {
+        return self::flagged('audio', $limit, $lang);
+    }
+
+    /**
      * Опубликованные новости языка с ручной отметкой (колонка из закрытого
      * списка — она уходит в текст запроса).
      *
-     * @param 'is_editor_pick'|'is_partner' $flag
+     * @param 'is_editor_pick'|'is_partner'|'audio' $flag
      * @return list<array<string, mixed>>
      */
     private static function flagged(string $flag, int $limit, ?string $lang): array
@@ -693,7 +704,7 @@ final class News
             "SELECT " . self::listColumns('n') . "
              FROM news n{$parts['join']}
              WHERE n.status = 'published' AND n.published_at <= NOW() AND n.deleted_at IS NULL
-               AND n.{$flag} = 1 AND {$parts['where']}
+               AND " . ($flag === 'audio' ? "COALESCE(n.audio_url, '') <> ''" : "n.{$flag} = 1") . " AND {$parts['where']}
              ORDER BY n.published_at DESC, n.id DESC
              LIMIT :limit"
         );
@@ -704,6 +715,24 @@ final class News
         $stmt->execute();
 
         return self::localizePublicRows(Database::rows($stmt), $lang);
+    }
+
+    /**
+     * Автор колонки — внешний эксперт, а не пользователь панели: имя,
+     * должность и фото у самой новости. Ссылка на фото проверяется — она
+     * уходит в src.
+     */
+    public static function setAuthor(int $id, string $name, string $role, string $photo): void
+    {
+        $clean = static fn (string $v, int $max): ?string => ($v = mb_substr(trim(strip_tags($v)), 0, $max)) !== '' ? $v : null;
+        $photo = trim($photo);
+        if ($photo !== '' && !\App\Core\UrlGuard::isSafeLink($photo)) {
+            $photo = '';
+        }
+        Database::pdo()->prepare(
+            'UPDATE news SET author_name = :n, author_role = :r, author_photo = :p WHERE id = :id'
+        )->execute([':n' => $clean($name, 120), ':r' => $clean($role, 160), ':p' => $clean($photo, 500), ':id' => $id]);
+        self::bustPageCache();
     }
 
     /**

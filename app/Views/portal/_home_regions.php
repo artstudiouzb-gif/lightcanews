@@ -27,6 +27,7 @@ $regions = (array) ($sec['regions'] ?? []);
                 <a class="pt-region__hero" href="<?= htmlspecialchars((string) $regionLead['url'], ENT_QUOTES) ?>" tabindex="-1" aria-hidden="true">
                     <?php $photoCard = $regionLead; $photoRatio = '16x9'; $photoSizes = '(max-width: 720px) 100vw, 33vw'; require __DIR__ . '/_photo.php'; ?>
                     <span class="pt-region__id"><?php if ($region['mark'] !== ''): ?><b><?= $region['mark'] ?></b><?php endif; ?><?= htmlspecialchars((string) $region['name'], ENT_QUOTES) ?></span>
+                    <?php if (($region['fact'] ?? '') !== ''): ?><span class="pt-region__fact"><?= htmlspecialchars((string) $region['fact'], ENT_QUOTES) ?></span><?php endif; ?>
                 </a>
                 <div class="pt-region__body">
                     <h3 class="pt-region__lead"><a href="<?= htmlspecialchars((string) $regionLead['url'], ENT_QUOTES) ?>"><span class="pt-hl"><?= htmlspecialchars((string) $regionLead['title'], ENT_QUOTES) ?></span></a></h3>

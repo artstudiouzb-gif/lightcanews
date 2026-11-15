@@ -366,4 +366,38 @@
             show(live[index]);
         }, seconds * 1000);
     });
+
+    // Лента: «Последние» / «Главные» (самое читаемое за неделю). Без скрипта
+    // видна лента «Последние», вкладки скрыты.
+    document.querySelectorAll('[data-pt-tabs]').forEach(function (tabs) {
+        var buttons = Array.prototype.slice.call(tabs.querySelectorAll('[role="tab"]'));
+        tabs.hidden = false;
+        buttons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                buttons.forEach(function (b) {
+                    var on = b === button;
+                    b.setAttribute('aria-selected', on ? 'true' : 'false');
+                    var panel = document.getElementById(b.getAttribute('aria-controls'));
+                    if (panel) { panel.hidden = !on; }
+                });
+            });
+        });
+    });
+
+    // «Видео и подкасты»: фильтр по виду выпуска.
+    document.querySelectorAll('[data-pt-media]').forEach(function (section) {
+        var tabs = section.querySelector('[data-pt-media-tabs]');
+        if (!tabs) { return; }
+        tabs.hidden = false;
+        var buttons = Array.prototype.slice.call(tabs.querySelectorAll('button[data-kind]'));
+        buttons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var kind = button.getAttribute('data-kind');
+                buttons.forEach(function (b) { b.setAttribute('aria-pressed', b === button ? 'true' : 'false'); });
+                section.querySelectorAll('.pt-media__list [data-kind]').forEach(function (item) {
+                    item.hidden = kind !== 'all' && item.getAttribute('data-kind') !== kind;
+                });
+            });
+        });
+    });
 })();

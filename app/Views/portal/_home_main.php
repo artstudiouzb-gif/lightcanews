@@ -7,6 +7,7 @@
  * @var string               $secTitle свой заголовок секции ('' — по умолчанию)
  * @var bool|null            $secInner внутри общей секции «Главное и лента» — без своей обёртки
  * @var string|null          $secUid   отличает id заголовков, когда секций на странице несколько
+ * @var list<array{value:string, caption:string}>|null $secFacts ключевые цифры под «Также в центре внимания»
  */
 
 use App\Core\Locale;
@@ -65,6 +66,13 @@ $secUid = (string) ($secUid ?? 'home');
             </div>
         </section>
         <?php endif; ?>
+    <?php $secFacts = (array) ($secFacts ?? []); if ($secFacts !== []): ?>
+        <div class="pt-kpis" aria-label="<?= htmlspecialchars(t('Ключевые цифры'), ENT_QUOTES) ?>">
+            <?php foreach ($secFacts as $fact): ?>
+                <p class="pt-kpi"><strong><?= htmlspecialchars((string) $fact['value'], ENT_QUOTES) ?></strong><span><?= htmlspecialchars((string) $fact['caption'], ENT_QUOTES) ?></span></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
     </section>
 
 <?php if (empty($secInner)): ?></div><?php endif; ?>

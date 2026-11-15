@@ -218,7 +218,7 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                 <?php $countryUrl = Locale::url(NewsCategory::path($country)); ?>
                 <a href="<?= htmlspecialchars($countryUrl, ENT_QUOTES) ?>"<?= $isCurrent($countryUrl) ? ' aria-current="page"' : '' ?>><?php $countryMark = Portal::countryMark($country); ?><?php if ($countryMark !== ''): ?><b><?= $countryMark ?></b><?php endif; ?><?= htmlspecialchars((string) $country['name'], ENT_QUOTES) ?></a>
             <?php endforeach; ?>
-            <span class="pt-countries__date"><?= htmlspecialchars(\App\Core\DateFormatter::long('now', $currentLang), ENT_QUOTES) ?></span>
+            <span class="pt-countries__date"><?php $ptDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']; ?><?= htmlspecialchars(Portal::date(\App\Core\DateFormatter::format('now', 'Y-m-d'), $currentLang) . ', ' . t($ptDays[(int) \App\Core\DateFormatter::format('now', 'N') - 1]), ENT_QUOTES) ?></span>
         </nav>
         <?php endif; ?>
     </div>

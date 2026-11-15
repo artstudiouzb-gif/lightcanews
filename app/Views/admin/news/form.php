@@ -157,6 +157,22 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                         <input type="text" id="source_note" name="source_note" value="<?= htmlspecialchars($news['source_note'] ?? '', ENT_QUOTES) ?>" placeholder="Подготовлено пресс-службой Агентства">
                     </div>
                 </div>
+                <?php // Автор колонки: «Точка зрения» на главной показывает фото, имя и должность. ?>
+                <input type="hidden" name="author_present" value="1">
+                <fieldset class="form-field u-inline-001013efee">
+                    <legend>Автор колонки</legend>
+                    <div class="form-grid-2col">
+                        <div class="form-field">
+                            <label for="author_name">Имя автора</label>
+                            <input type="text" id="author_name" name="author_name" maxlength="120" value="<?= htmlspecialchars((string) ($news['author_name'] ?? ''), ENT_QUOTES) ?>" placeholder="Дильноза Каримова">
+                        </div>
+                        <div class="form-field">
+                            <label for="author_role">Должность</label>
+                            <input type="text" id="author_role" name="author_role" maxlength="160" value="<?= htmlspecialchars((string) ($news['author_role'] ?? ''), ENT_QUOTES) ?>" placeholder="Главный редактор">
+                        </div>
+                    </div>
+                    <?= \App\Core\AdminUi::imageField('author_photo', (string) ($news['author_photo'] ?? ''), ['label' => 'Фото автора', 'id' => 'author_photo', 'hint' => 'Квадратное, от 96 px. Заполняется для колонок «Точки зрения» — там выводятся фото, имя и должность.']) ?>
+                </fieldset>
             </div>
 
             <!-- Блок 2: Видео, Аудио и Фотогалерея статьи -->
