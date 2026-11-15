@@ -29,7 +29,8 @@ $secUid = (string) ($secUid ?? 'home');
             </div>
             <?php endif; ?>
         </header>
-        <ol class="pt-feed__list" id="pt-feed-new-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-new-<?= $secUid ?>">
+        <div id="pt-feed-new-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-new-<?= $secUid ?>">
+        <ol class="pt-feed__list">
             <?php foreach ($feed as $feedIndex => $card): ?>
                 <li<?= $feedIndex === 0 ? ' class="is-hot"' : '' ?>>
                     <a href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
@@ -47,8 +48,10 @@ $secUid = (string) ($secUid ?? 'home');
                 <?php if ($feedIndex === 2): $adKey = 'feed'; require __DIR__ . '/_ad.php'; endif; ?>
             <?php endforeach; ?>
         </ol>
+        </div>
         <?php if ($feedTop !== []): ?>
-        <ol class="pt-feed__list" id="pt-feed-top-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-top-<?= $secUid ?>" hidden>
+        <div id="pt-feed-top-<?= $secUid ?>" role="tabpanel" aria-labelledby="pt-feed-tab-top-<?= $secUid ?>" hidden>
+        <ol class="pt-feed__list">
             <?php foreach ($feedTop as $card): ?>
                 <li>
                     <a href="<?= htmlspecialchars((string) $card['url'], ENT_QUOTES) ?>">
@@ -64,6 +67,7 @@ $secUid = (string) ($secUid ?? 'home');
                 </li>
             <?php endforeach; ?>
         </ol>
+        </div>
         <?php endif; ?>
         <a class="pt-btn pt-btn--wide" href="<?= htmlspecialchars($newsUrl, ENT_QUOTES) ?>"><?= htmlspecialchars(t('Вся лента'), ENT_QUOTES) ?></a>
         <?php $adKey = 'partner'; require __DIR__ . '/_ad.php'; ?>
