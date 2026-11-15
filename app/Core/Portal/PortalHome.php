@@ -22,11 +22,11 @@ final class PortalHome
 {
     public const TYPE = 'portal_section';
 
-    /** @param list<array<string, mixed>> $blocks блоки страницы верхнего уровня */
+    /** @param array<mixed> $blocks блоки страницы верхнего уровня */
     public static function usesBlocks(array $blocks): bool
     {
         foreach ($blocks as $block) {
-            if ((string) ($block['type'] ?? '') === self::TYPE) {
+            if (is_array($block) && ($block['type'] ?? '') === self::TYPE) {
                 return true;
             }
         }
