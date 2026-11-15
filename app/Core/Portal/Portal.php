@@ -49,7 +49,6 @@ final class Portal
         }
     }
 
-    /** @param array<string, mixed> $category */
     /** Как метить страну рядом с названием: коды, флаги или никак. */
     public const COUNTRY_MARKS = ['codes' => 'Коды (UZ, KZ, МИР)', 'flags' => 'Флаги и глобус', 'off' => 'Не показывать'];
 
@@ -116,6 +115,7 @@ final class Portal
         return htmlspecialchars(self::countryCode($category), ENT_QUOTES);
     }
 
+    /** @param array<string, mixed> $category */
     public static function countryCode(array $category): string
     {
         if (!self::showCountryCodes()) {
