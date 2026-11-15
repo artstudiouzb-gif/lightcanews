@@ -78,8 +78,8 @@ $newsUrl = Locale::url('news');
                             <span class="pt-feed__date"><?= htmlspecialchars((string) $card['day_full'], ENT_QUOTES) ?></span>
                         </span>
                         <span>
-                            <?php $feedKicker = trim($card['rubric'] . ($card['countries'] !== [] ? ' · ' . implode(', ', $card['countries']) : ''), ' ·'); ?>
-                            <?php if ($feedKicker !== ''): ?><span class="pt-feed__rubric"><?= htmlspecialchars($feedKicker, ENT_QUOTES) ?></span><?php endif; ?>
+                            <?php $feedKicker = trim(htmlspecialchars((string) $card['rubric'], ENT_QUOTES) . ($card['country_marks'] !== [] ? ' · ' . implode(', ', $card['country_marks']) : ''), ' ·'); ?>
+                            <?php if ($feedKicker !== ''): ?><span class="pt-feed__rubric"><?= $feedKicker ?></span><?php endif; ?>
                             <span class="pt-hl"><?= htmlspecialchars((string) $card['title'], ENT_QUOTES) ?></span>
                         </span>
                     </a>

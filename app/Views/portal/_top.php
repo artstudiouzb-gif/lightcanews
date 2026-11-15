@@ -216,7 +216,7 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
             <span class="pt-countries__label"><?= htmlspecialchars(t('Страны'), ENT_QUOTES) ?></span>
             <?php foreach ($countries as $country): ?>
                 <?php $countryUrl = Locale::url(NewsCategory::path($country)); ?>
-                <a href="<?= htmlspecialchars($countryUrl, ENT_QUOTES) ?>"<?= $isCurrent($countryUrl) ? ' aria-current="page"' : '' ?>><b><?= htmlspecialchars(Portal::countryCode($country), ENT_QUOTES) ?></b><?= htmlspecialchars((string) $country['name'], ENT_QUOTES) ?></a>
+                <a href="<?= htmlspecialchars($countryUrl, ENT_QUOTES) ?>"<?= $isCurrent($countryUrl) ? ' aria-current="page"' : '' ?>><?php $countryMark = Portal::countryMark($country); ?><?php if ($countryMark !== ''): ?><b><?= $countryMark ?></b><?php endif; ?><?= htmlspecialchars((string) $country['name'], ENT_QUOTES) ?></a>
             <?php endforeach; ?>
             <span class="pt-countries__date"><?= htmlspecialchars(\App\Core\DateFormatter::long('now', $currentLang), ENT_QUOTES) ?></span>
         </nav>

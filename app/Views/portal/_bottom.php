@@ -74,7 +74,7 @@ $footBrand = (string) preg_replace('/\.(news)$/i', '<span>.</span>$1', htmlspeci
                 <h2 class="pt-foot__head"><?= htmlspecialchars(t('Страны'), ENT_QUOTES) ?></h2>
                 <ul>
                     <?php foreach ($footCountries as $footCountry): ?>
-                        <li><a href="<?= htmlspecialchars(Locale::url(NewsCategory::path($footCountry)), ENT_QUOTES) ?>"><?= htmlspecialchars((string) $footCountry['name'] . ' (' . Portal::countryCode($footCountry) . ')', ENT_QUOTES) ?></a></li>
+                        <li><a href="<?= htmlspecialchars(Locale::url(NewsCategory::path($footCountry)), ENT_QUOTES) ?>"><?= Portal::countryMarkMode() === 'flags' ? Portal::countryMark($footCountry) . ' ' : '' ?><?= htmlspecialchars((string) $footCountry['name'] . (Portal::countryMarkMode() === 'codes' ? ' (' . Portal::countryCode($footCountry) . ')' : ''), ENT_QUOTES) ?></a></li>
                     <?php endforeach; ?>
                 </ul>
             </nav>

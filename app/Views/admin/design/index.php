@@ -189,6 +189,17 @@ foreach ($options as $key => $opt) {
             </div>
             <div class="design-opt">
                 <div class="design-opt__label">
+                    <span>Метки стран</span>
+                    <small>Рядом с названиями стран и на карточках новостей — в ленте, шапке, разделе стран и подвале. «Флаги» рисуют флаги стран и глобус для «В мире».</small>
+                </div>
+                <div class="design-opt__choices">
+                    <?php foreach (\App\Core\Portal\Portal::COUNTRY_MARKS as $markKey => $markLabel): ?>
+                        <label class="form-check"><input type="radio" name="country_codes" value="<?= htmlspecialchars($markKey, ENT_QUOTES) ?>" <?= \App\Core\Portal\Portal::countryMarkMode() === $markKey ? 'checked' : '' ?>> <?= htmlspecialchars($markLabel, ENT_QUOTES) ?></label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="design-opt">
+                <div class="design-opt__label">
                     <span>Ширина ленты новостей на главной</span>
                     <small>Правая колонка «Лента новостей» на первом экране портала, от 260 до 560 px. Пусто — треть ширины, как в прототипе.</small>
                 </div>

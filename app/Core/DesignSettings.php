@@ -629,6 +629,10 @@ final class DesignSettings
         if (array_key_exists('font_size_custom', $input)) {
             Setting::set('design_font_size_custom', self::normalizeFontSize((string) $input['font_size_custom']));
         }
+        if (array_key_exists('country_codes', $input)) {
+            $mode = (string) $input['country_codes'];
+            Setting::set('design_country_codes', isset(\App\Core\Portal\Portal::COUNTRY_MARKS[$mode]) ? $mode : 'codes');
+        }
         if (array_key_exists('portal_feed_width', $input)) {
             Setting::set('design_portal_feed_width', CssValue::pixels((string) $input['portal_feed_width'], 260, 560));
         }

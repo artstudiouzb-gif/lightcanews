@@ -79,6 +79,27 @@ test('Портал: код страны — по slug, для незнакомо
     assert_same('МО', Portal::countryCode(['slug' => 'mongolia', 'name' => 'Монголия']));
 });
 
+test('Портал: метки стран — коды, флаги или ничего, по настройке «Дизайна»', function (): void {
+    ensure_test_db();
+    $uz = ['slug' => 'uzbekistan', 'name' => 'Узбекистан'];
+    $world = ['slug' => 'world', 'name' => 'В мире'];
+
+    \App\Core\DesignSettings::save(['country_codes' => 'flags']);
+    $flag = Portal::countryMark($uz, true);
+    assert_contains('<svg class="pt-flag"', $flag, 'флаг вместо кода');
+    assert_contains('aria-label="Узбекистан"', $flag, 'флагу без названия рядом нужна подпись');
+    assert_contains('aria-hidden="true"', Portal::countryMark($uz), 'рядом с названием флаг — украшение');
+    assert_contains('pt-flag--globe', Portal::countryMark($world), '«В мире» — глобус');
+    assert_same('МО', Portal::countryMark(['slug' => 'mongolia', 'name' => 'Монголия']), 'страна без флага — код');
+
+    \App\Core\DesignSettings::save(['country_codes' => 'off']);
+    assert_same('', Portal::countryMark($uz), 'выключено — пусто');
+    assert_same('', Portal::countryCode($uz));
+
+    \App\Core\DesignSettings::save(['country_codes' => 'bogus']);
+    assert_same('UZ', Portal::countryMark($uz), 'чужое значение — коды');
+});
+
 test('Портал: лента раздела — крупная первая новость, сетка и полоса страниц', function (): void {
     $_SERVER['REQUEST_URI'] = '/news';
     $html = render_view('app/Views/portal/news_index.php', [
