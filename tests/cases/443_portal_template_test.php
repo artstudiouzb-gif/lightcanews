@@ -58,9 +58,24 @@ test('Портал: акцент и основной цвет приходят �
     assert_contains('Пока нет опубликованных новостей.', $html);
 });
 
+test('Портал: ширина сайта и колонки ленты — из «Дизайна»', function (): void {
+    ensure_test_db();
+    reset_design_state();
+    Setting::set('design_container_custom', '1300px');
+    Setting::set('design_portal_feed_width', '340');
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--wrap:1300px', $html, 'ширина контейнера доходит до портала');
+    assert_contains('--pt-feed-w:340px', $html, 'ширина ленты новостей');
+    Setting::set('design_portal_feed_width', '9000');
+    Setting::set('design_container_custom', '');
+    $html = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_true(!str_contains($html, '--pt-feed-w'), 'вне пределов — треть, как в прототипе');
+    assert_contains('--wrap:1440px', $html, 'без своей ширины — пресет');
+});
+
 test('Портал: код страны — по slug, для незнакомой страны — из названия', function (): void {
     assert_same('UZ', Portal::countryCode(['slug' => 'uzbekistan', 'name' => 'Узбекистан']));
-    assert_same('МИР', Portal::countryCode(['slug' => 'world', 'name' => 'В мире']));
+    assert_same('МИР', Portal::countryCode(['slug' => 'world', 'name' => 'В мире']), 'на русском — МИР');
     assert_same('МО', Portal::countryCode(['slug' => 'mongolia', 'name' => 'Монголия']));
 });
 
@@ -223,4 +238,59 @@ test('Портал: ссылки языкового меню переписыв�
     $html = portal_home_html(['lead' => null, 'feed' => []]);
     // Без ?_lang= ссылка на основной язык уводила обратно на язык из cookie.
     assert_contains('?' . \App\Core\LocalePreference::QUERY . '=ru"', $html);
+});
+
+test('Портал: главная собирается из блоков «Секция портала», когда они стоят на странице', function (): void {
+    ensure_test_db();
+    $_SERVER['REQUEST_URI'] = '/';
+    $pdo = \App\Core\Database::pdo();
+    $pdo->prepare("INSERT INTO pages (title, slug, status, lang, entity_type, created_at) VALUES ('Главная', :s, 'published', 'ru', 'page', NOW())")
+        ->execute([':s' => 'home-' . bin2hex(random_bytes(3))]);
+    $pageId = (int) $pdo->lastInsertId();
+    \App\Models\Block::create($pageId, 'ru', 'text', 'Старый блок', ['content' => '<p>x</p>'], '');
+
+    $blocks = static fn (): array => \App\Models\Block::forPage($pageId, 'ru', true);
+    assert_false(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'прежние блоки демо-главной не переводят её на конструктор');
+
+    assert_same(count(\App\Core\Portal\Portal::SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
+    assert_true(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'с секциями главная из конструктора');
+    assert_same(1 + count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
+
+    \App\Core\Portal\PortalHome::seed($pageId, 'ru', true);
+    assert_same(count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
+
+    $html = render_view('templates/blocks/portal_section.php', [
+        'data' => ['section' => 'lead', 'heading' => 'Свежее', 'limit' => 0],
+        'blockId' => 1,
+    ]);
+    assert_contains('pt-home-top', $html, 'секция печатает разметку главной');
+    assert_contains('Свежее', $html, 'свой заголовок секции');
+    $sub = render_view('templates/blocks/portal_section.php', [
+        'data' => ['section' => 'subscribe', 'heading' => '', 'limit' => 0],
+        'blockId' => 2,
+    ]);
+    assert_contains('pt-subscribe', $sub, 'подписка');
+});
+
+test('Портал: сохранение «Дизайна» не перекрашивает сайт, подложка логотипа — своя настройка', function (): void {
+    ensure_test_db();
+    reset_design_state();
+    \App\Core\Database::pdo()->exec("DELETE FROM settings WHERE `key` IN ('color_primary','color_accent','design_custom_color_primary','design_custom_color_accent','design_logo_plate','design_palette')");
+    Setting::forgetCache();
+    $before = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--brand:' . \App\Core\DesignSettings::DEFAULT_ACCENT, $before, 'умолчание портала');
+
+    // Форма присылает то, что показывает: цвета из customAppearance().
+    $shown = \App\Core\DesignSettings::customAppearance();
+    \App\Core\DesignSettings::save(['palette' => 'custom', 'container' => 'wide', 'color_primary' => $shown['color_primary'], 'color_accent' => $shown['color_accent']]);
+    Setting::forgetCache();
+    $after = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--brand:' . \App\Core\DesignSettings::DEFAULT_ACCENT . ';--brand-deep:' . \App\Core\DesignSettings::DEFAULT_PRIMARY, $after, 'сохранение ширины не трогает цвета');
+
+    \App\Core\DesignSettings::save(['logo_plate' => '#123456']);
+    Setting::forgetCache();
+    assert_contains('--logo-plate:#123456', portal_home_html(['lead' => null, 'feed' => []]), 'свой цвет подложки');
+    \App\Core\DesignSettings::save(['logo_plate' => '#123456', 'logo_plate_off' => '1']);
+    Setting::forgetCache();
+    assert_true(!str_contains(portal_home_html(['lead' => null, 'feed' => []]), '--logo-plate'), '«как основной цвет» — переменной нет');
 });

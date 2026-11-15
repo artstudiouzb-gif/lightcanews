@@ -377,6 +377,26 @@ final class PageController
         exit;
     }
 
+    /**
+     * Главная портала в конструктор: добавляет секции главной блоками «Секция
+     * портала». После этого главная собирается из блоков страницы.
+     *
+     * @param array<string, string> $params
+     */
+    public function portalHome(array $params): void
+    {
+        Auth::requireLogin();
+        Csrf::verifyRequest();
+        $owner = Page::findById((int) $params['id']);
+        if (!$owner) {
+            \App\Core\Redirect::to('/admin/pages');
+        }
+        $lang = $this->resolveBlockLang();
+        $added = \App\Core\Portal\PortalHome::seed((int) $owner['id'], $lang, Input::post()->bool('replace'));
+        Flash::success('Главная собрана из блоков: добавлено секций — ' . $added . '. Переставляйте их, убирайте и добавляйте между ними любые блоки.');
+        \App\Core\Redirect::to(BlockOwner::editUrlFor($owner, $lang));
+    }
+
     private function resolveBlockLang(?string $fallback = null): string
     {
         $lang = (string) (

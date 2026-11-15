@@ -25,6 +25,18 @@ final class InputBag
     {
     }
 
+    /**
+     * Присланное как есть — для нормализаторов схемы блоков
+     * (`BlockFieldSchema::normalize`), которые приводят каждое поле сами по
+     * описанию типа. Остальному коду — типизированные методы ниже.
+     *
+     * @return array<mixed>
+     */
+    public function raw(): array
+    {
+        return $this->data;
+    }
+
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->data);
