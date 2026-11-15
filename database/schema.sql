@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS news_categories (
     slug        VARCHAR(150) NOT NULL COMMENT 'один на все языки: адрес и выборки',
     axis        ENUM('rubric','country') NOT NULL DEFAULT 'rubric' COMMENT 'ось раздела: рубрика или страна',
     icon        VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'ключ иконки Tabler',
+    fact        VARCHAR(80) NULL COMMENT 'факт на фото страны в «Нитях региона»',
     is_active   TINYINT(1) NOT NULL DEFAULT 1,
     sort_order  INT NOT NULL DEFAULT 0,
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS news_category_translations (
     category_id INT UNSIGNED NOT NULL,
     lang        VARCHAR(8) NOT NULL,
     name        VARCHAR(150) NULL,
+    fact        VARCHAR(80) NULL,
     UNIQUE KEY uq_news_category_translations (category_id, lang),
     CONSTRAINT fk_news_category_translations_category
         FOREIGN KEY (category_id) REFERENCES news_categories(id) ON DELETE CASCADE
@@ -149,6 +151,9 @@ CREATE TABLE IF NOT EXISTS news (
     views           INT UNSIGNED NOT NULL DEFAULT 0,
     is_editor_pick  TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'выбор редакции, общий для группы перевода',
     is_partner      TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'партнёрский материал, общий для группы перевода',
+    author_name     VARCHAR(120) NULL COMMENT 'автор колонки (внешний эксперт)',
+    author_role     VARCHAR(160) NULL,
+    author_photo    VARCHAR(500) NULL,
     layout_type     ENUM('standard','gallery','video','side_image','premium','card') NOT NULL DEFAULT 'standard',
     sidebar_layout  ENUM('no_sidebar','left_sidebar','right_sidebar') NOT NULL DEFAULT 'right_sidebar',
     focal_x         TINYINT UNSIGNED NULL COMMENT 'фокальная точка обложки X, %',
@@ -1256,7 +1261,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_23_news_country_axis.sql'),
     ('2026_10_24_news_editor_pick.sql'),
     ('2026_11_08_drop_projects.sql'),
-    ('2026_11_15_news_partner.sql')
+    ('2026_11_15_news_partner.sql'),
+    ('2026_11_15_portal_prototype_fields.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

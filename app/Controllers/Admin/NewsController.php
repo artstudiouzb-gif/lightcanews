@@ -106,7 +106,11 @@ final class NewsController
         $raw = $_POST['countries'] ?? [];
         \App\Models\NewsCategory::setCountries(News::groupKeyOf($row), is_array($raw) ? $raw : []);
         News::setEditorPick($id, !empty($_POST['is_editor_pick']));
-        News::setPartner($id, !empty($_POST['is_partner']));
+        $in = \App\Core\Input::post();
+        News::setPartner($id, $in->bool('is_partner'));
+        if ($in->has('author_present')) {
+            News::setAuthor($id, $in->str('author_name', '', 120), $in->str('author_role', '', 160), $in->str('author_photo', '', 500));
+        }
     }
 
     public function store(): void

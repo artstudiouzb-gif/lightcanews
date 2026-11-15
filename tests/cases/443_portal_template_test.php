@@ -317,12 +317,12 @@ test('Портал: главная собирается из блоков «Се
     $blocks = static fn (): array => \App\Models\Block::forPage($pageId, 'ru', true);
     assert_false(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'прежние блоки демо-главной не переводят её на конструктор');
 
-    assert_same(count(\App\Core\Portal\Portal::SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
+    assert_same(count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), \App\Core\Portal\PortalHome::seed($pageId, 'ru'), 'добавлены все секции');
     assert_true(\App\Core\Portal\PortalHome::usesBlocks($blocks()), 'с секциями главная из конструктора');
-    assert_same(1 + count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
+    assert_same(1 + count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), count($blocks()), 'прежний блок остался без просьбы убрать');
 
     \App\Core\Portal\PortalHome::seed($pageId, 'ru', true);
-    assert_same(count(\App\Core\Portal\Portal::SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
+    assert_same(count(\App\Core\Portal\Portal::DEFAULT_SECTIONS), count($blocks()), 'с «убрать прежние» — только секции');
 
     $html = render_view('templates/blocks/portal_section.php', [
         'data' => ['section' => 'lead', 'heading' => 'Свежее', 'limit' => 0],
@@ -335,6 +335,70 @@ test('Портал: главная собирается из блоков «Се
         'blockId' => 2,
     ]);
     assert_contains('pt-subscribe', $sub, 'подписка');
+});
+
+test('Портал: элементы прототипа — цифры, вкладки ленты, номера, факт страны, автор, видео', function (): void {
+    $cards = Portal::cards(sample_news_rows(6), 'ru');
+    $sec = ['lead' => $cards[0], 'grid' => [], 'also' => [], 'feed' => $cards, 'feed_top' => array_slice($cards, 0, 2)];
+    $main = render_view('app/Views/portal/_home_main.php', ['sec' => $sec, 'secTitle' => '', 'secFacts' => [['value' => '+18,0%', 'caption' => 'Рост экспорта']]]);
+    assert_contains('class="pt-kpi"><strong>+18,0%</strong><span>Рост экспорта</span>', $main, 'ключевые цифры под «Также»');
+
+    $feed = render_view('app/Views/portal/_home_feed.php', ['sec' => $sec, 'secTitle' => '', 'secUid' => 'b1']);
+    assert_contains('data-pt-tabs', $feed, 'вкладки «Последние / Главные»');
+    assert_contains('id="pt-feed-top-b1" role="tabpanel" aria-labelledby="pt-feed-tab-top-b1" hidden', $feed, 'вкладка «Главные» без скрипта скрыта');
+    assert_same(1, substr_count($feed, 'class="is-hot"'), 'свежая новость подсвечена');
+
+    $picks = render_view('app/Views/portal/_home_picks.php', ['sec' => ['picks' => array_slice($cards, 0, 2)], 'secTitle' => '']);
+    assert_contains('<span class="pt-pcard__num" aria-hidden="true">02</span>', $picks, 'номера подборки');
+
+    $regions = render_view('app/Views/portal/_home_regions.php', ['sec' => ['regions' => [[
+        'fact' => '+18% экспорт', 'code' => 'UZ', 'mark' => 'UZ', 'name' => 'Узбекистан', 'url' => '/c/uz', 'items' => array_slice($cards, 0, 2),
+    ]]], 'secTitle' => '']);
+    assert_contains('<span class="pt-region__fact">+18% экспорт</span>', $regions, 'факт на фото страны');
+
+    $rows = sample_news_rows(1);
+    $rows[0] += ['author_name' => 'Дильноза Каримова', 'author_role' => 'Главный редактор', 'author_photo' => ''];
+    $voices = render_view('app/Views/portal/_home_voices.php', ['sec' => ['voices' => ['title' => 'Точка зрения', 'url' => '/x', 'items' => Portal::cards($rows, 'ru')]], 'secTitle' => '']);
+    assert_contains('<strong>Дильноза Каримова</strong><span class="pt-meta">Главный редактор</span>', $voices, 'автор колонки');
+
+    $media = render_view('app/Views/portal/_home_media.php', ['sec' => ['media' => [
+        ['kind' => 'video', 'title' => 'Ролик', 'url' => 'https://youtu.be/x', 'external' => true, 'cover' => '', 'duration' => '23:29', 'source' => 'YouTube', 'date' => '2026-11-10'],
+        ['kind' => 'podcast', 'title' => 'Выпуск', 'url' => '/news/p', 'external' => false, 'cover' => '', 'duration' => '', 'source' => '', 'date' => '2026-11-09'],
+    ]], 'secTitle' => 'Made in Uzbekistan', 'secCta' => ['title' => 'Студия', 'note' => '', 'text' => 'Предложить тему', 'url' => 'mailto:a@b.uz']]);
+    assert_contains('Made in Uzbekistan', $media);
+    assert_contains('target="_blank" rel="noopener"', $media, 'ролик открывается на YouTube');
+    assert_contains('data-pt-media-tabs', $media, 'вкладки, когда видов выпусков два');
+    assert_contains('pt-media__wave', $media, 'подкаст — волной');
+    assert_contains('href="mailto:a@b.uz"', $media, 'плашка студии');
+    assert_same('', trim(render_view('app/Views/portal/_home_media.php', ['sec' => ['media' => []], 'secTitle' => ''])), 'без выпусков секции нет');
+});
+
+test('Портал: главное, лента и партнёрские материалы — отдельные секции', function (): void {
+    $cards = Portal::cards(sample_news_rows(10), 'ru');
+    $sec = ['lead' => $cards[0], 'grid' => array_slice($cards, 1, 3), 'also' => [], 'feed' => array_slice($cards, 0, 5)];
+    $feed = render_view('app/Views/portal/_home_feed.php', ['sec' => $sec, 'secTitle' => 'Свежее', 'secUid' => 'b7']);
+    assert_contains('pt-feed-solo', $feed, 'лента своей обёрткой');
+    assert_contains('Свежее', $feed, 'свой заголовок у отдельной ленты');
+    assert_contains('id="pt-feed-title-b7"', $feed, 'id заголовка не совпадает у двух блоков');
+    assert_same(5, substr_count($feed, 'pt-feed__stamp'), 'длина ленты — из данных секции');
+    assert_not_contains('pt-pkg', $feed, 'в ленте нет главного');
+
+    $main = render_view('app/Views/portal/_home_main.php', ['sec' => $sec, 'secTitle' => '']);
+    assert_contains('pt-home-main', $main);
+    assert_contains('pt-pkg', $main);
+    assert_not_contains('pt-feed__list', $main, 'в главном нет ленты');
+
+    $lead = render_view('app/Views/portal/_home_lead.php', ['sec' => $sec, 'secTitle' => '']);
+    assert_contains('pt-home-top', $lead);
+    assert_not_contains('pt-feed-solo', $lead, 'внутри общей секции у частей нет своих обёрток');
+
+    $rows = sample_news_rows(2);
+    $rows[0]['is_partner'] = 1;
+    $partners = render_view('app/Views/portal/_home_partners.php', ['sec' => ['partners' => Portal::cards($rows, 'ru')], 'secTitle' => '']);
+    assert_contains('Партнёрские материалы', $partners);
+    assert_contains('pt-sponsored', $partners);
+    assert_same('', trim(render_view('app/Views/portal/_home_partners.php', ['sec' => ['partners' => []], 'secTitle' => ''])), 'пустая секция не печатается');
+    assert_true(array_diff(\App\Core\Portal\Portal::DEFAULT_SECTIONS, array_keys(\App\Core\Portal\Portal::SECTIONS)) === [], 'умолчание — из объявленных секций');
 });
 
 test('Портал: сохранение «Дизайна» не перекрашивает сайт, подложка логотипа — своя настройка', function (): void {

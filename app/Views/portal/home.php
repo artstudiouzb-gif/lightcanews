@@ -14,7 +14,7 @@ require __DIR__ . '/_top.php';
 ?>
 <h1 class="pt-visually-hidden"><?= htmlspecialchars($metaTitle !== '' ? $metaTitle : t('Главное в отрасли'), ENT_QUOTES) ?></h1>
 <?php
-foreach (array_keys(\App\Core\Portal\Portal::SECTIONS) as $secKey) {
+foreach (\App\Core\Portal\Portal::DEFAULT_SECTIONS as $secKey) {
     $sec = $home;
     $secTitle = '';
     require __DIR__ . '/_home_' . $secKey . '.php';

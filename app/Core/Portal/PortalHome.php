@@ -48,7 +48,7 @@ final class PortalHome
             }
         }
         $added = 0;
-        foreach (array_keys(Portal::SECTIONS) as $section) {
+        foreach (Portal::DEFAULT_SECTIONS as $section) {
             Block::create($pageId, $lang, self::TYPE, Portal::SECTIONS[$section], [
                 'section' => $section,
                 'heading' => '',
