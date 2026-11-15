@@ -189,6 +189,15 @@ foreach ($options as $key => $opt) {
             </div>
             <div class="design-opt">
                 <div class="design-opt__label">
+                    <span>Ширина ленты новостей на главной</span>
+                    <small>Правая колонка «Лента новостей» на первом экране портала, от 260 до 560 px. Пусто — треть ширины, как в прототипе.</small>
+                </div>
+                <div class="design-opt__choices">
+                    <input class="u-inline-e73ebf4146" type="text" name="portal_feed_width" value="<?= htmlspecialchars((string) \App\Models\Setting::get('design_portal_feed_width', ''), ENT_QUOTES) ?>" placeholder="напр. 340px">
+                </div>
+            </div>
+            <div class="design-opt">
+                <div class="design-opt__label">
                     <span>Точное скругление углов</span>
                     <small>От 0 до 48 px. Применяется к карточкам, полям ввода и кнопкам. Пусто — значение пресета.</small>
                 </div>
@@ -230,6 +239,10 @@ foreach ($options as $key => $opt) {
                         <label for="design_color_accent">Акцентный цвет</label>
                         <input type="color" id="design_color_accent" name="color_accent" value="<?= htmlspecialchars($accent, ENT_QUOTES) ?>" data-design-preview-field>
                         <small class="form-hint">Переменные: <code>--color-accent</code>, <code>--gov-teal</code> (заливки/кнопки) и <code>--gov-teal-text</code> (текст WCAG)<br>Управляет: ссылки, стрелки «→», бейджи статусов, обводка при наведении и фокус. Бэкенд автоматически вычисляет контрастный текстовый оттенок (WCAG 4.5:1).</small>
+                    </div>
+                    <div>
+                        <?= \App\Core\AdminUi::colorField('logo_plate', \App\Core\DesignSettings::logoPlate(), 'Цвет подложки логотипа', $primary, 'Как основной цвет') ?>
+                        <small class="form-hint">Плашка с названием сайта в шапке портала. По умолчанию — основной бренд-цвет. Текст на ней белый, поэтому цвет нужен тёмный.</small>
                     </div>
                     <?php foreach ([
                         'bg_primary' => ['label' => 'Фон страницы', 'vars' => '--bg-primary, --gov-bg', 'desc' => 'Задний общий фон подложки сайта и подложки под секциями.'],

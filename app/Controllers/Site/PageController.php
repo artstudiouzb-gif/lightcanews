@@ -21,6 +21,25 @@ final class PageController
         // Новый шаблон портала собирает главную из новостей. Страница-главная
         // из конструктора остаётся источником заголовка и описания для поиска.
         if (\App\Core\Portal\Portal::enabled()) {
+            $metaTitle = (string) (($page['meta_title'] ?? '') !== '' ? $page['meta_title'] : ($page['title'] ?? ''));
+            $metaDescription = (string) ($page['meta_description'] ?? ($page['lead'] ?? ''));
+            // Главная в конструкторе — когда на странице-главной есть секции
+            // портала (PortalHome::usesBlocks); иначе фиксированная главная.
+            if ($page && \App\Core\Portal\PortalHome::usesBlocks(Block::forPageLocalized((int) $page['id'], $lang))) {
+                $langs = Page::availableLangs((int) $page['id']);
+                Locale::setContentLangs($langs);
+                Locale::setAlternatePaths(array_fill_keys($langs, '/'));
+                $rendered = \App\Core\PageBlocks::compile((int) $page['id'], $lang);
+                View::render('portal/home_blocks', [
+                    'page' => $page,
+                    'content' => $rendered['html'],
+                    'blockCss' => $rendered['css'],
+                    'preloadImages' => $rendered['preload_images'] ?? [],
+                    'metaTitle' => $metaTitle,
+                    'metaDescription' => $metaDescription,
+                ]);
+                return;
+            }
             View::render('portal/home', [
                 'home' => \App\Core\Portal\Portal::home($lang),
                 'metaTitle' => (string) (($page['meta_title'] ?? '') !== '' ? $page['meta_title'] : ($page['title'] ?? '')),

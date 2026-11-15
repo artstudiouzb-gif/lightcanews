@@ -25,6 +25,14 @@ $languages = Language::active();
         <a class="btn btn--small" href="/admin/revisions/page/<?= (int) $page['id'] ?>">История версий</a>
         <?php if (\App\Models\Page::isHomePage($page)): ?>
             <span class="badge badge--success u-inline-371a921b3b"><?= \App\Core\AdminUi::icon('home', 14) ?> Эта страница назначена Главной страницей сайта</span>
+            <?php if (\App\Core\Portal\Portal::enabled() && \App\Core\Portal\PortalHome::count((int) $page['id'], $blockLang) === 0): ?>
+                <form class="u-inline-0cd28ce9ba" method="post" action="/admin/pages/<?= (int) $page['id'] ?>/portal-home" data-confirm="Главная портала станет собираться из блоков этой страницы. Секции добавятся в конец списка блоков.">
+                    <?= Csrf::field() ?>
+                    <input type="hidden" name="block_lang" value="<?= htmlspecialchars($blockLang, ENT_QUOTES) ?>">
+                    <label class="form-check"><input type="checkbox" name="replace" value="1"> убрать прежние блоки страницы</label>
+                    <button type="submit" class="btn btn--small btn--primary"><?= \App\Core\AdminUi::icon('layout-dashboard', 15) ?> Собрать главную из блоков</button>
+                </form>
+            <?php endif; ?>
         <?php else: ?>
             <form class="u-inline-0cd28ce9ba" method="post" action="/admin/pages/<?= (int) $page['id'] ?>/make-home">
                 <?= Csrf::field() ?>

@@ -310,6 +310,15 @@ final class DesignSettings
         return self::normalizeWidth($raw);
     }
 
+    /**
+     * Ширина колонки «Лента новостей» на главной портала (260–560 px): пусто —
+     * треть первого экрана, как в прототипе. Остальное занимает главное.
+     */
+    public static function portalFeedWidth(): string
+    {
+        return CssValue::pixels((string) Setting::get('design_portal_feed_width', ''), 260, 560);
+    }
+
     /** Нормализует пользовательскую ширину или возвращает '' при невалидной. */
     public static function normalizeWidth(string $raw): string
     {
@@ -445,6 +454,24 @@ final class DesignSettings
     }
 
     /**
+     * Цвета сайта, пока их не сохраняли: те же, которыми рисует портал
+     * (`portal/_top.php`). Прежде форма «Дизайна» подставляла свои умолчания —
+     * синие цвета госсайта, — и первое же сохранение любой настройки
+     * записывало их в цвета сайта: портал перекрашивался, хотя цвета не
+     * трогали. Умолчание одно на форму и на вывод.
+     */
+    public const DEFAULT_PRIMARY = '#0b4b42';
+    public const DEFAULT_ACCENT = '#005650';
+
+    /** Свой цвет подложки логотипа шапки портала; пусто — основной цвет. */
+    public static function logoPlate(): string
+    {
+        $raw = trim((string) Setting::get('design_logo_plate', ''));
+
+        return $raw === '' ? '' : SettingsValidator::hexColor($raw, '');
+    }
+
+    /**
      * Ручные значения внешнего вида. Хранятся отдельно от материализованных
      * рабочих ключей цветов и font_family, чтобы готовый пресет не затирал настройки
      * пользователя при последующем возврате к варианту «Свои…».
@@ -455,12 +482,12 @@ final class DesignSettings
     {
         return [
             'color_primary' => SettingsValidator::hexColor(
-                (string) Setting::get('design_custom_color_primary', Setting::get('color_primary', '#0F2B46')),
-                '#173a63'
+                (string) Setting::get('design_custom_color_primary', Setting::get('color_primary', self::DEFAULT_PRIMARY)),
+                self::DEFAULT_PRIMARY
             ),
             'color_accent' => SettingsValidator::hexColor(
-                (string) Setting::get('design_custom_color_accent', Setting::get('color_accent', '#009BBE')),
-                '#17999b'
+                (string) Setting::get('design_custom_color_accent', Setting::get('color_accent', self::DEFAULT_ACCENT)),
+                self::DEFAULT_ACCENT
             ),
             'font_family' => (string) Setting::get(
                 'design_custom_font_family',
@@ -602,6 +629,9 @@ final class DesignSettings
         if (array_key_exists('font_size_custom', $input)) {
             Setting::set('design_font_size_custom', self::normalizeFontSize((string) $input['font_size_custom']));
         }
+        if (array_key_exists('portal_feed_width', $input)) {
+            Setting::set('design_portal_feed_width', CssValue::pixels((string) $input['portal_feed_width'], 260, 560));
+        }
         if (array_key_exists('radius_custom', $input)) {
             Setting::set('design_radius_custom', self::normalizeRadius((string) $input['radius_custom']));
         }
@@ -684,6 +714,10 @@ final class DesignSettings
         // Ручные цвета и шрифт сохраняются отдельно от активного пресета.
         // При первом сохранении старые рабочие ключи цветов и font_family используются как
         // значения по умолчанию — миграция базы не требуется.
+        if (array_key_exists('logo_plate', $input)) {
+            $plate = trim((string) $input['logo_plate']);
+            Setting::set('design_logo_plate', $plate === '' || !empty($input['logo_plate_off']) ? '' : SettingsValidator::hexColor($plate, ''));
+        }
         if (array_key_exists('color_primary', $input)) {
             Setting::set('design_custom_color_primary', SettingsValidator::hexColor(
                 (string) $input['color_primary'],
