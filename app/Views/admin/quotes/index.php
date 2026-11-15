@@ -9,6 +9,7 @@ require __DIR__ . '/../layout/header.php';
 
 /** @var array{items: list<array<string, mixed>>, source: string} $quotes */
 /** @var list<array<string, mixed>> $languages */
+/** @var int $ratesAt */
 $esc = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES);
 $rows = $quotes['items'];
 // Пара пустых строк под новые котировки: заполнили — строка добавилась.
@@ -17,6 +18,14 @@ for ($pad = 0; $pad < 2 && count($rows) < MarketQuotes::MAX_ITEMS; $pad++) {
 }
 ?>
 <div class="admin-builder-workspace">
+    <div class="header-builder__group">
+        <h3>Курсы ЦБ Узбекистана</h3>
+        <p class="form-hint"><?= $ratesAt > 0 ? 'Обновлены ' . $esc(\App\Core\DateFormatter::format($ratesAt, 'd.m.Y H:i')) . '.' : 'Ещё ни разу не загружались.' ?> Курсы обновляются сами: раз в <?= (int) (\App\Core\CurrencyRates::REFRESH_AFTER / 3600) ?> часа после захода посетителя на сайт, а при настроенном cron — по расписанию.</p>
+        <form method="post" action="/admin/quotes/rates">
+            <?= Csrf::field() ?>
+            <button type="submit" class="btn">Обновить курсы сейчас</button>
+        </form>
+    </div>
     <p class="form-hint">Котировки идут в полосе «Курсы валют» на главной рядом с курсами ЦБ. Введите новое значение: прежнее запомнится само, и сайт покажет изменение в процентах и дату обновления. Строка без значения на сайт не выводится; чтобы удалить строку, очистите её название и значение. Число можно писать как в документе: «71,25» или «1 840».</p>
     <form method="post" action="/admin/quotes" class="form-grid">
         <?= Csrf::field() ?>

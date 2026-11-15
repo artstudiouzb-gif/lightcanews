@@ -104,6 +104,101 @@ final class CurrencyRates
         return ['ok' => true, 'error' => ''];
     }
 
+    /** Копия старше этого — повод обновить её после ответа посетителю. */
+    public const REFRESH_AFTER = 3 * 3600;
+
+    /** Неудачная попытка не повторяется чаще: лежащий ЦБ не дёргаем каждым заходом. */
+    private const RETRY_AFTER = 3600;
+
+    private const ATTEMPT_SETTING = 'currency_rates_attempt';
+
+    private static bool $scheduled = false;
+
+    /**
+     * Обновить и сбросить кэш страниц: курсы печатаются на главной и в шапке,
+     * а страницы кэшируются. Одна последовательность на воркер, кнопку панели
+     * и обновление после ответа.
+     *
+     * @return array{ok: bool, error: string}
+     */
+    public static function update(): array
+    {
+        Setting::set(self::ATTEMPT_SETTING, (string) time());
+        $result = self::refresh();
+        if ($result['ok']) {
+            Cache::forgetPrefix('page:');
+        }
+
+        return $result;
+    }
+
+    /**
+     * Пора ли обновить: копия старше REFRESH_AFTER (или её нет), а прошлая
+     * попытка была не ближе RETRY_AFTER. Читает только настройки — сеть не
+     * трогает, поэтому годится для каждого публичного запроса.
+     */
+    public static function isDue(?int $now = null): bool
+    {
+        $now ??= time();
+        $data = json_decode((string) Setting::get(self::SETTING, ''), true);
+        $fetched = is_array($data) ? (int) ($data['fetched_at'] ?? 0) : 0;
+        if ($now - $fetched < self::REFRESH_AFTER) {
+            return false;
+        }
+
+        return $now - (int) Setting::get(self::ATTEMPT_SETTING, '0') >= self::RETRY_AFTER;
+    }
+
+    /**
+     * Обновить после ответа, если пора. Так курсы живут и без cron: первый
+     * посетитель после срока получает страницу как обычно, а запрос к ЦБ идёт
+     * уже после того, как ответ отдан. Только из веб-запроса — у консоли свой
+     * воркер, а тесты наружу не ходят.
+     */
+    public static function afterResponse(): void
+    {
+        if (self::$scheduled || PHP_SAPI === 'cli' || !self::isDue()) {
+            return;
+        }
+        self::$scheduled = true;
+        register_shutdown_function([self::class, 'flushAfterResponse']);
+    }
+
+    /** @internal вызывается из register_shutdown_function */
+    public static function flushAfterResponse(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } elseif (function_exists('litespeed_finish_request')) {
+            litespeed_finish_request();
+        }
+        // Тот же замок, что у воркера: обновляет кто-то один.
+        $lock = ProcessLock::acquire('rates_worker');
+        if ($lock === null) {
+            return;
+        }
+        try {
+            if (self::isDue()) {
+                self::update();
+            }
+        } catch (\Throwable $e) {
+            Logger::swallowed('Курсы валют: обновление после ответа не удалось', $e);
+        } finally {
+            ProcessLock::release($lock);
+        }
+    }
+
+    /** Когда сохранена копия (0 — ни разу). */
+    public static function fetchedAt(): int
+    {
+        $data = json_decode((string) Setting::get(self::SETTING, ''), true);
+
+        return is_array($data) ? (int) ($data['fetched_at'] ?? 0) : 0;
+    }
+
     /**
      * Сохранённая копия, если она свежая.
      *
