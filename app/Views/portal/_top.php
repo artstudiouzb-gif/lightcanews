@@ -60,12 +60,49 @@ $brand = \App\Core\SettingsValidator::hexColor(Setting::get('color_accent', ''),
 $brandDeep = \App\Core\SettingsValidator::hexColor(Setting::get('color_primary', ''), \App\Core\DesignSettings::DEFAULT_PRIMARY);
 
 $homeUrl = Locale::url('/', $currentLang);
-$tagline = t('Новости лёгкой промышленности Центральной Азии');
+// Подпись, знак, меню и что показывать — из конструктора шапки (вид «Портал»);
+// раскладку задаёт шаблон прототипа, зоны конструктора здесь не действуют.
+$hdrCfg = \App\Core\HeaderConfig::get();
+$hdrPortal = (array) ($hdrCfg['portal'] ?? []);
+$hdrShow = static fn (string $key): bool => !array_key_exists($key, $hdrPortal) || !empty($hdrPortal[$key]);
+$tagline = trim((string) ($hdrPortal['tagline'] ?? ''));
+$tagline = $tagline !== '' ? $tagline : t('Новости лёгкой промышленности Центральной Азии');
+$hdrLogo = '';
+if (($hdrPortal['logo_mode'] ?? 'text') === 'image') {
+    $hdrLogo = trim((string) ($hdrCfg['logo_by_lang'][$currentLang] ?? ''));
+    $hdrLogo = $hdrLogo !== '' ? $hdrLogo : trim((string) Setting::get('logo_url', ''));
+}
+$hdrLiveUrl = (string) ($hdrPortal['live_url'] ?? '');
+$hdrLiveText = trim((string) ($hdrPortal['live_text'] ?? ''));
+$hdrLiveText = $hdrLiveText !== '' ? $hdrLiveText : t('Онлайн');
+$hdrCta = (array) ($hdrCfg['cta'] ?? []);
+$hdrCtaUrl = trim((string) ($hdrCta['url'] ?? ''));
+$hdrCtaText = trim((string) ($hdrCta['text'] ?? ''));
+$hdrCtaOn = !empty($hdrCta['enabled']) && $hdrCtaText !== '' && $hdrCtaUrl !== '' && \App\Core\UrlGuard::isSafeLink($hdrCtaUrl);
+// Пункты меню: рубрики, основное меню или оба (основное — только верхний уровень).
+$hdrNavMode = (string) ($hdrPortal['nav'] ?? 'rubrics');
+$hdrNav = [];
+if ($hdrNavMode !== 'rubrics') {
+    try {
+        foreach (\App\Models\MenuItem::activeForLang($currentLang) as $hdrItem) {
+            if (empty($hdrItem['is_divider']) && empty($hdrItem['parent_id'])) {
+                $hdrNav[] = [(string) $hdrItem['title'], \App\Models\MenuItem::resolveUrl($hdrItem, $currentLang)];
+            }
+        }
+    } catch (\Throwable $e) {
+        \App\Core\Logger::swallowed('Шапка портала: меню не загрузилось', $e);
+    }
+}
 $wordmark = trim(Setting::get('pwa_short_name', ''));
 $wordmark = $wordmark !== '' ? $wordmark : (string) preg_replace('/\.news$/i', '', $siteName);
 
 $rubrics = NewsCategory::all($currentLang, true, NewsCategory::AXIS_RUBRIC);
-$countries = NewsCategory::all($currentLang, true, NewsCategory::AXIS_COUNTRY);
+if ($hdrNavMode !== 'menu') {
+    foreach ($rubrics as $rubric) {
+        $hdrNav[] = [(string) $rubric['name'], Locale::url(NewsCategory::path($rubric))];
+    }
+}
+$countries = $hdrShow('show_countries') ? NewsCategory::all($currentLang, true, NewsCategory::AXIS_COUNTRY) : [];
 $requestPath = rtrim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
 $isCurrent = static function (string $url) use ($requestPath): bool {
     return $requestPath !== '' && $requestPath === rtrim((string) parse_url($url, PHP_URL_PATH), '/');
@@ -177,18 +214,27 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
     <div class="pt-mast__hem" aria-hidden="true"></div>
     <div class="pt-wrap pt-mast__row">
         <a class="pt-logo" href="<?= htmlspecialchars($homeUrl, ENT_QUOTES) ?>" aria-label="<?= htmlspecialchars($siteName . ' — ' . t('на главную'), ENT_QUOTES) ?>">
-            <span class="pt-logo__word"><?= htmlspecialchars($wordmark, ENT_QUOTES) ?></span>
+            <?php if ($hdrLogo !== ''): ?>
+                <img class="pt-logo__img" src="<?= htmlspecialchars($hdrLogo, ENT_QUOTES) ?>" alt="<?= htmlspecialchars($siteName, ENT_QUOTES) ?>">
+            <?php else: ?>
+                <span class="pt-logo__word"><?= htmlspecialchars($wordmark, ENT_QUOTES) ?></span>
+            <?php endif; ?>
             <span class="pt-logo__desc"><?= htmlspecialchars($tagline, ENT_QUOTES) ?></span>
         </a>
         <div class="pt-mast__bar">
-            <nav class="pt-nav" aria-label="<?= htmlspecialchars(t('Рубрики'), ENT_QUOTES) ?>">
-                <?php foreach ($rubrics as $rubric): ?>
-                    <?php $rubricUrl = Locale::url(NewsCategory::path($rubric)); ?>
-                    <a href="<?= htmlspecialchars($rubricUrl, ENT_QUOTES) ?>"<?= $isCurrent($rubricUrl) ? ' aria-current="page"' : '' ?>><?= htmlspecialchars((string) $rubric['name'], ENT_QUOTES) ?></a>
+            <nav class="pt-nav" aria-label="<?= htmlspecialchars($hdrNavMode === 'rubrics' ? t('Рубрики') : t('Меню'), ENT_QUOTES) ?>">
+                <?php foreach ($hdrNav as [$navTitle, $navUrl]): ?>
+                    <a href="<?= htmlspecialchars($navUrl, ENT_QUOTES) ?>"<?= $isCurrent($navUrl) ? ' aria-current="page"' : '' ?>><?= htmlspecialchars($navTitle, ENT_QUOTES) ?></a>
                 <?php endforeach; ?>
             </nav>
             <div class="pt-tools">
-                <?php if (count($langLinks) > 1): ?>
+                <?php if ($hdrLiveUrl !== ''): ?>
+                    <a class="pt-btn pt-btn--live" href="<?= htmlspecialchars($hdrLiveUrl, ENT_QUOTES) ?>"><span class="pt-live-dot" aria-hidden="true"></span><?= htmlspecialchars($hdrLiveText, ENT_QUOTES) ?></a>
+                <?php endif; ?>
+                <?php if ($hdrCtaOn): ?>
+                    <a class="pt-btn<?= ($hdrCta['style'] ?? 'filled') === 'outline' ? '' : ' pt-btn--cta' ?>" href="<?= htmlspecialchars($hdrCtaUrl, ENT_QUOTES) ?>"><?= htmlspecialchars(t($hdrCtaText), ENT_QUOTES) ?></a>
+                <?php endif; ?>
+                <?php if ($hdrShow('show_lang') && count($langLinks) > 1): ?>
                 <details class="pt-lang">
                     <summary class="pt-btn" aria-label="<?= htmlspecialchars(t('Язык'), ENT_QUOTES) ?>"><?= htmlspecialchars($currentLangLabel, ENT_QUOTES) ?></summary>
                     <ul class="pt-lang__menu">
@@ -201,14 +247,18 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                     </ul>
                 </details>
                 <?php endif; ?>
+                <?php if ($hdrShow('show_search')): ?>
                 <a class="pt-btn pt-btn--search" href="<?= htmlspecialchars(Locale::url('search'), ENT_QUOTES) ?>" data-pt-search aria-label="<?= htmlspecialchars(t('Поиск по сайту'), ENT_QUOTES) ?>">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                     <span><?= htmlspecialchars(t('Поиск'), ENT_QUOTES) ?></span>
                 </a>
+                <?php endif; ?>
+                <?php if ($hdrShow('show_theme')): ?>
                 <button type="button" class="pt-btn pt-btn--icon" data-pt-theme aria-label="<?= htmlspecialchars(t('Тёмная тема'), ENT_QUOTES) ?>">
                     <svg class="pt-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.5A9 9 0 0 1 10.5 3.1 9 9 0 1 0 20.9 13.5Z"/></svg>
                     <svg class="pt-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
                 </button>
+                <?php endif; ?>
             </div>
         </div>
         <?php if ($countries !== []): ?>
@@ -218,7 +268,7 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                 <?php $countryUrl = Locale::url(NewsCategory::path($country)); ?>
                 <a href="<?= htmlspecialchars($countryUrl, ENT_QUOTES) ?>"<?= $isCurrent($countryUrl) ? ' aria-current="page"' : '' ?>><?php $countryMark = Portal::countryMark($country); ?><?php if ($countryMark !== ''): ?><b><?= $countryMark ?></b><?php endif; ?><?= htmlspecialchars((string) $country['name'], ENT_QUOTES) ?></a>
             <?php endforeach; ?>
-            <span class="pt-countries__date"><?php $ptDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']; ?><?= htmlspecialchars(Portal::date(\App\Core\DateFormatter::format('now', 'Y-m-d'), $currentLang) . ', ' . t($ptDays[(int) \App\Core\DateFormatter::format('now', 'N') - 1]), ENT_QUOTES) ?></span>
+            <?php if ($hdrShow('show_date')): ?><span class="pt-countries__date"><?php $ptDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']; ?><?= htmlspecialchars(Portal::date(\App\Core\DateFormatter::format('now', 'Y-m-d'), $currentLang) . ', ' . t($ptDays[(int) \App\Core\DateFormatter::format('now', 'N') - 1]), ENT_QUOTES) ?></span><?php endif; ?>
         </nav>
         <?php endif; ?>
     </div>

@@ -388,6 +388,37 @@ test('Портал: Instagram-ролики — вертикальная поло
     assert_same('', trim(render_view('app/Views/portal/_home_reels.php', ['sec' => ['reels' => []], 'secTitle' => ''])), 'без публикаций секции нет');
 });
 
+test('Портал: шапка слушает конструктор шапки — знак, меню, кнопки, переключатели', function (): void {
+    ensure_test_db();
+    $home = ['lead' => null, 'grid' => [], 'also' => [], 'feed' => [], 'picks' => [], 'regions' => [], 'voices' => []];
+    $html = portal_home_html($home);
+    assert_contains('class="pt-countries"', $html, 'по умолчанию полоса стран есть');
+    assert_contains('data-pt-search aria-label', $html);
+    assert_not_contains('pt-btn--live', $html, 'без ссылки кнопки «Онлайн» нет');
+
+    $cfg = \App\Core\HeaderConfig::get();
+    $cfg['portal'] = ['tagline' => 'Своя подпись', 'live_url' => '/live', 'live_text' => 'Эфир', 'nav' => 'menu',
+        'show_countries' => false, 'show_date' => true, 'show_lang' => true, 'show_search' => false, 'show_theme' => false];
+    $cfg['cta'] = ['enabled' => true, 'text' => 'Реклама', 'url' => '/ads', 'style' => 'filled'] + (array) $cfg['cta'];
+    \App\Core\HeaderConfig::save($cfg);
+    $html = portal_home_html($home);
+    assert_contains('Своя подпись', $html, 'подпись в плашке');
+    assert_contains('href="/live"', $html);
+    assert_contains('Эфир', $html, 'кнопка «Онлайн» со своим текстом');
+    assert_contains('class="pt-btn pt-btn--cta" href="/ads"', $html, 'кнопка CTA');
+    assert_not_contains('class="pt-countries"', $html, 'полосу стран можно скрыть');
+    assert_not_contains('data-pt-search aria-label', $html, 'поиск можно скрыть');
+    assert_not_contains('data-pt-theme', $html, 'тему можно скрыть');
+    assert_contains('aria-label="Меню"', $html, 'меню шапки — основное меню');
+
+    $saved = \App\Core\HeaderConfig::get()['portal'];
+    assert_same(false, $saved['show_countries']);
+    assert_same('menu', $saved['nav']);
+    \App\Core\HeaderConfig::save(['portal' => ['nav' => 'evil', 'logo_mode' => 'x']]);
+    $saved = \App\Core\HeaderConfig::get()['portal'];
+    assert_same(['rubrics', 'text', true], [$saved['nav'], $saved['logo_mode'], $saved['show_countries']], 'чужое значение — умолчание, запись без переключателя — включено');
+});
+
 test('Портал: подвал собирается из колонок конструктора', function (): void {
     ensure_test_db();
     \App\Core\FooterConfig::save(['columns' => [

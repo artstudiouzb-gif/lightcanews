@@ -182,6 +182,29 @@ $heightSelect = function (string $name, string $current): string {
                     <label for="portal_live_text">Кнопка «Онлайн» — текст</label>
                     <input type="text" id="portal_live_text" name="portal_live_text" maxlength="24" value="<?= htmlspecialchars((string) ($portalCfg['live_text'] ?? ''), ENT_QUOTES) ?>" placeholder="Онлайн">
                 </div>
+                <div class="form-field">
+                    <label for="portal_logo_mode">Знак в плашке</label>
+                    <select id="portal_logo_mode" name="portal_logo_mode">
+                        <option value="text"<?= ($portalCfg['logo_mode'] ?? 'text') === 'text' ? ' selected' : '' ?>>Текстом — название сайта</option>
+                        <option value="image"<?= ($portalCfg['logo_mode'] ?? '') === 'image' ? ' selected' : '' ?>>Картинкой — логотип</option>
+                    </select>
+                    <span class="form-hint">Картинка берётся из «Логотип» (общий или для языка страницы) — светлая на тёмной плашке читается лучше. Нет картинки — знак текстом.</span>
+                </div>
+                <div class="form-field">
+                    <label for="portal_nav">Меню шапки</label>
+                    <select id="portal_nav" name="portal_nav">
+                        <?php foreach (\App\Core\HeaderConfig::PORTAL_NAV as $navKey => $navLabel): ?>
+                            <option value="<?= $navKey ?>"<?= ($portalCfg['nav'] ?? 'rubrics') === $navKey ? ' selected' : '' ?>><?= htmlspecialchars($navLabel, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <fieldset class="form-field">
+                    <legend>Показывать в шапке</legend>
+                    <?php foreach (\App\Core\HeaderConfig::PORTAL_TOGGLES as $toggleKey => $toggleLabel): ?>
+                        <label class="form-check"><input type="checkbox" name="portal_<?= $toggleKey ?>" value="1"<?= ($portalCfg[$toggleKey] ?? true) ? ' checked' : '' ?>> <?= htmlspecialchars($toggleLabel, ENT_QUOTES) ?></label>
+                    <?php endforeach; ?>
+                    <span class="form-hint">Кнопка CTA (вкладка «Элементы» → «Кнопка») тоже выводится в шапке портала, если включена. Раскладку шапки портала задаёт шаблон: зоны и полосы ниже относятся к классическому виду.</span>
+                </fieldset>
             </div>
             <!-- Container Mode Card Selector -->
             <div class="header-builder__group form-card u-inline-8cddc29a69">
