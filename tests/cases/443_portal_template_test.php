@@ -388,6 +388,30 @@ test('Портал: Instagram-ролики — вертикальная поло
     assert_same('', trim(render_view('app/Views/portal/_home_reels.php', ['sec' => ['reels' => []], 'secTitle' => ''])), 'без публикаций секции нет');
 });
 
+test('Портал: подвал собирается из колонок конструктора', function (): void {
+    ensure_test_db();
+    \App\Core\FooterConfig::save(['columns' => [
+        ['heading' => '', 'widget' => 'about', 'text' => '<p>Деловое издание</p>'],
+        ['heading' => 'Связь', 'widget' => 'contacts', 'widget2' => 'subscribe'],
+        ['heading' => 'Мой текст', 'widget' => 'text', 'text' => '<p>Свой блок</p>'],
+    ], 'bottom' => '© {year} Тест', 'bottom_links' => [['label' => 'Правила', 'url' => '/rules']]]);
+    \App\Models\Setting::set('contact_phone', '+998 71 200 00 00');
+    $html = render_view('app/Views/portal/_bottom.php', []);
+    assert_contains('pt-foot__grid--c3', $html, 'колонок столько, сколько в конструкторе');
+    assert_contains('Деловое издание', $html);
+    assert_contains('href="tel:+998712000000"', $html, 'контакты');
+    assert_contains('class="pt-foot__subscribe"', $html, 'второй виджет колонки');
+    assert_contains('Свой блок', $html);
+    assert_contains('Правила', $html, 'ссылки нижней строки');
+    assert_not_contains('>Рубрики<', $html, 'колонка, которой нет в конструкторе, не печатается');
+
+    \App\Core\FooterConfig::save(['style' => 'minimal', 'columns' => [['heading' => '', 'widget' => 'about']]]);
+    $html = render_view('app/Views/portal/_bottom.php', []);
+    assert_not_contains('pt-foot__grid', $html, '«Минимальный» — только нижняя строка');
+    assert_contains('pt-foot__bottom', $html);
+    assert_same(['about', 'rubrics', 'countries', 'menu'], array_column(\App\Core\FooterConfig::DEFAULTS['columns'], 'widget'), 'набор по умолчанию — как в прототипе');
+});
+
 test('Портал: главное, лента и партнёрские материалы — отдельные секции', function (): void {
     $cards = Portal::cards(sample_news_rows(10), 'ru');
     $sec = ['lead' => $cards[0], 'grid' => array_slice($cards, 1, 3), 'also' => [], 'feed' => array_slice($cards, 0, 5)];

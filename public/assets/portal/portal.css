@@ -279,6 +279,15 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-foot a:hover { color: var(--signal-on-dark); text-decoration: underline; text-underline-offset: 3px; }
 .pt-foot__social { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .pt-foot__social a { padding: 5px 10px; border: 1px solid rgba(255, 255, 255, .18); border-radius: var(--r); font-size: .78rem; font-weight: 700; color: #e8efee; }
+.pt-foot__grid--c1 { grid-template-columns: minmax(0, 1fr); }
+.pt-foot__grid--c2 { grid-template-columns: 1.6fr 1fr; }
+.pt-foot__grid--c3 { grid-template-columns: 1.6fr 1fr 1fr; }
+.pt-foot__grid > * > * + * { margin-top: 14px; }
+.pt-foot__grid > * > .pt-foot__head + * { margin-top: 0; }
+.pt-foot__links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.pt-foot__subscribe { display: flex; gap: 8px; max-width: 360px; }
+.pt-foot__subscribe input[type="email"] { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, .22); border-radius: var(--r); background: rgba(255, 255, 255, .06); color: #fff; font: inherit; font-size: .875rem; }
+.pt-foot__subscribe button { padding: 8px 14px; border: 0; border-radius: var(--r); background: var(--signal-on-dark); color: #0c1413; font: inherit; font-size: .82rem; font-weight: 800; cursor: pointer; }
 .pt-foot__bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 18px; font-size: .8rem; color: #9ab0ad; }
 
 /* --- Адаптив ------------------------------------------------------------------- */
