@@ -198,6 +198,15 @@ $heightSelect = function (string $name, string $current): string {
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <div class="form-field">
+                    <label for="portal_weather_city">Город погоды</label>
+                    <select id="portal_weather_city" name="portal_weather_city">
+                        <?php foreach (\App\Core\Weather::CITIES as $cityKey => $cityInfo): ?>
+                            <option value="<?= $cityKey ?>"<?= ($portalCfg['weather_city'] ?? 'tashkent') === $cityKey ? ' selected' : '' ?>><?= htmlspecialchars($cityInfo[0], ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span class="form-hint">Погода рядом с датой, источник — Open-Meteo. Обновляется раз в час сама, после захода посетителя на сайт.</span>
+                </div>
                 <fieldset class="form-field">
                     <legend>Показывать в шапке</legend>
                     <?php foreach (\App\Core\HeaderConfig::PORTAL_TOGGLES as $toggleKey => $toggleLabel): ?>

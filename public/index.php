@@ -601,6 +601,9 @@ if (in_array($requestMethod, ['GET', 'HEAD'], true)
     && !str_starts_with($requestPath, '/admin')
     && !str_starts_with($requestPath, '/assets')) {
     \App\Core\CurrencyRates::afterResponse();
+    if ((\App\Core\HeaderConfig::get()['portal']['show_weather'] ?? true) !== false) {
+        \App\Core\Weather::afterResponse();
+    }
 }
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

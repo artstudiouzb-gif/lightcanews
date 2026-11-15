@@ -214,6 +214,7 @@ final class HeaderController
         $out = [
             'logo_mode' => $in->oneOf('portal_logo_mode', HeaderConfig::PORTAL_LOGO_MODES, 'text'),
             'nav' => $in->oneOf('portal_nav', array_keys(HeaderConfig::PORTAL_NAV), 'rubrics'),
+            'weather_city' => $in->oneOf('portal_weather_city', array_keys(\App\Core\Weather::CITIES), \App\Core\Weather::DEFAULT_CITY),
         ];
         foreach (array_keys(HeaderConfig::PORTAL_TOGGLES) as $toggle) {
             $out[$toggle] = $in->bool('portal_' . $toggle);
