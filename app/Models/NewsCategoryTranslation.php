@@ -63,6 +63,54 @@ final class NewsCategoryTranslation
         return $result;
     }
 
+    /**
+     * Переведённые факты стран («Нити региона») пакетом.
+     *
+     * @param list<int> $categoryIds
+     * @return array<int, string>
+     */
+    public static function factsForIds(array $categoryIds, string $lang): array
+    {
+        $categoryIds = array_values(array_unique(array_filter(array_map('intval', $categoryIds), static fn (int $id): bool => $id > 0)));
+        if ($categoryIds === []) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
+        $stmt = Database::pdo()->prepare(
+            "SELECT category_id, fact FROM news_category_translations
+             WHERE category_id IN ({$placeholders}) AND lang = ? AND TRIM(COALESCE(fact, '')) <> ''"
+        );
+        $stmt->execute([...$categoryIds, $lang]);
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(int) $row['category_id']] = (string) $row['fact'];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Факт перевода. Строки перевода без названия upsert() удаляет, поэтому
+     * факт без названия заводит строку сам — с пустым названием (его
+     * namesForIds не отдаёт, срабатывает откат к основному языку).
+     */
+    public static function setFact(int $categoryId, string $lang, string $fact): void
+    {
+        $fact = mb_substr(trim(strip_tags($fact)), 0, 80);
+        $stmt = Database::pdo()->prepare(
+            'INSERT INTO news_category_translations (category_id, lang, name, fact)
+             VALUES (:c, :l, NULL, :f)
+             ON DUPLICATE KEY UPDATE fact = VALUES(fact)'
+        );
+        if ($fact === '') {
+            Database::pdo()->prepare('UPDATE news_category_translations SET fact = NULL WHERE category_id = :c AND lang = :l')
+                ->execute([':c' => $categoryId, ':l' => $lang]);
+        } else {
+            $stmt->execute([':c' => $categoryId, ':l' => $lang, ':f' => $fact]);
+        }
+        Cache::forgetPrefix('page:');
+    }
+
     public static function upsert(int $categoryId, string $lang, string $name): void
     {
         $name = trim($name);

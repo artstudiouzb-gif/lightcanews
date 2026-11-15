@@ -317,13 +317,21 @@
     // кэшируется, поэтому «что сейчас в периоде» и «какой показать» решает
     // браузер: случайный при каждой загрузке или по очереди через интервал.
     // Смена по таймеру ждёт, пока курсор или фокус внутри креатива.
-    var adGroups = {};
+    // Группа — соседи одного родителя: лента бывает на главной дважды (общая
+    // секция и отдельный блок), и у каждой копии зоны своя очередь.
+    var adGroups = [];
     document.querySelectorAll('[data-ad]').forEach(function (el) {
-        var key = el.getAttribute('data-ad');
-        (adGroups[key] = adGroups[key] || []).push(el);
+        var group = adGroups.filter(function (g) {
+            return g.parent === el.parentElement && g.key === el.getAttribute('data-ad');
+        })[0];
+        if (!group) {
+            group = { parent: el.parentElement, key: el.getAttribute('data-ad'), items: [] };
+            adGroups.push(group);
+        }
+        group.items.push(el);
     });
-    Object.keys(adGroups).forEach(function (key) {
-        var all = adGroups[key];
+    adGroups.forEach(function (group) {
+        var all = group.items;
         var now = Date.now() / 1000;
         var live = all.filter(function (el) {
             var from = Number(el.getAttribute('data-ad-from') || 0);
@@ -357,5 +365,39 @@
             live = next;
             show(live[index]);
         }, seconds * 1000);
+    });
+
+    // Лента: «Последние» / «Главные» (самое читаемое за неделю). Без скрипта
+    // видна лента «Последние», вкладки скрыты.
+    document.querySelectorAll('[data-pt-tabs]').forEach(function (tabs) {
+        var buttons = Array.prototype.slice.call(tabs.querySelectorAll('[role="tab"]'));
+        tabs.hidden = false;
+        buttons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                buttons.forEach(function (b) {
+                    var on = b === button;
+                    b.setAttribute('aria-selected', on ? 'true' : 'false');
+                    var panel = document.getElementById(b.getAttribute('aria-controls'));
+                    if (panel) { panel.hidden = !on; }
+                });
+            });
+        });
+    });
+
+    // «Видео и подкасты»: фильтр по виду выпуска.
+    document.querySelectorAll('[data-pt-media]').forEach(function (section) {
+        var tabs = section.querySelector('[data-pt-media-tabs]');
+        if (!tabs) { return; }
+        tabs.hidden = false;
+        var buttons = Array.prototype.slice.call(tabs.querySelectorAll('button[data-kind]'));
+        buttons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var kind = button.getAttribute('data-kind');
+                buttons.forEach(function (b) { b.setAttribute('aria-pressed', b === button ? 'true' : 'false'); });
+                section.querySelectorAll('.pt-media__list [data-kind]').forEach(function (item) {
+                    item.hidden = kind !== 'all' && item.getAttribute('data-kind') !== kind;
+                });
+            });
+        });
     });
 })();

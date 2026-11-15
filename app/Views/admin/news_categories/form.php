@@ -35,6 +35,11 @@ $translationLangs = array_values(array_filter(
         </div>
         <?php $axis = \App\Models\NewsCategory::axis((string) ($category['axis'] ?? '')); ?>
         <div class="form-field">
+            <label for="fact">Факт на главной</label>
+            <input type="text" id="fact" name="fact" maxlength="80" value="<?= htmlspecialchars((string) ($category['fact'] ?? ''), ENT_QUOTES) ?>" placeholder="+18% экспорт текстиля">
+            <span class="form-hint">Для стран: короткая плашка на фото в «Нитях региона» на главной. Пусто — плашки нет.</span>
+        </div>
+        <div class="form-field">
             <label for="axis">Ось</label>
             <select id="axis" name="axis"<?= $newsCount > 0 ? ' disabled aria-describedby="axis-hint"' : '' ?>>
                 <?php foreach (\App\Models\NewsCategory::AXES as $axisValue => $axisLabel): ?>
@@ -89,6 +94,14 @@ $translationLangs = array_values(array_filter(
                             name="translations[<?= htmlspecialchars($code, ENT_QUOTES) ?>][name]"
                             value="<?= htmlspecialchars((string) ($translation['name'] ?? ''), ENT_QUOTES) ?>"
                             placeholder="Название на <?= htmlspecialchars((string) $language['name'], ENT_QUOTES) ?>"
+                        >
+                        <input
+                            type="text"
+                            maxlength="80"
+                            aria-label="Факт на главной — <?= htmlspecialchars((string) $language['name'], ENT_QUOTES) ?>"
+                            name="translations[<?= htmlspecialchars($code, ENT_QUOTES) ?>][fact]"
+                            value="<?= htmlspecialchars((string) ($translation['fact'] ?? ''), ENT_QUOTES) ?>"
+                            placeholder="Факт на главной (для стран)"
                         >
                     </div>
                 <?php endforeach; ?>

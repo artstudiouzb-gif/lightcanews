@@ -117,6 +117,7 @@ final class NewsCategoryController
             $axis
         );
         $this->saveTranslations($id);
+        NewsCategory::setFact($id, \App\Core\Input::post()->str('fact', '', 80));
 
         Flash::success('Категория сохранена.');
         header('Location: /admin/news-categories/' . $id . '/edit');
@@ -150,6 +151,7 @@ final class NewsCategoryController
                 continue;
             }
             NewsCategoryTranslation::upsert($categoryId, $code, (string) ($input[$code]['name'] ?? ''));
+            NewsCategoryTranslation::setFact($categoryId, $code, (string) ($input[$code]['fact'] ?? ''));
         }
     }
 }

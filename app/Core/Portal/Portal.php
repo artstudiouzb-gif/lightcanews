@@ -188,6 +188,9 @@ final class Portal
                 'country_marks' => $marks,
                 'badge' => trim((string) ($row['badge'] ?? '')),
                 'partner' => !empty($row['is_partner']),
+                'author' => trim((string) ($row['author_name'] ?? '')),
+                'author_role' => trim((string) ($row['author_role'] ?? '')),
+                'author_photo' => trim((string) ($row['author_photo'] ?? '')),
                 'date' => self::date($published, $lang),
                 'time' => self::time($published),
                 'day' => $published !== '' ? DateFormatter::format($published, 'd.m') : '',
@@ -241,17 +244,28 @@ final class Portal
      * портала»: разметка у них общая (`portal/_home_<ключ>.php`).
      */
     public const SECTIONS = [
-        'lead' => 'Главное в отрасли и лента новостей',
+        'lead' => 'Главное в отрасли и лента новостей (две колонки)',
+        'main' => 'Главное в отрасли (без ленты)',
+        'feed' => 'Лента новостей',
         'rates' => 'Курсы валют',
         'picks' => 'Выбор редакции',
+        'partners' => 'Партнёрские материалы',
         'ad' => 'Широкий рекламный баннер',
         'regions' => 'Нити региона (по странам)',
+        'media' => 'Видео и подкасты',
         'voices' => 'Точка зрения',
         'subscribe' => 'Подписка',
     ];
 
+    /**
+     * Секции, которые «Собрать главную из блоков» ставит по умолчанию: та же
+     * главная, что и фиксированным шаблоном. Остальные (лента и главное по
+     * отдельности, партнёрские материалы) редактор добавляет сам.
+     */
+    public const DEFAULT_SECTIONS = ['lead', 'rates', 'picks', 'ad', 'regions', 'media', 'voices', 'subscribe'];
+
     /** Сколько материалов секция показывает, если редактор не задал своё. */
-    public const SECTION_LIMITS = ['picks' => 4, 'regions' => 4, 'voices' => 3];
+    public const SECTION_LIMITS = ['picks' => 4, 'partners' => 4, 'regions' => 4, 'voices' => 3, 'feed' => 8, 'lead' => 8];
 
     /**
      * Данные одной секции главной.
@@ -263,14 +277,26 @@ final class Portal
         $limit = $limit > 0 ? min($limit, 12) : (self::SECTION_LIMITS[$name] ?? 0);
         switch ($name) {
             case 'lead':
-                $latest = self::cards(News::published(24, 0, $lang), $lang);
+            case 'main':
+            case 'feed':
+                // Число у «Главного» и у общей секции — длина ленты; раскладка
+                // главного (крупная, три, четыре) задана прототипом.
+                $latest = self::cards(News::published(max(8, $limit), 0, $lang), $lang);
+
+                $feedLimit = $limit > 0 ? $limit : 8;
 
                 return [
                     'lead' => $latest[0] ?? null,
                     'grid' => array_slice($latest, 1, 3),
                     'also' => array_slice($latest, 4, 4),
-                    'feed' => array_slice($latest, 0, 8),
+                    'feed' => array_slice($latest, 0, $feedLimit),
+                    // Вкладка «Главные» ленты — самое читаемое за неделю.
+                    'feed_top' => $name === 'main' ? [] : self::cards(News::mostViewed(7, $feedLimit, $lang), $lang),
                 ];
+            case 'media':
+                return ['media' => self::media($lang, $limit > 0 ? $limit : 4)];
+            case 'partners':
+                return ['partners' => self::cards(News::partnerMaterials($limit, $lang), $lang)];
             case 'rates':
                 return ['rates' => \App\Core\CurrencyRates::current()];
             case 'picks':
@@ -283,6 +309,7 @@ final class Portal
                         continue;
                     }
                     $regions[] = [
+                        'fact' => trim((string) ($country['fact'] ?? '')),
                         'code' => self::countryCode($country),
                         'mark' => self::countryMark($country),
                         'name' => (string) $country['name'],
@@ -310,6 +337,61 @@ final class Portal
     }
 
     /**
+     * «Видео и подкасты»: ролики из раздела «Видео» (отмеченные «на главной»,
+     * иначе последние) и новости с аудиозаписью, свежие первыми. Первым
+     * крупно идёт ролик, если он есть. Ролик открывается на YouTube или
+     * файлом — своей страницы у видео нет; подкаст ведёт в новость.
+     *
+     * @return list<array{kind:string, title:string, url:string, external:bool, cover:string, duration:string, source:string, date:string}>
+     */
+    public static function media(string $lang, int $limit = 4): array
+    {
+        $items = [];
+        foreach (\App\Models\Video::forHome($limit, $lang) as $video) {
+            $url = trim((string) ($video['video_url'] ?? ''));
+            if ($url === '' || !\App\Core\UrlGuard::isSafeLink($url)) {
+                continue;
+            }
+            $cover = trim((string) ($video['cover_url'] ?? ''));
+            $youtube = trim((string) ($video['youtube_id'] ?? ''));
+            if ($cover === '' && $youtube !== '') {
+                $cover = 'https://i.ytimg.com/vi/' . rawurlencode($youtube) . '/hqdefault.jpg';
+            }
+            $items[] = [
+                'kind' => 'video',
+                'title' => (string) ($video['title'] ?? ''),
+                'url' => $url,
+                'external' => (bool) preg_match('~^https?://~i', $url),
+                'cover' => $cover,
+                'duration' => trim((string) ($video['duration'] ?? '')),
+                'source' => $youtube !== '' ? 'YouTube' : '',
+                'date' => (string) ($video['published_at'] ?? $video['created_at'] ?? ''),
+            ];
+        }
+        foreach (self::cards(News::withAudio($limit, $lang), $lang) as $card) {
+            $items[] = [
+                'kind' => 'podcast',
+                'title' => (string) $card['title'],
+                'url' => (string) $card['url'],
+                'external' => false,
+                'cover' => (string) $card['cover'],
+                'duration' => '',
+                'source' => '',
+                'date' => (string) $card['datetime'],
+            ];
+        }
+        // Ролик — крупно первым; остальное по свежести.
+        usort($items, static fn (array $a, array $b): int => [$a['kind'] === 'video' ? 0 : 1, $b['date']] <=> [$b['kind'] === 'video' ? 0 : 1, $a['date']]);
+        $lead = array_shift($items);
+        if ($lead === null) {
+            return [];
+        }
+        usort($items, static fn (array $a, array $b): int => strcmp($b['date'], $a['date']));
+
+        return array_merge([$lead], array_slice($items, 0, max(0, $limit - 1)));
+    }
+
+    /**
      * Все секции фиксированной главной разом.
      *
      * @return array<string, mixed>
@@ -320,6 +402,7 @@ final class Portal
             + ['rates' => \App\Core\CurrencyRates::current()]
             + self::section('picks', $lang)
             + self::section('regions', $lang)
+            + self::section('media', $lang)
             + self::section('voices', $lang);
     }
 }
