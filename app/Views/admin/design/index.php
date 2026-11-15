@@ -240,6 +240,10 @@ foreach ($options as $key => $opt) {
                         <input type="color" id="design_color_accent" name="color_accent" value="<?= htmlspecialchars($accent, ENT_QUOTES) ?>" data-design-preview-field>
                         <small class="form-hint">Переменные: <code>--color-accent</code>, <code>--gov-teal</code> (заливки/кнопки) и <code>--gov-teal-text</code> (текст WCAG)<br>Управляет: ссылки, стрелки «→», бейджи статусов, обводка при наведении и фокус. Бэкенд автоматически вычисляет контрастный текстовый оттенок (WCAG 4.5:1).</small>
                     </div>
+                    <div>
+                        <?= \App\Core\AdminUi::colorField('logo_plate', \App\Core\DesignSettings::logoPlate(), 'Цвет подложки логотипа', $primary, 'Как основной цвет') ?>
+                        <small class="form-hint">Плашка с названием сайта в шапке портала. По умолчанию — основной бренд-цвет. Текст на ней белый, поэтому цвет нужен тёмный.</small>
+                    </div>
                     <?php foreach ([
                         'bg_primary' => ['label' => 'Фон страницы', 'vars' => '--bg-primary, --gov-bg', 'desc' => 'Задний общий фон подложки сайта и подложки под секциями.'],
                         'bg_surface' => ['label' => 'Фон карточек и поверхностей', 'vars' => '--bg-surface, --gov-surface', 'desc' => 'Фон карточек контента, выпадающих меню, панелей и таблиц.'],

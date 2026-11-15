@@ -56,8 +56,8 @@ if ($ogImageRaw !== '' && !preg_match('#^https?://#', $ogImageRaw)) {
 
 // Цвета приходят из «Дизайна»: акцент и основной цвет настраиваются в
 // админке, здесь — только их запасные значения на случай пустой настройки.
-$brand = \App\Core\SettingsValidator::hexColor(Setting::get('color_accent', ''), '#005650');
-$brandDeep = \App\Core\SettingsValidator::hexColor(Setting::get('color_primary', ''), '#0b4b42');
+$brand = \App\Core\SettingsValidator::hexColor(Setting::get('color_accent', ''), \App\Core\DesignSettings::DEFAULT_ACCENT);
+$brandDeep = \App\Core\SettingsValidator::hexColor(Setting::get('color_primary', ''), \App\Core\DesignSettings::DEFAULT_PRIMARY);
 
 $homeUrl = Locale::url('/', $currentLang);
 $tagline = t('Новости лёгкой промышленности Центральной Азии');
@@ -152,8 +152,9 @@ foreach ($langLinks as $langLink) {
 // (DesignSettings::containerWidth/portalFeedWidth), в CSS идут как есть.
 $portalWrap = \App\Core\DesignSettings::containerWidth();
 $portalFeed = \App\Core\DesignSettings::portalFeedWidth();
+$logoPlate = \App\Core\DesignSettings::logoPlate();
 ?>
-<style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>;--wrap:<?= htmlspecialchars($portalWrap, ENT_QUOTES) ?><?= $portalFeed !== '' ? ';--pt-feed-w:' . htmlspecialchars($portalFeed, ENT_QUOTES) : '' ?>}</style>
+<style>:root{--brand:<?= $brand ?>;--brand-deep:<?= $brandDeep ?>;--wrap:<?= htmlspecialchars($portalWrap, ENT_QUOTES) ?><?= $portalFeed !== '' ? ';--pt-feed-w:' . htmlspecialchars($portalFeed, ENT_QUOTES) : '' ?><?= $logoPlate !== '' ? ';--logo-plate:' . $logoPlate : '' ?>}</style>
 <?php if (!empty($portalBlocks)): ?>
 <?php // Страница из блоков конструктора: свои стили блоков портала, затем
       // собственные файлы типов на странице и scoped CSS блоков. ?>

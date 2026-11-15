@@ -271,3 +271,26 @@ test('Портал: главная собирается из блоков «Се
     ]);
     assert_contains('pt-subscribe', $sub, 'подписка');
 });
+
+test('Портал: сохранение «Дизайна» не перекрашивает сайт, подложка логотипа — своя настройка', function (): void {
+    ensure_test_db();
+    reset_design_state();
+    \App\Core\Database::pdo()->exec("DELETE FROM settings WHERE `key` IN ('color_primary','color_accent','design_custom_color_primary','design_custom_color_accent','design_logo_plate','design_palette')");
+    Setting::forgetCache();
+    $before = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--brand:' . \App\Core\DesignSettings::DEFAULT_ACCENT, $before, 'умолчание портала');
+
+    // Форма присылает то, что показывает: цвета из customAppearance().
+    $shown = \App\Core\DesignSettings::customAppearance();
+    \App\Core\DesignSettings::save(['palette' => 'custom', 'container' => 'wide', 'color_primary' => $shown['color_primary'], 'color_accent' => $shown['color_accent']]);
+    Setting::forgetCache();
+    $after = portal_home_html(['lead' => null, 'feed' => []]);
+    assert_contains('--brand:' . \App\Core\DesignSettings::DEFAULT_ACCENT . ';--brand-deep:' . \App\Core\DesignSettings::DEFAULT_PRIMARY, $after, 'сохранение ширины не трогает цвета');
+
+    \App\Core\DesignSettings::save(['logo_plate' => '#123456']);
+    Setting::forgetCache();
+    assert_contains('--logo-plate:#123456', portal_home_html(['lead' => null, 'feed' => []]), 'свой цвет подложки');
+    \App\Core\DesignSettings::save(['logo_plate' => '#123456', 'logo_plate_off' => '1']);
+    Setting::forgetCache();
+    assert_true(!str_contains(portal_home_html(['lead' => null, 'feed' => []]), '--logo-plate'), '«как основной цвет» — переменной нет');
+});

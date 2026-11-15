@@ -100,7 +100,7 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
     grid-column: 1; grid-row: 1 / span 2; align-self: start;
     width: 174px; height: calc(var(--hdr-row1) + var(--hdr-row2) + 10px); margin-bottom: -10px;
     padding: 14px 16px 12px; display: flex; flex-direction: column; justify-content: center; gap: 7px;
-    background: var(--brand-deep); color: #fff; border-radius: 0 0 4px 4px;
+    background: var(--logo-plate, var(--brand-deep)); color: #fff; border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 12px rgba(7, 47, 43, .16), 0 1px 3px rgba(7, 47, 43, .1);
     position: relative; z-index: 6;
 }
