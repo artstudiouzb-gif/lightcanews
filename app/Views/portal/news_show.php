@@ -156,6 +156,7 @@ require __DIR__ . '/_top.php';
     <article class="pt-art__main" data-pt-article>
         <?php require __DIR__ . '/_crumbs.php'; ?>
         <div class="pt-tags pt-art__tags">
+            <?php if ($card['partner']): ?><span class="pt-ad-mark pt-sponsored"><?= htmlspecialchars(t('Партнёрский материал'), ENT_QUOTES) ?></span><?php endif; ?>
             <?php if ($card['badge'] !== ''): ?><span class="pt-badge"><?= htmlspecialchars((string) $card['badge'], ENT_QUOTES) ?></span><?php endif; ?>
             <?php if ($card['rubric'] !== ''): ?><a class="pt-art__badge" href="<?= htmlspecialchars((string) $card['rubric_url'], ENT_QUOTES) ?>"><?= htmlspecialchars((string) $card['rubric'], ENT_QUOTES) ?></a><?php endif; ?>
             <?php foreach ($card['country_marks'] as $countryMark): ?><span class="pt-code"><?= $countryMark ?></span><?php endforeach; ?>

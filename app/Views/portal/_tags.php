@@ -7,6 +7,7 @@
  */
 ?>
 <span class="pt-tags">
+    <?php if (!empty($tagCard['partner'])): ?><span class="pt-ad-mark pt-sponsored"><?= htmlspecialchars(t('Партнёрский материал'), ENT_QUOTES) ?></span><?php endif; ?>
     <?php if (($tagCard['badge'] ?? '') !== ''): ?><span class="pt-badge"><?= htmlspecialchars((string) $tagCard['badge'], ENT_QUOTES) ?></span><?php endif; ?>
     <?php foreach ((array) ($tagCard['country_marks'] ?? []) as $tagMark): ?><span class="pt-code"><?= $tagMark ?></span><?php endforeach; ?>
     <?php if (($tagCard['rubric'] ?? '') !== ''): ?><span class="pt-rubric"><?= htmlspecialchars((string) $tagCard['rubric'], ENT_QUOTES) ?></span><?php endif; ?>

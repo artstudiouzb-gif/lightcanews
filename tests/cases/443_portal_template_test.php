@@ -210,6 +210,50 @@ test('Портал: рекламная зона показывается тол�
     assert_contains('pt-ad--mid', $html, 'баннер встаёт между первой новостью и сеткой');
 });
 
+test('Портал: креативов в зоне несколько, у каждого свой период', function (): void {
+    $ads = \App\Core\Portal\PortalAds::class;
+    $now = (int) \App\Core\DateFormatter::format('2026-11-15 12:00', 'U');
+    $ads::save(['top' => [
+        'enabled' => '1', 'rotate' => 'interval', 'interval' => '2', 'pages' => ['home'],
+        'items' => [
+            ['title' => 'Прошедшая', 'url' => '/a', 'from' => '2026-10-01T00:00', 'to' => '2026-11-01T00:00'],
+            ['title' => 'Текущая', 'url' => '/b', 'to' => '2026-12-01T00:00'],
+            ['title' => 'Будущая', 'url' => '/c', 'from' => '2026-11-20T09:00'],
+            ['title' => '', 'url' => ''],
+        ],
+    ]]);
+    $saved = $ads::all()['top'];
+    assert_same(3, count($saved['items']), 'пустая строка репитера не креатив');
+    assert_same(5, $saved['interval'], 'интервал не меньше пяти секунд');
+    assert_same('2026-11-20 09:00', $saved['items'][2]['from']);
+    $zone = $ads::zone('top', 'home', $now);
+    assert_true($zone !== null);
+    assert_same(['Текущая', 'Будущая'], array_column($zone['items'], 'title'), 'закончившийся креатив не выводится');
+    assert_same([true, false], array_column($zone['items'], 'shown'), 'без скрипта виден идущий сейчас');
+
+    // Запись старше ротации: один креатив прямо в зоне.
+    \App\Models\Setting::set($ads::SETTING, json_encode(['mid' => ['enabled' => true, 'title' => 'Старый баннер', 'url' => '/old']]));
+    assert_same('Старый баннер', $ads::all()['mid']['items'][0]['title']);
+
+    $ads::save(['top' => ['enabled' => '1', 'items' => [
+        ['title' => 'Первый', 'url' => '/1'], ['title' => 'Второй', 'url' => '/2'],
+    ]]]);
+    $cards = Portal::cards(sample_news_rows(2), 'ru');
+    $html = portal_home_html(['lead' => $cards[0], 'grid' => [], 'also' => [], 'feed' => $cards, 'picks' => [], 'regions' => [], 'voices' => []]);
+    assert_same(2, substr_count($html, 'data-ad="top"'), 'печатаются все креативы зоны');
+    assert_same(1, substr_count($html, 'data-ad="top" data-ad-rotate="load" data-ad-interval="15" hidden'), 'виден один');
+});
+
+test('Портал: партнёрский материал помечен на карточке и в статье', function (): void {
+    $rows = sample_news_rows(2);
+    $rows[0]['is_partner'] = 1;
+    $cards = Portal::cards($rows, 'ru');
+    assert_true($cards[0]['partner'] && !$cards[1]['partner']);
+    $html = render_view('app/Views/portal/_tags.php', ['tagCard' => $cards[0], 'tagDate' => false]);
+    assert_contains('pt-sponsored', $html);
+    assert_contains('Партнёрский материал', $html);
+});
+
 test('Портал: статья сохраняет аудио, хронологию, источник, мероприятие и пресс-релиз', function (): void {
     $_SERVER['REQUEST_URI'] = '/news/probe-news-0';
     $news = sample_news_rows(1)[0] + [

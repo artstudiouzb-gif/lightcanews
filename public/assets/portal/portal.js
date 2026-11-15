@@ -312,4 +312,50 @@
         });
         box.addEventListener('close', function () { go(index); });
     });
+
+    // Реклама: креативы одной зоны — соседи с одинаковым data-ad. Страница
+    // кэшируется, поэтому «что сейчас в периоде» и «какой показать» решает
+    // браузер: случайный при каждой загрузке или по очереди через интервал.
+    // Смена по таймеру ждёт, пока курсор или фокус внутри креатива.
+    var adGroups = {};
+    document.querySelectorAll('[data-ad]').forEach(function (el) {
+        var key = el.getAttribute('data-ad');
+        (adGroups[key] = adGroups[key] || []).push(el);
+    });
+    Object.keys(adGroups).forEach(function (key) {
+        var all = adGroups[key];
+        var now = Date.now() / 1000;
+        var live = all.filter(function (el) {
+            var from = Number(el.getAttribute('data-ad-from') || 0);
+            var to = Number(el.getAttribute('data-ad-to') || 0);
+            return (!from || from <= now) && (!to || to > now);
+        });
+        var show = function (target) {
+            all.forEach(function (el) { el.hidden = el !== target; });
+        };
+        if (!live.length) { show(null); return; }
+        var index = Math.floor(Math.random() * live.length);
+        show(live[index]);
+        if (live.length < 2 || all[0].getAttribute('data-ad-rotate') !== 'interval') { return; }
+        var seconds = Math.max(5, Number(all[0].getAttribute('data-ad-interval')) || 15);
+        var paused = false;
+        live.forEach(function (el) {
+            el.addEventListener('mouseenter', function () { paused = true; });
+            el.addEventListener('mouseleave', function () { paused = false; });
+            el.addEventListener('focusin', function () { paused = true; });
+            el.addEventListener('focusout', function () { paused = false; });
+        });
+        window.setInterval(function () {
+            if (paused || document.hidden) { return; }
+            var t = Date.now() / 1000;
+            var next = live.filter(function (el) {
+                var to = Number(el.getAttribute('data-ad-to') || 0);
+                return !to || to > t;
+            });
+            if (!next.length) { show(null); return; }
+            index = (index + 1) % next.length;
+            live = next;
+            show(live[index]);
+        }, seconds * 1000);
+    });
 })();

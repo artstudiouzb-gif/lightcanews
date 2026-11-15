@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS news (
     source_note     VARCHAR(255) NULL COMMENT 'подпись источника (пресс-служба)',
     views           INT UNSIGNED NOT NULL DEFAULT 0,
     is_editor_pick  TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'выбор редакции, общий для группы перевода',
+    is_partner      TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'партнёрский материал, общий для группы перевода',
     layout_type     ENUM('standard','gallery','video','side_image','premium','card') NOT NULL DEFAULT 'standard',
     sidebar_layout  ENUM('no_sidebar','left_sidebar','right_sidebar') NOT NULL DEFAULT 'right_sidebar',
     focal_x         TINYINT UNSIGNED NULL COMMENT 'фокальная точка обложки X, %',
@@ -1254,7 +1255,8 @@ INSERT INTO migrations (filename) VALUES
     ('2026_10_22_drop_team_and_org_structure.sql'),
     ('2026_10_23_news_country_axis.sql'),
     ('2026_10_24_news_editor_pick.sql'),
-    ('2026_11_08_drop_projects.sql')
+    ('2026_11_08_drop_projects.sql'),
+    ('2026_11_15_news_partner.sql')
 ON DUPLICATE KEY UPDATE filename = filename;
 
 CREATE TABLE IF NOT EXISTS search_log (

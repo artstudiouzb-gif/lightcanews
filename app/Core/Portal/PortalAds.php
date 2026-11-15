@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Portal;
 
+use App\Core\DateFormatter;
 use App\Core\UrlGuard;
 use App\Models\Setting;
 
@@ -11,6 +12,10 @@ use App\Models\Setting;
  * Рекламные зоны шаблона портала. Мест ровно пять, и они объявлены здесь
  * одним списком: форма админки рисует поля по нему, вьюхи спрашивают зону по
  * ключу. Хранятся одной настройкой JSON — записей пять, индексировать нечего.
+ *
+ * В зоне может быть несколько креативов (`items`), у каждого — свой период
+ * показа. Когда в периоде их несколько, они сменяются: случайный при каждой
+ * загрузке или по очереди через заданное время (`rotate`, `interval`).
  *
  * Выключенная или недозаполненная зона не печатается вовсе: пустая рамка с
  * подписью «Реклама» читается как поломка страницы. Ссылка рекламы уходит с
@@ -67,11 +72,28 @@ final class PortalAds
         ],
     ];
 
-    /** Поля зоны и их предел длины в символах. */
+    /** Поля креатива и их предел длины в символах. */
     public const FIELDS = ['sponsor' => 60, 'title' => 160, 'text' => 240, 'cta' => 40, 'url' => 500, 'image' => 500];
 
     /**
-     * Все зоны как есть (для формы): у каждой ключ enabled и поля.
+     * Как сменяются креативы зоны, если в периоде их несколько: случайный при
+     * каждой загрузке страницы или по очереди через заданное число секунд.
+     */
+    public const ROTATIONS = [
+        'load' => 'Случайный при каждой загрузке страницы',
+        'interval' => 'По очереди, через заданное время',
+    ];
+
+    /** Креативов в зоне: больше — это уже не ротация, а лотерея. */
+    public const MAX_ITEMS = 10;
+
+    public const INTERVAL_MIN = 5;
+    public const INTERVAL_MAX = 300;
+    public const INTERVAL_DEFAULT = 15;
+
+    /**
+     * Все зоны как есть (для формы): у каждой enabled, pages, rotate,
+     * interval и список креативов.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -91,28 +113,56 @@ final class PortalAds
     /**
      * Зона для вывода или null, если показывать нечего.
      *
+     * В `items` — креативы, чей период ещё не закончился: и идущие сейчас, и
+     * будущие. Страница кэшируется, поэтому выбор «что сейчас» делает браузер
+     * (`portal.js` по `data-ad-from/to`), а сервер лишь отмечает `active` —
+     * его видно без скрипта. Ни одного годного креатива — null.
+     *
      * @return array<string, mixed>|null
      */
-    public static function zone(string $key, string $place = 'other'): ?array
+    public static function zone(string $key, string $place = 'other', ?int $now = null): ?array
     {
         if (!isset(self::ZONES[$key])) {
             return null;
         }
         $zone = self::all()[$key];
-        if (!in_array($place, $zone['pages'], true)) {
+        if (!$zone['enabled'] || !in_array($place, $zone['pages'], true)) {
             return null;
         }
-        if (!$zone['enabled'] || $zone['title'] === '' || $zone['url'] === '') {
+        $now ??= time();
+        $items = [];
+        foreach ($zone['items'] as $item) {
+            if ($item['title'] === '' || $item['url'] === '' || ($key === 'feed' && $item['image'] === '')) {
+                continue;
+            }
+            $to = self::stamp($item['to']);
+            if ($to !== null && $to <= $now) {
+                continue;
+            }
+            $from = self::stamp($item['from']);
+            $item['from_ts'] = $from;
+            $item['to_ts'] = $to;
+            $item['active'] = $from === null || $from <= $now;
+            $item['external'] = (bool) preg_match('~^https?://~i', (string) $item['url']);
+            $items[] = $item;
+        }
+        if ($items === []) {
             return null;
         }
-        if (self::ZONES[$key]['image'] && $key === 'feed' && $zone['image'] === '') {
-            return null;
+        // Без скрипта виден ровно один креатив — первый идущий сейчас.
+        $shown = false;
+        foreach ($items as $i => $item) {
+            $items[$i]['shown'] = !$shown && $item['active'];
+            $shown = $shown || $item['active'];
         }
-        $zone['key'] = $key;
-        $zone['mark'] = self::ZONES[$key]['mark'];
-        $zone['external'] = (bool) preg_match('~^https?://~i', (string) $zone['url']);
 
-        return $zone;
+        return [
+            'key' => $key,
+            'mark' => self::ZONES[$key]['mark'],
+            'rotate' => $zone['rotate'],
+            'interval' => $zone['interval'],
+            'items' => $items,
+        ];
     }
 
     /** @param array<string, mixed> $zones присланное формой: ключ зоны → поля */
@@ -123,6 +173,17 @@ final class PortalAds
             $clean[$key] = self::normalize($key, is_array($zones[$key] ?? null) ? $zones[$key] : []);
         }
         Setting::set(self::SETTING, json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR));
+    }
+
+    /** Отметка времени начала/конца показа; пусто — без границы. */
+    public static function stamp(string $value): ?int
+    {
+        if ($value === '') {
+            return null;
+        }
+        $ts = DateFormatter::format($value, 'U');
+
+        return $ts === '' ? null : (int) $ts;
     }
 
     /**
@@ -142,18 +203,60 @@ final class PortalAds
                 static fn (string $place): bool => in_array($place, $input['pages'], true)
             ))
             : self::ZONES[$key]['default'];
+        $rotate = $input['rotate'] ?? 'load';
+        $zone['rotate'] = is_string($rotate) && isset(self::ROTATIONS[$rotate]) ? $rotate : 'load';
+        $interval = is_numeric($input['interval'] ?? null) ? (int) $input['interval'] : self::INTERVAL_DEFAULT;
+        $zone['interval'] = max(self::INTERVAL_MIN, min(self::INTERVAL_MAX, $interval));
+
+        // Запись старше ротации хранила один креатив прямо в зоне.
+        $rawItems = is_array($input['items'] ?? null) ? $input['items'] : [array_intersect_key($input, self::FIELDS)];
+        $items = [];
+        foreach ($rawItems as $raw) {
+            if (!is_array($raw)) {
+                continue;
+            }
+            $item = self::item($raw);
+            // Пустая строка репитера — не креатив.
+            if ($item['title'] === '' && $item['url'] === '' && $item['image'] === '' && $item['sponsor'] === '') {
+                continue;
+            }
+            $items[] = $item;
+            if (count($items) >= self::MAX_ITEMS) {
+                break;
+            }
+        }
+        $zone['items'] = $items;
+
+        return $zone;
+    }
+
+    /**
+     * @param array<mixed> $raw
+     * @return array<string, string>
+     */
+    private static function item(array $raw): array
+    {
+        $item = [];
         foreach (self::FIELDS as $field => $limit) {
-            $value = $input[$field] ?? '';
+            $value = $raw[$field] ?? '';
             $value = is_string($value) ? trim(strip_tags($value)) : '';
-            $zone[$field] = mb_substr($value, 0, $limit);
+            $item[$field] = mb_substr($value, 0, $limit);
         }
         // Ссылки идут в href: javascript: и прочее чужое отбрасывается.
         foreach (['url', 'image'] as $field) {
-            if ($zone[$field] !== '' && !UrlGuard::isSafeLink($zone[$field])) {
-                $zone[$field] = '';
+            if ($item[$field] !== '' && !UrlGuard::isSafeLink($item[$field])) {
+                $item[$field] = '';
             }
         }
+        // Период показа: поле формы datetime-local («2026-11-20T09:00»).
+        foreach (['from', 'to'] as $field) {
+            $value = $raw[$field] ?? '';
+            $value = is_string($value) ? trim($value) : '';
+            $item[$field] = preg_match('/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/', $value, $m) === 1 && self::stamp($m[1] . ' ' . $m[2]) !== null
+                ? $m[1] . ' ' . $m[2]
+                : '';
+        }
 
-        return $zone;
+        return $item;
     }
 }
