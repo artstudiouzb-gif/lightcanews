@@ -84,7 +84,7 @@ require __DIR__ . '/../layout/header.php';
 
         <div class="news-import__notice" data-category-link hidden>
             <?= AdminUi::icon('category', 20) ?>
-            <div><strong>Рубрик в файле: <span data-category-count>0</span></strong><span>Новости уже перенесены без разделов? Свяжите их с рубриками старого сайта разом, без переноса заново. <a href="/admin/news/import/categories">Связать рубрики</a></span></div>
+            <div><strong>Рубрик в файле: <span data-category-count>0</span></strong><span>Новости уже перенесены, но языки перепутаны или нет разделов? Исправьте языки и свяжите рубрики разом, без переноса заново. <a href="/admin/news/import/categories">Языки и рубрики</a></span></div>
         </div>
 
         <div class="news-import__options" data-import-options hidden>

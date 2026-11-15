@@ -104,6 +104,12 @@ final class LegacyWxrImporter
                     $thumbId = (int) $meta->meta_value;
                 } elseif ($key === '_yoast_wpseo_primary_category') {
                     $primaryTerm = (int) $meta->meta_value;
+                } elseif ($key === '_wpml_import_language_code' && $lang === '') {
+                    // Дополнение WPML «Export and Import» пишет язык и группу
+                    // перевода в поля записи — это точнее любой догадки.
+                    $lang = strtolower(trim((string) $meta->meta_value));
+                } elseif ($key === '_wpml_import_translation_group' && $group === '') {
+                    $group = 'wpml:' . trim((string) $meta->meta_value);
                 }
             }
             // Главная рубрика («Primary» в старой админке) идёт первой: рубрика
@@ -114,11 +120,11 @@ final class LegacyWxrImporter
             }
 
             $link = (string) $item->link;
+            $body = (string) $item->children($content)->encoded;
             if ($lang === '') {
-                $lang = self::inferWpmlLanguage($link, $categoryLabels);
+                $lang = self::inferWpmlLanguage($link, $categoryLabels, (string) $item->title . ' ' . $body);
             }
 
-            $body = (string) $item->children($content)->encoded;
             $posts[] = [
                 'id' => $id,
                 'title' => (string) $item->title,
@@ -577,14 +583,32 @@ final class LegacyWxrImporter
     }
 
     /** @param list<string> $categories */
-    private static function inferWpmlLanguage(string $link, array $categories): string
+    /**
+     * Язык записи без явной пометки. Обычный экспорт WPML языка не пишет вовсе,
+     * а адрес помечает его, только если язык задан каталогом (`/ru/`) или
+     * параметром (`?lang=ru`). Прежде всё, что не начиналось с `/ru/`,
+     * считалось узбекским — и русские записи сайта, где русский язык живёт без
+     * префикса, приехали узбекскими, а переводы не сложились в пары (у пары
+     * должны быть разные языки). Поэтому без пометки в адресе язык читается
+     * по тексту: русский и узбекский различаются письменностью, а узбекская
+     * кириллица — буквами ў қ ғ ҳ, которых в русском нет.
+     *
+     * @param list<string> $categories
+     */
+    public static function inferWpmlLanguage(string $link, array $categories, string $text = ''): string
     {
         $path = strtolower((string) parse_url($link, PHP_URL_PATH));
-        if (preg_match('#^/ru(?:/|$)#', $path)) {
-            return 'ru';
+        if (preg_match('#^/(ru|en|uz)(?:/|$)#', $path, $m)) {
+            return $m[1];
         }
-        if (preg_match('#^/en(?:/|$)#', $path)) {
-            return 'en';
+        parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+        $queryLang = is_string($query['lang'] ?? null) ? strtolower($query['lang']) : '';
+        if (in_array($queryLang, ['ru', 'uz', 'en'], true)) {
+            return $queryLang;
+        }
+        $byText = self::textLanguage($text);
+        if ($byText !== '') {
+            return $byText;
         }
         foreach ($categories as $label) {
             $normalized = mb_strtolower(trim($label));
@@ -595,6 +619,25 @@ final class LegacyWxrImporter
                 return 'en';
             }
         }
+        return 'uz';
+    }
+
+    /** Язык по письменности текста; пусто — букв слишком мало, чтобы судить. */
+    public static function textLanguage(string $text): string
+    {
+        $plain = html_entity_decode(strip_tags(preg_replace('/\[[^\]]*\]/u', ' ', $text) ?? $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $plain = mb_substr($plain, 0, 4000);
+        $cyr = preg_match_all('/\p{Cyrillic}/u', $plain);
+        $lat = preg_match_all('/[A-Za-z]/', $plain);
+        if ($cyr + $lat < 20) {
+            return '';
+        }
+        if ($cyr > $lat) {
+            $uzCyr = preg_match_all('/[ўқғҳЎҚҒҲ]/u', $plain);
+
+            return $uzCyr * 200 >= $cyr ? 'uz' : 'ru';
+        }
+
         return 'uz';
     }
 

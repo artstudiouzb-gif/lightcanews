@@ -32,6 +32,18 @@ final class UzCyrillic
     }
 
     /**
+     * Письменность узбекских страниц для посетителя, который её не выбирал.
+     * У портала узбекский — кириллицей (решение владельца), латиница — по
+     * выбору в переключателе; выбор запоминается и главнее умолчания.
+     */
+    public const DEFAULT_SETTING = 'uz_script_default';
+
+    public static function defaultScript(): string
+    {
+        return self::enabled() && \App\Models\Setting::get(self::DEFAULT_SETTING, 'cyrl') !== 'latn' ? 'cyrl' : 'latn';
+    }
+
+    /**
      * Знаки, которыми латиница ставит и кавычки: в конце слова такой знак —
      * кавычка, а не tutuq belgisi.
      */
