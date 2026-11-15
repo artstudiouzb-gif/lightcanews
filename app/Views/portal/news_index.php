@@ -57,7 +57,7 @@ require __DIR__ . '/_top.php';
 <div class="pt-wrap pt-sec pt-listing">
     <?php require __DIR__ . '/_crumbs.php'; ?>
     <header class="pt-sec-head pt-sec-head--page">
-        <h1><?php if ($isCountry): ?><span class="pt-code pt-code--lg"><?= htmlspecialchars(Portal::countryCode($section), ENT_QUOTES) ?></span> <?php endif; ?><?= htmlspecialchars($sectionTitle, ENT_QUOTES) ?></h1>
+        <h1><?php if ($isCountry && Portal::countryMark($section) !== ''): ?><span class="pt-code pt-code--lg"><?= Portal::countryMark($section) ?></span> <?php endif; ?><?= htmlspecialchars($sectionTitle, ENT_QUOTES) ?></h1>
     </header>
     <?php if ($sectionLead !== ''): ?><p class="pt-listing__lead"><?= htmlspecialchars($sectionLead, ENT_QUOTES) ?></p><?php endif; ?>
 
@@ -68,7 +68,7 @@ require __DIR__ . '/_top.php';
         <?php endif; ?>
         <?php foreach ($filters as $filter): ?>
             <a href="<?= htmlspecialchars(Locale::url(NewsCategory::path($filter)), ENT_QUOTES) ?>"<?= (int) $filter['id'] === $sectionId ? ' aria-current="page"' : '' ?>>
-                <?php if ($isCountry): ?><b><?= htmlspecialchars(Portal::countryCode($filter), ENT_QUOTES) ?></b><?php endif; ?><?= htmlspecialchars((string) $filter['name'], ENT_QUOTES) ?>
+                <?php if ($isCountry && Portal::countryMark($filter) !== ''): ?><b><?= Portal::countryMark($filter) ?></b><?php endif; ?><?= htmlspecialchars((string) $filter['name'], ENT_QUOTES) ?>
             </a>
         <?php endforeach; ?>
     </nav>
