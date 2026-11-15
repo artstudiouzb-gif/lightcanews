@@ -458,7 +458,7 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
    задана заранее, чтобы зона не сдвигала страницу при загрузке. */
 .pt-ad-mark { font-size: 10px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
 /* Метка партнёрского материала у новости: рамкой, чтобы не спутать с рубрикой. */
-.pt-sponsored { display: inline-flex; align-items: center; padding: 2px 6px; border: 1px solid var(--rule); border-radius: var(--r); }
+.pt-sponsored { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 6px; border: 1px solid var(--rule); border-radius: var(--r); }
 .pt-ad-band { background: var(--paper); border-bottom: 1px solid var(--rule); padding-block: 14px 10px; }
 .pt-ad--mid { padding-block: 22px; }
 .pt-ad__meta { margin: 0 0 5px; display: flex; justify-content: flex-end; }
