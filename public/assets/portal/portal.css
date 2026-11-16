@@ -65,6 +65,9 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 .pt h1, .pt h2, .pt h3 { margin: 0; }
 
+/* Спрайт иконок встраивается сразу после <body>: строчный svg 0×0 всё равно
+   занимает строку текста и сдвигал шапку вниз. */
+.tabler-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 .pt-skip { position: absolute; left: -9999px; top: 8px; z-index: 999; padding: 10px 14px; background: var(--brand-deep); color: #fff; font-weight: 700; }
 .pt-skip:focus { left: 16px; }
 .csrf-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
