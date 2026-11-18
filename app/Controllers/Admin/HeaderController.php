@@ -215,6 +215,8 @@ final class HeaderController
             'logo_mode' => $in->oneOf('portal_logo_mode', HeaderConfig::PORTAL_LOGO_MODES, 'text'),
             'nav' => $in->oneOf('portal_nav', array_keys(HeaderConfig::PORTAL_NAV), 'rubrics'),
             'weather_city' => $in->oneOf('portal_weather_city', array_keys(\App\Core\Weather::CITIES), \App\Core\Weather::DEFAULT_CITY),
+            'date_format' => $in->oneOf('portal_date_format', array_keys(HeaderConfig::PORTAL_DATE_FORMATS), 'short'),
+            'weather_format' => $in->oneOf('portal_weather_format', array_keys(HeaderConfig::PORTAL_WEATHER_FORMATS), 'full'),
         ];
         foreach (array_keys(HeaderConfig::PORTAL_TOGGLES) as $toggle) {
             $out[$toggle] = $in->bool('portal_' . $toggle);

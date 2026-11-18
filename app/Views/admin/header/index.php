@@ -210,6 +210,22 @@ $heightSelect = function (string $name, string $current): string {
                     </select>
                     <span class="form-hint">Погода рядом с датой, источник — Open-Meteo. Обновляется раз в час сама, после захода посетителя на сайт.</span>
                 </div>
+                <div class="form-field">
+                    <label for="portal_date_format">Вид даты</label>
+                    <select id="portal_date_format" name="portal_date_format">
+                        <?php foreach (\App\Core\HeaderConfig::PORTAL_DATE_FORMATS as $optKey => $optLabel): ?>
+                            <option value="<?= $optKey ?>"<?= ($portalCfg['date_format'] ?? 'short') === $optKey ? ' selected' : '' ?>><?= htmlspecialchars($optLabel, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="portal_weather_format">Вид погоды</label>
+                    <select id="portal_weather_format" name="portal_weather_format">
+                        <?php foreach (\App\Core\HeaderConfig::PORTAL_WEATHER_FORMATS as $optKey => $optLabel): ?>
+                            <option value="<?= $optKey ?>"<?= ($portalCfg['weather_format'] ?? 'full') === $optKey ? ' selected' : '' ?>><?= htmlspecialchars($optLabel, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <fieldset class="form-field">
                     <legend>Показывать в шапке</legend>
                     <?php foreach (\App\Core\HeaderConfig::PORTAL_TOGGLES as $toggleKey => $toggleLabel): ?>

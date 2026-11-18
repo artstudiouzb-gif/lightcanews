@@ -140,12 +140,15 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-countries > a { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 5px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); font-size: .8125rem; font-weight: 600; }
 .pt-countries > a b { font-size: .68rem; background: var(--brand-soft); color: var(--link); padding: 2px 5px; border-radius: 1px; }
 .pt-countries > a:hover, .pt-countries > a[aria-current] { border-color: var(--link); background: var(--brand-soft); }
-.pt-countries__date { margin-left: auto; padding-left: 14px; border-left: 1px solid var(--rule); font-size: .8rem; font-weight: 600; color: var(--ink-2); }
+/* Дата и погода стоят у правого края и не уезжают вместе с прокруткой стран:
+   в конце прокручиваемой полосы их обрезал край («18 ноября, Ч»). */
+.pt-countries__meta { margin-left: auto; flex-shrink: 0; position: sticky; right: 0; display: inline-flex; align-items: center; align-self: stretch; padding-left: 10px; background: var(--band); }
+.pt-countries__date { padding-left: 14px; border-left: 1px solid var(--rule); font-size: .8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
 .pt-countries__weather { display: inline-flex; align-items: center; gap: 5px; padding-left: 14px; font-size: .8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
-.pt-countries__weather--solo { margin-left: auto; border-left: 1px solid var(--rule); }
+.pt-countries__weather--solo { border-left: 1px solid var(--rule); }
 .pt-countries__weather b { color: var(--ink); font-weight: 800; }
 .pt-countries__wicon { color: var(--link); }
-@media (max-width: 1120px) { .pt-countries__date, .pt-countries__weather { display: none; } }
+@media (max-width: 1120px) { .pt-countries__meta { display: none; } }
 
 .pt-search { border: 1px solid var(--rule); border-top: 3px solid var(--brand); border-radius: var(--r); background: var(--surface); color: var(--ink); max-width: 640px; width: calc(100% - 32px); padding: 0; margin: 72px auto auto; box-shadow: 0 24px 60px rgba(12, 19, 18, .28); }
 .pt-search::backdrop { background: rgba(12, 19, 18, .55); }

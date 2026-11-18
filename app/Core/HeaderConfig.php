@@ -55,6 +55,22 @@ final class HeaderConfig
         'both' => 'Основное меню, затем рубрики',
     ];
 
+    /** Вид даты в полосе стран: значение => подпись в админке. */
+    public const PORTAL_DATE_FORMATS = [
+        'short' => 'Дата и день недели коротко — 18 ноября, Ср',
+        'long' => 'Дата и день недели полностью — 18 ноября, среда',
+        'weekday_first' => 'День недели впереди — Среда, 18 ноября',
+        'date' => 'Только дата — 18 ноября',
+        'numeric' => 'Числами — 18.11.2026',
+    ];
+
+    /** Вид погоды рядом с датой: значение => подпись в админке. */
+    public const PORTAL_WEATHER_FORMATS = [
+        'full' => 'Город, значок и температура',
+        'icon' => 'Значок и температура',
+        'temp' => 'Только температура',
+    ];
+
     /** Элементы шапки портала, которые можно скрыть: ключ => подпись. */
     public const PORTAL_TOGGLES = [
         'show_countries' => 'Полоса стран',
@@ -91,6 +107,8 @@ final class HeaderConfig
             'nav' => 'rubrics',
             // Город погоды рядом с датой (App\Core\Weather::CITIES).
             'weather_city' => 'tashkent',
+            // Вид даты и погоды в полосе стран (PORTAL_DATE_FORMATS / PORTAL_WEATHER_FORMATS).
+            'date_format' => 'short', 'weather_format' => 'full',
             // Что показывать в шапке портала — раскладку задаёт шаблон.
             'show_countries' => true, 'show_date' => true, 'show_weather' => true, 'show_lang' => true,
             'show_search' => true, 'show_theme' => true,
@@ -460,6 +478,8 @@ final class HeaderConfig
             'logo_mode' => in_array($portal['logo_mode'] ?? '', self::PORTAL_LOGO_MODES, true) ? (string) $portal['logo_mode'] : 'text',
             'nav' => isset(self::PORTAL_NAV[$portal['nav'] ?? '']) ? (string) $portal['nav'] : 'rubrics',
             'weather_city' => isset(Weather::CITIES[$portal['weather_city'] ?? '']) ? (string) $portal['weather_city'] : Weather::DEFAULT_CITY,
+            'date_format' => isset(self::PORTAL_DATE_FORMATS[$portal['date_format'] ?? '']) ? (string) $portal['date_format'] : 'short',
+            'weather_format' => isset(self::PORTAL_WEATHER_FORMATS[$portal['weather_format'] ?? '']) ? (string) $portal['weather_format'] : 'full',
         ];
         // Переключатели: ключа нет (запись старше настройки) — как по умолчанию.
         foreach (self::PORTAL_TOGGLES as $toggle => $label) {

@@ -268,9 +268,12 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                 <?php $countryUrl = Locale::url(NewsCategory::path($country)); ?>
                 <a href="<?= htmlspecialchars($countryUrl, ENT_QUOTES) ?>"<?= $isCurrent($countryUrl) ? ' aria-current="page"' : '' ?>><?php $countryMark = Portal::countryMark($country); ?><?php if ($countryMark !== ''): ?><b><?= $countryMark ?></b><?php endif; ?><?= htmlspecialchars((string) $country['name'], ENT_QUOTES) ?></a>
             <?php endforeach; ?>
-            <?php if ($hdrShow('show_date')): ?><span class="pt-countries__date"><?php $ptDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']; ?><?= htmlspecialchars(Portal::date(\App\Core\DateFormatter::format('now', 'Y-m-d'), $currentLang) . ', ' . t($ptDays[(int) \App\Core\DateFormatter::format('now', 'N') - 1]), ENT_QUOTES) ?></span><?php endif; ?>
             <?php $ptWeather = $hdrShow('show_weather') ? \App\Core\Weather::current((string) ($hdrPortal['weather_city'] ?? '')) : null; ?>
-            <?php if ($ptWeather !== null): ?><span class="pt-countries__weather<?= $hdrShow('show_date') ? '' : ' pt-countries__weather--solo' ?>" title="<?= htmlspecialchars(t($ptWeather['label']), ENT_QUOTES) ?>"><?= htmlspecialchars(t($ptWeather['city']), ENT_QUOTES) ?> <?= \App\Core\Icon::render($ptWeather['icon'], 16, 'pt-countries__wicon') ?><span class="pt-visually-hidden"><?= htmlspecialchars(t($ptWeather['label']), ENT_QUOTES) ?>,</span> <b><?= \App\Core\Weather::format($ptWeather['temp']) ?></b></span><?php endif; ?>
+            <?php $ptWeatherFormat = (string) ($hdrPortal['weather_format'] ?? 'full'); ?>
+            <?php if ($hdrShow('show_date') || $ptWeather !== null): ?><span class="pt-countries__meta">
+            <?php if ($hdrShow('show_date')): ?><span class="pt-countries__date"><?= htmlspecialchars(Portal::headerDate((string) ($hdrPortal['date_format'] ?? 'short'), $currentLang), ENT_QUOTES) ?></span><?php endif; ?>
+            <?php if ($ptWeather !== null): ?><span class="pt-countries__weather<?= $hdrShow('show_date') ? '' : ' pt-countries__weather--solo' ?>" title="<?= htmlspecialchars(t($ptWeather['city']) . ': ' . t($ptWeather['label']), ENT_QUOTES) ?>"><?php if ($ptWeatherFormat === 'full'): ?><?= htmlspecialchars(t($ptWeather['city']), ENT_QUOTES) ?> <?php else: ?><span class="pt-visually-hidden"><?= htmlspecialchars(t($ptWeather['city']), ENT_QUOTES) ?>,</span><?php endif; ?><?php if ($ptWeatherFormat !== 'temp'): ?><?= \App\Core\Icon::render($ptWeather['icon'], 16, 'pt-countries__wicon') ?><?php endif; ?><span class="pt-visually-hidden"><?= htmlspecialchars(t($ptWeather['label']), ENT_QUOTES) ?>,</span> <b><?= \App\Core\Weather::format($ptWeather['temp']) ?></b></span><?php endif; ?>
+            </span><?php endif; ?>
         </nav>
         <?php endif; ?>
     </div>
