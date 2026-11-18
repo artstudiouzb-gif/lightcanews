@@ -35,6 +35,10 @@ jobs:
           CLEAN_DIR="$(mktemp -d)"
           git archive HEAD | tar -x -C "${CLEAN_DIR}"
 
+          # .cpanel.yml исключён из git archive (.gitattributes, чтобы не попадать в ZIP-релиз),
+          # но cPanel Git Version Control без него не может деплоить: кладём его явно.
+          if [ -f .cpanel.yml ]; then cp .cpanel.yml "${CLEAN_DIR}/.cpanel.yml"; fi
+
           # Write release version info
           SHORT_SHA="$(git rev-parse --short=12 HEAD)"
           mkdir -p "${CLEAN_DIR}/storage"
