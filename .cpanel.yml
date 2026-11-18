@@ -1,0 +1,7 @@
+---
+# cPanel Git Version Control: копирует код из репозитория на сайт.
+# Живые файлы (config.php, storage, загрузки) не трогаются.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/podiumvi/new.lightca.news/
+    - /bin/rsync -rlt --exclude='.git' --exclude='.github' --exclude='.cpanel.yml' --exclude='config/config.php' --exclude='storage/installed.lock' --exclude='storage/admin-entry.json' --exclude='storage/logs/' --exclude='storage/cache/' --exclude='storage/backups/' --exclude='storage/sessions/' --exclude='storage/imports/' --exclude='storage/protected_uploads/' --exclude='public/uploads/' ./ $DEPLOYPATH
