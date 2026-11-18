@@ -219,6 +219,30 @@ final class Portal
         return trim((string) preg_replace('/[,\s]*' . preg_quote($year, '/') . '(-yil| г\.)?$/u', '', $long));
     }
 
+    /** Дни недели по номеру ISO (1 = понедельник): коротко и полностью, ключи словаря t(). */
+    private const WEEKDAYS_SHORT = [1 => 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    private const WEEKDAYS_LONG = [1 => 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'];
+
+    /**
+     * Сегодняшняя дата для полосы стран в выбранном виде
+     * (HeaderConfig::PORTAL_DATE_FORMATS), ташкентское время.
+     */
+    public static function headerDate(string $format, string $lang, string $now = 'now'): string
+    {
+        $date = self::date(DateFormatter::format($now, 'Y-m-d'), $lang);
+        $n = (int) DateFormatter::format($now, 'N');
+        $short = t(self::WEEKDAYS_SHORT[$n] ?? 'Пн');
+        $long = t(self::WEEKDAYS_LONG[$n] ?? 'понедельник');
+
+        return match ($format) {
+            'long' => $date . ', ' . $long,
+            'weekday_first' => mb_strtoupper(mb_substr($long, 0, 1)) . mb_substr($long, 1) . ', ' . $date,
+            'date' => $date,
+            'numeric' => DateFormatter::format($now, 'd.m.Y'),
+            default => $date . ', ' . $short,
+        };
+    }
+
     public static function time(string $published): string
     {
         return $published !== '' ? DateFormatter::format($published, 'H:i') : '';
