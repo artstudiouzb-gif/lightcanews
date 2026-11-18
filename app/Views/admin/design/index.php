@@ -200,6 +200,17 @@ foreach ($options as $key => $opt) {
             </div>
             <div class="design-opt">
                 <div class="design-opt__label">
+                    <span>Буквица в статье</span>
+                    <small>Крупная цветная первая буква первого абзаца новости.</small>
+                </div>
+                <div class="design-opt__choices">
+                    <?php $dropCapOn = \App\Core\DesignSettings::portalDropCap(); ?>
+                    <label class="form-check"><input type="radio" name="portal_dropcap" value="1" <?= $dropCapOn ? 'checked' : '' ?>> Показывать</label>
+                    <label class="form-check"><input type="radio" name="portal_dropcap" value="0" <?= $dropCapOn ? '' : 'checked' ?>> Обычная первая буква</label>
+                </div>
+            </div>
+            <div class="design-opt">
+                <div class="design-opt__label">
                     <span>Ширина ленты новостей на главной</span>
                     <small>Правая колонка «Лента новостей» на первом экране портала, от 260 до 560 px. Пусто — треть ширины, как в прототипе.</small>
                 </div>
