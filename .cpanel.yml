@@ -1,0 +1,8 @@
+---
+# cPanel Git Version Control: копирует код из репозитория на сайт.
+# В архив попадают только файлы из git, поэтому config/config.php,
+# storage (логи, кэш, сессии) и public/uploads на сервере не трогаются.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/podiumvi/new.lightca.news/
+    - git archive --format=tar HEAD | tar -x -C $DEPLOYPATH --exclude=.cpanel.yml --exclude=.github
