@@ -314,6 +314,12 @@ final class DesignSettings
      * Ширина колонки «Лента новостей» на главной портала (260–560 px): пусто —
      * треть первого экрана, как в прототипе. Остальное занимает главное.
      */
+    /** Буквица — крупная первая буква текста статьи портала (по умолчанию включена). */
+    public static function portalDropCap(): bool
+    {
+        return (string) Setting::get('design_portal_dropcap', '1') !== '0';
+    }
+
     public static function portalFeedWidth(): string
     {
         return CssValue::pixels((string) Setting::get('design_portal_feed_width', ''), 260, 560);
@@ -632,6 +638,9 @@ final class DesignSettings
         if (array_key_exists('country_codes', $input)) {
             $mode = (string) $input['country_codes'];
             Setting::set('design_country_codes', isset(\App\Core\Portal\Portal::COUNTRY_MARKS[$mode]) ? $mode : 'codes');
+        }
+        if (array_key_exists('portal_dropcap', $input)) {
+            Setting::set('design_portal_dropcap', (string) $input['portal_dropcap'] === '0' ? '0' : '1');
         }
         if (array_key_exists('portal_feed_width', $input)) {
             Setting::set('design_portal_feed_width', CssValue::pixels((string) $input['portal_feed_width'], 260, 560));

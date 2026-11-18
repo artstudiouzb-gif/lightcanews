@@ -208,7 +208,7 @@ require __DIR__ . '/_top.php';
             </section>
         <?php endif; ?>
 
-        <div class="pt-art__body rich-content"><?= $contentHtml ?></div>
+        <div class="pt-art__body<?= \App\Core\DesignSettings::portalDropCap() ? ' pt-art__body--dropcap' : '' ?> rich-content"><?= $contentHtml ?></div>
         <?php if ($sourceNote !== ''): ?><p class="pt-art__source"><?= htmlspecialchars($sourceNote, ENT_QUOTES) ?></p><?php endif; ?>
 
         <?php if ($timeline !== []): ?>

@@ -402,7 +402,7 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-impact__list { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: .95rem; line-height: 1.5; }
 .pt-art__body { max-width: none; }
 .pt-art__body h2, .pt-art__body h3 { scroll-margin-top: calc(var(--hdr-row1) + var(--hdr-row2) + 28px); }
-.pt-art__body > p:first-of-type::first-letter { float: left; font-size: 3.1rem; line-height: .85; padding: 4px 10px 0 0; font-weight: 700; color: var(--link); }
+.pt-art__body--dropcap > p:first-of-type::first-letter { float: left; font-size: 3.1rem; line-height: .85; padding: 4px 10px 0 0; font-weight: 700; color: var(--link); }
 .pt-art__docs { margin-top: 24px; padding: 16px 18px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); }
 .pt-art__docs-title { margin: 0 0 8px; font-size: 1rem; font-weight: 800; }
 .pt-art__docs ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
