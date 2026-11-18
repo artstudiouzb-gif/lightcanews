@@ -7,6 +7,9 @@ use App\Core\Csrf;
 use App\Core\HeaderConfig;
 
 $pageTitle = 'Конструктор шапки сайта';
+$hvariant = $config['variant'] ?? 'portal';
+$portalCfg = (array) ($config['portal'] ?? []);
+$isPortal = $hvariant === 'portal';
 $activeNav = 'header';
 require __DIR__ . '/../layout/header.php';
 
@@ -97,7 +100,7 @@ $heightSelect = function (string $name, string $current): string {
     <div class="hdr-live-preview">
         <div class="hdr-live-preview__head">
             <span><?= AdminUi::icon('eye', 16) ?> Схематичный предпросмотр шапки</span>
-            <span class="u-inline-2921120983">Основные параметры обновляются без сохранения</span>
+            <span class="u-inline-2921120983"><?= $isPortal ? 'Это схема классического вида; шапку портала смотрите на сайте' : 'Основные параметры обновляются без сохранения' ?></span>
         </div>
         <div class="hdr-live-preview__box">
             <div class="hdr-live-preview__top" id="prevTopbar">
@@ -118,9 +121,13 @@ $heightSelect = function (string $name, string $current): string {
 
     <!-- Навигация по разделам конструктора -->
     <div class="hdr-tabs-nav" role="tablist" aria-label="Разделы настройки шапки">
-        <button type="button" class="hdr-tab-btn is-active" id="hdr-tab-builder" role="tab"
-                aria-selected="true" aria-controls="tab-hdr-builder" data-hdr-tab-target="tab-hdr-builder">
-            Структура и зоны
+        <button type="button" class="hdr-tab-btn<?= $isPortal ? ' is-active' : '' ?>" id="hdr-tab-portal" role="tab"
+                aria-selected="<?= $isPortal ? 'true' : 'false' ?>" aria-controls="tab-hdr-portal" data-hdr-tab-target="tab-hdr-portal">
+            Вид и шапка портала
+        </button>
+        <button type="button" class="hdr-tab-btn<?= $isPortal ? '' : ' is-active' ?>" id="hdr-tab-builder" role="tab"
+                aria-selected="<?= $isPortal ? 'false' : 'true' ?>" aria-controls="tab-hdr-builder" data-hdr-tab-target="tab-hdr-builder">
+            Структура и зоны<?= $isPortal ? ' (классический вид)' : '' ?>
         </button>
         <button type="button" class="hdr-tab-btn" id="hdr-tab-menu" role="tab"
                 aria-selected="false" aria-controls="tab-hdr-menu" data-hdr-tab-target="tab-hdr-menu">
@@ -147,12 +154,8 @@ $heightSelect = function (string $name, string $current): string {
     <form method="post" action="/admin/header" class="form-grid" enctype="multipart/form-data">
         <?= Csrf::field() ?>
 
-        <!-- MODULE 1: ARCHITECTURE & GLASSMORPHISM -->
-        <div class="admin-tab-content" id="tab-hdr-arch" role="tabpanel" aria-labelledby="hdr-tab-arch">
-            <?php
-            $hvariant = $config['variant'] ?? 'portal';
-            $portalCfg = (array) ($config['portal'] ?? []);
-            ?>
+        <!-- Вид шапки и настройки портала — первая вкладка: портал — вид по умолчанию -->
+        <div class="admin-tab-content<?= $isPortal ? ' is-active' : '' ?>" id="tab-hdr-portal" role="tabpanel" aria-labelledby="hdr-tab-portal">
             <div class="header-builder__group form-card">
                 <h3>Вид шапки</h3>
                 <p class="form-hint">«Портал» — плашка логотипа на кромке шапки, рубрики из основного меню и полоса стран. Остальные настройки этой страницы относятся к классическому виду.</p>
@@ -215,6 +218,10 @@ $heightSelect = function (string $name, string $current): string {
                     <span class="form-hint">Кнопка CTA (вкладка «Элементы» → «Кнопка») тоже выводится в шапке портала, если включена. Раскладку шапки портала задаёт шаблон: зоны и полосы ниже относятся к классическому виду.</span>
                 </fieldset>
             </div>
+        </div>
+
+        <!-- MODULE 1: ARCHITECTURE & GLASSMORPHISM -->
+        <div class="admin-tab-content" id="tab-hdr-arch" role="tabpanel" aria-labelledby="hdr-tab-arch">
             <!-- Container Mode Card Selector -->
             <div class="header-builder__group form-card u-inline-8cddc29a69">
                 <h3 class="u-inline-0e0c39e056">
@@ -731,7 +738,7 @@ $heightSelect = function (string $name, string $current): string {
         </div>
 
         <!-- MODULE 3: VISUAL ZONE BUILDER -->
-        <div class="admin-tab-content is-active" id="tab-hdr-builder" role="tabpanel" aria-labelledby="hdr-tab-builder">
+        <div class="admin-tab-content<?= $isPortal ? '' : ' is-active' ?>" id="tab-hdr-builder" role="tabpanel" aria-labelledby="hdr-tab-builder">
             <div class="header-builder__group form-card u-inline-8cddc29a69">
                 <h3 class="u-inline-0e0c39e056">1. Элементы по зонам</h3>
                 <p class="form-hint u-inline-291b7bbb01">Перетащите элемент из палитры или выберите зону и нажмите нужный элемент. Для удаления используйте крестик на карточке.</p>
@@ -1185,7 +1192,7 @@ $heightSelect = function (string $name, string $current): string {
             panel.hidden = !active;
         });
         if (remember) {
-            try { localStorage.setItem('asdr-header-active-tab', targetId); } catch (error) {}
+            try { localStorage.setItem('asdr-header-active-tab-v2', targetId); } catch (error) {}
         }
     };
 
@@ -1207,7 +1214,7 @@ $heightSelect = function (string $name, string $current): string {
     });
 
     var savedTab = '';
-    try { savedTab = localStorage.getItem('asdr-header-active-tab') || ''; } catch (error) {}
+    try { savedTab = localStorage.getItem('asdr-header-active-tab-v2') || ''; } catch (error) {}
     var savedTabButton = savedTab
         ? document.querySelector('[data-hdr-tab-target="' + savedTab + '"]')
         : null;
