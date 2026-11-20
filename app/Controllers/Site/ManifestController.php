@@ -41,4 +41,22 @@ final class ManifestController
 
         echo json_encode($manifest, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
+
+    /**
+     * Правила упреждающей загрузки (`SpeculationRules::PATH`). Набор общий
+     * для всех страниц и меняется только с настройкой, поэтому кэшируется.
+     * Приём выключен — 404: заголовок на него тогда и не указывает.
+     */
+    public function speculationRules(): void
+    {
+        $json = \App\Core\SpeculationRules::json();
+        if ($json === null) {
+            http_response_code(404);
+            header('Cache-Control: no-store');
+            return;
+        }
+        header('Content-Type: application/speculationrules+json');
+        header('Cache-Control: public, max-age=3600');
+        echo $json;
+    }
 }

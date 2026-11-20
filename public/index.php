@@ -502,6 +502,7 @@ $router->post('/_vitals', [\App\Controllers\Site\VitalsController::class, 'store
 
 // --- PWA-манифест ---
 $router->get('/manifest.webmanifest', [\App\Controllers\Site\ManifestController::class, 'webmanifest']);
+$router->get(\App\Core\SpeculationRules::PATH, [\App\Controllers\Site\ManifestController::class, 'speculationRules']);
 
 // --- SEO & RSS ---
 $router->get('/sitemap.xml', [\App\Controllers\Site\SitemapController::class, 'sitemap']);

@@ -16,13 +16,14 @@ use App\Models\Setting;
  * моменту нажатия страница уже готова. SPA для этого не нужен: приём
  * декларативный, браузер без поддержки просто переходит по ссылке как раньше.
  *
- * **Разметка не содержит nonce, и это не мелочь.** Инлайн-скрипт с nonce
- * менялся бы от запроса к запросу, а `PublicResponseCache::sendConditional()`
- * считает ETag от готового тела — тег перестал бы совпадать никогда, и вместо
- * пустого `304` посетитель получал бы всю страницу заново. Поэтому
- * `<script type="speculationrules">` разрешён в CSP отдельным источником
- * `'inline-speculation-rules'`: он допускает ровно этот тип скрипта и ничего
- * исполняемого.
+ * **Правила — отдельный файл, а не инлайн-скрипт.** Страница сообщает их
+ * адрес заголовком `Speculation-Rules`, а сам набор отдаёт
+ * `/speculationrules.json`. Инлайн `<script type="speculationrules">` спорил
+ * с CSP: с nonce тег менялся бы от запроса к запросу, а
+ * `PublicResponseCache::sendConditional()` считает ETag от готового тела —
+ * `304` не совпал бы никогда; без nonce его блокировали браузеры и проверки,
+ * не знающие источника `'inline-speculation-rules'`. Заголовок не трогает
+ * тело страницы, а файл того же origin проходит `'self'`.
  *
  * **Нагрузка на сервер — часть настройки, а не побочный эффект.** Пререндер
  * это полноценный запрос плюс отрисовка в скрытой вкладке, поэтому он идёт
@@ -41,6 +42,9 @@ final class SpeculationRules
 
     /** off — приём выключен; prefetch — только префетч; prerender — префетч плюс пререндер. */
     public const MODES = ['off', 'prefetch', 'prerender'];
+
+    /** Адрес набора правил; его же называет заголовок Speculation-Rules. */
+    public const PATH = '/speculationrules.json';
 
     /**
      * Служебные адреса, которых нет в списке приватных путей: они публичны и
@@ -172,27 +176,32 @@ final class SpeculationRules
     }
 
     /**
-     * Разметка для подвала. Пустая строка — приём выключен.
+     * Набор правил JSON-ом для `/speculationrules.json`; null — приём выключен.
      *
-     * JSON печатается без экранирования слэшей: шаблоны адресов читаются в
-     * «просмотре кода страницы», а `\/` там выглядит поломкой.
+     * Слэши не экранируются: шаблоны адресов читают в ответе глазами, а `\/`
+     * там выглядит поломкой.
      */
-    public static function scriptHtml(): string
+    public static function json(): ?string
     {
         $rules = self::rules();
         if ($rules === []) {
-            return '';
+            return null;
         }
+        $json = json_encode($rules, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        $json = json_encode(
-            $rules,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-                | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
-        );
-        if (!is_string($json)) {
-            return '';
+        return is_string($json) ? $json : null;
+    }
+
+    /**
+     * Сообщает браузеру адрес правил заголовком. Зовётся из конца страницы:
+     * вьюха собирается в буфер, и заголовок ещё можно отправить.
+     */
+    public static function announce(): void
+    {
+        if (PHP_SAPI === 'cli' || headers_sent() || self::rules() === []) {
+            return;
         }
-
-        return '<script type="speculationrules">' . $json . '</script>';
+        // Значение — строка структурированного заголовка, отсюда кавычки.
+        header('Speculation-Rules: "' . self::PATH . '"');
     }
 }

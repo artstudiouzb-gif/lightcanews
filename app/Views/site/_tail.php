@@ -50,4 +50,4 @@ $pageJsUrls = \App\Core\CustomAssetHelper::resolveJsUrls((string) $page['custom_
 <?php // Упреждающая загрузка внутренних страниц (Speculation Rules). Печатается
       // последней: правила касаются ссылок всей страницы, а не окружения. Без
       // nonce намеренно — см. App\Core\SpeculationRules. ?>
-<?= \App\Core\SpeculationRules::scriptHtml() ?>
+<?php \App\Core\SpeculationRules::announce(); ?>

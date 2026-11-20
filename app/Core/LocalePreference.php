@@ -87,7 +87,7 @@ final class LocalePreference
     public static function managesPath(string $path): bool
     {
         foreach (['/admin', '/install', '/assets', '/uploads', '/health',
-            '/manifest.webmanifest', '/sitemap.xml', '/robots.txt', '/indexnow.txt'] as $excluded) {
+            '/manifest.webmanifest', '/sitemap.xml', '/robots.txt', '/indexnow.txt', \App\Core\SpeculationRules::PATH] as $excluded) {
             if ($path === $excluded || str_starts_with($path, $excluded . '/')) {
                 return false;
             }

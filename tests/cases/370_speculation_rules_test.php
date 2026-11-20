@@ -85,21 +85,21 @@ test('Правила ограничены своим origin и не трогаю
     }
 });
 
-test('Разметка правил не несёт nonce — иначе ETag страницы перестал бы совпадать', function (): void {
-    $footer = (string) file_get_contents(APP_ROOT . '/app/Views/site/_tail.php');
-    assert_contains('SpeculationRules::scriptHtml()', $footer);
+test('Правила приходят файлом по заголовку, а не инлайн-скриптом', function (): void {
+    // Инлайн-тег спорил с CSP: с nonce он менялся бы от запроса к запросу и
+    // ломал ETag (304), без nonce его блокировали браузеры и проверки, не
+    // знающие 'inline-speculation-rules'. Заголовок тела страницы не трогает.
+    $tail = (string) file_get_contents(APP_ROOT . '/app/Views/site/_tail.php');
+    assert_contains('SpeculationRules::announce()', $tail);
+    assert_not_contains('speculationrules">', $tail);
+    assert_not_contains("'inline-speculation-rules'", \App\Core\SecurityHeaders::publicCsp('n0nce', []));
 
-    // Nonce меняется каждый запрос, а ETag считается от готового тела: с ним
-    // «304» не совпал бы никогда, и вместо пустого ответа посетитель получал
-    // бы страницу целиком. Поэтому тип разрешён в CSP отдельным источником.
-    $csp = \App\Core\SecurityHeaders::publicCsp('n0nce', []);
-    assert_contains("'inline-speculation-rules'", $csp);
-
-    $html = SpeculationRules::scriptHtml();
-    if ($html !== '') {
-        assert_contains('<script type="speculationrules">', $html);
-        assert_not_contains('nonce', $html);
+    $json = SpeculationRules::json();
+    if ($json !== null) {
+        $decoded = json_decode($json, true);
+        assert_true(is_array($decoded) && (isset($decoded['prefetch']) || isset($decoded['prerender'])), 'файл — набор правил');
     }
+    assert_false(\App\Core\LocalePreference::managesPath(SpeculationRules::PATH), 'адрес правил не уводится на языковую версию');
 });
 
 test('Скрипты, обращающиеся к посетителю, ждут показа страницы', function (): void {
