@@ -132,15 +132,83 @@ final class UzCyrillic
      * переписывать их нельзя, получится «Маде ин Узбекистан». Решает блок
      * целиком, а не узел: ссылка внутри абзаца — отдельный узел без единой
      * кириллической буквы.
+     *
+     * Исключение — узел из одних узбекских слов интерфейса (подписи словаря,
+     * месяцы даты): шаблон ставит их рядом с кириллическим названием рубрики
+     * или заголовком, и без исключения «20-noyabr» и «Batafsil» оставались
+     * латиницей на кириллической странице.
      */
     public static function html(string $html): string
     {
         return UzbekText::textNodes(
             $html,
-            static fn (string $text, string $block): string => preg_match('/\p{Cyrillic}/u', $block) === 1
-                ? $text
-                : self::text($text)
+            static fn (string $text, string $block): string => preg_match('/\p{Cyrillic}/u', $block) !== 1
+                || self::isInterfaceText($text)
+                ? self::text($text)
+                : $text
         );
+    }
+
+    /** Слова, которыми пишет сам сайт: значения узбекского словаря и даты. */
+    private static ?array $vocabulary = null;
+
+    /** Все латинские слова узла — из словаря интерфейса. */
+    private static function isInterfaceText(string $text): bool
+    {
+        if (!preg_match_all('/[a-zA-Z' . self::apostropheClass() . ']+/u', UzLatin::toOld($text), $m)) {
+            return false;
+        }
+        $vocabulary = self::vocabulary();
+        foreach ($m[0] as $word) {
+            $key = self::vocabularyKey($word);
+            if ($key !== '' && !isset($vocabulary[$key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** @return array<string, true> */
+    private static function vocabulary(): array
+    {
+        if (self::$vocabulary !== null) {
+            return self::$vocabulary;
+        }
+        $words = [];
+        $source = implode(' ', Lang::dictionary('uz'));
+        if (preg_match_all('/[a-zA-Z' . self::apostropheClass() . ']+/u', UzLatin::toOld($source), $m)) {
+            foreach ($m[0] as $word) {
+                $key = self::vocabularyKey($word);
+                if ($key !== '') {
+                    $words[$key] = true;
+                }
+            }
+        }
+
+        // Слово, которое так же пишется и в английском интерфейсе (Telegram,
+        // email, video), — уже не признак узбекского текста: в кириллической
+        // статье оно чаще всего английское название.
+        $english = implode(' ', Lang::dictionary('en'));
+        if (preg_match_all('/[a-zA-Z]+/', $english, $m)) {
+            foreach ($m[0] as $word) {
+                unset($words[strtolower($word)]);
+            }
+        }
+        // Дата: «20-noyabr, 2026-yil».
+        foreach ([...array_keys(self::WHOLE_WORDS), 'mart', 'may', 'avgust', 'yil'] as $word) {
+            $words[$word] = true;
+        }
+
+        return self::$vocabulary = $words;
+    }
+
+    /** Слово без кавычек по краям и с одним видом апострофа, строчными. */
+    private static function vocabularyKey(string $word): string
+    {
+        $word = trim(UzbekText::normalizeApostrophes($word), 'ʻ');
+
+        return strtolower($word);
     }
 
     private static function convert(string $text): string
