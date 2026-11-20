@@ -57,6 +57,9 @@ test('Метрика: счётчик инициализируется с пар�
     $js = \App\Core\Analytics::buildScript('', '114397823');
     assert_contains("ym(114397823,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:'dataLayer',accurateTrackBounce:true,trackLinks:true});", $js);
     assert_same(1, substr_count($js, "'init'"), 'одна инициализация');
+    // Без ?id= Яндекс отдаёт другую сборку tag.js, которая очередь ym не
+    // подхватывает: init остаётся в очереди, хиты не уходят.
+    assert_contains("'https://mc.yandex.ru/metrika/tag.js?id=114397823'", $js, 'тег — адресом из кабинета, с номером счётчика');
     assert_contains("ym(114397823,'reachGoal','subscribe')", $js, 'цель «subscribe» на отправку формы подписки');
 });
 
