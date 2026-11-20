@@ -83,7 +83,7 @@ test('CSP: внешние источники постраничных CSS/JS п�
 
 test('Публичные шаблоны разрешают внешние ассеты страницы в CSP', function () {
     $header = (string) file_get_contents(APP_ROOT . '/app/Views/site/_header.php');
-    $footer = (string) file_get_contents(APP_ROOT . '/app/Views/site/_footer.php');
+    $footer = (string) file_get_contents(APP_ROOT . '/app/Views/site/_tail.php');
     assert_contains('SecurityHeaders::allowPageAssets', $header);
     assert_contains('SecurityHeaders::allowPageAssets', $footer);
 });

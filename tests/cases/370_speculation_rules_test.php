@@ -86,7 +86,7 @@ test('Правила ограничены своим origin и не трогаю
 });
 
 test('Разметка правил не несёт nonce — иначе ETag страницы перестал бы совпадать', function (): void {
-    $footer = (string) file_get_contents(APP_ROOT . '/app/Views/site/_footer.php');
+    $footer = (string) file_get_contents(APP_ROOT . '/app/Views/site/_tail.php');
     assert_contains('SpeculationRules::scriptHtml()', $footer);
 
     // Nonce меняется каждый запрос, а ETag считается от готового тела: с ним

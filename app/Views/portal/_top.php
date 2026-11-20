@@ -146,12 +146,21 @@ foreach ($langLinks as $langLink) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars($currentLang, ENT_QUOTES) ?>" data-theme="<?= htmlspecialchars($defaultTheme, ENT_QUOTES) ?>">
+<?php
+// Настройки отображения из cookie: атрибуты печатает сервер, чтобы страница
+// сразу пришла крупной или контрастной, без мигания.
+$a11ySettings = \App\Core\A11ySettings::fromCookie($_COOKIE[\App\Core\A11ySettings::COOKIE] ?? null);
+?>
+<html lang="<?= htmlspecialchars($currentLang, ENT_QUOTES) ?>" data-theme="<?= htmlspecialchars($defaultTheme, ENT_QUOTES) ?>" <?= \App\Core\A11ySettings::htmlAttributes($a11ySettings) ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="<?= htmlspecialchars(Asset::url('/assets/js/theme-init.js'), ENT_QUOTES) ?>"></script>
 <?= \App\Core\SeoHelper::faviconsHtml($appUrl) ?>
+<?= \App\Core\Favicon::settingTag(Setting::get('favicon_url', '')) ?>
+<?php $ptThemeColor = Setting::get('theme_color', ''); ?>
+<?php if ($ptThemeColor !== ''): ?><meta name="theme-color" content="<?= htmlspecialchars($ptThemeColor, ENT_QUOTES) ?>">
+<?php endif; ?>
 <title><?= htmlspecialchars($fullTitle, ENT_QUOTES) ?></title>
 <?php if (!empty($robotsNoindex)): ?>
 <meta name="robots" content="noindex, nofollow">
@@ -206,10 +215,24 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
 <link rel="stylesheet" href="<?= htmlspecialchars($portalBlockCssUrl, ENT_QUOTES) ?>">
 <?php endif; ?>
 <?php endif; ?>
+<link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/a11y.css'), ENT_QUOTES) ?>">
+<?php if (!empty($page['custom_css']) && !empty($page['id'])): ?>
+<?php
+// «Свой CSS» страницы (супер-админ): файлом, чужой домен — в CSP.
+$pageCssUrls = \App\Core\CustomAssetHelper::resolveCssUrls((string) $page['custom_css'], (int) $page['id']);
+\App\Core\SecurityHeaders::allowPageAssets(\App\Core\CustomAssetHelper::originsOf($pageCssUrls), []);
+?>
+<?php foreach ($pageCssUrls as $pageCssUrl): ?>
+<link rel="stylesheet" href="<?= htmlspecialchars($pageCssUrl, ENT_QUOTES) ?>" data-page-custom-css>
+<?php endforeach; ?>
+<?php endif; ?>
 </head>
 <?php $ptAdminBar = \App\Core\AppToolbar::isVisible(); ?>
-<body class="pt<?= $ptAdminBar ? ' has-admin-bar' : '' ?>">
+<body class="pt<?= $ptAdminBar ? ' has-admin-bar' : '' ?><?= !empty($previewNotice) ? ' is-preview' : '' ?>">
 <?= $ptAdminBar ? \App\Core\AppToolbar::renderHtml(get_defined_vars()) : '' ?>
+<?php if (!empty($previewNotice)): ?>
+<div class="pt-preview" role="status"><?= \App\Core\Icon::render('eye', 18) ?> <?= htmlspecialchars(t('Режим предпросмотра — эта версия не опубликована и закрыта от индексации.'), ENT_QUOTES) ?></div>
+<?php endif; ?>
 <a class="pt-skip skip-link" href="#main-content"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>
 
 <header class="pt-mast">
@@ -255,6 +278,9 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                     <span><?= htmlspecialchars(t('Поиск'), ENT_QUOTES) ?></span>
                 </a>
                 <?php endif; ?>
+                <?php if ($hdrShow('show_a11y')): ?>
+                <button type="button" class="pt-btn pt-btn--icon a11y-toggle<?= \App\Core\A11ySettings::isActive($a11ySettings) ? ' is-active' : '' ?>" data-a11y-open aria-controls="a11y-panel" aria-expanded="false" aria-label="<?= htmlspecialchars(t('Настройки отображения'), ENT_QUOTES) ?>" title="<?= htmlspecialchars(t('Настройки отображения: размер текста, контраст, интервалы'), ENT_QUOTES) ?>"><?= \App\Core\Icon::render('eye', 18) ?></button>
+                <?php endif; ?>
                 <?php if ($hdrShow('show_theme')): ?>
                 <button type="button" class="pt-btn pt-btn--icon" data-pt-theme aria-label="<?= htmlspecialchars(t('Тёмная тема'), ENT_QUOTES) ?>">
                     <svg class="pt-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.5A9 9 0 0 1 10.5 3.1 9 9 0 1 0 20.9 13.5Z"/></svg>
@@ -292,3 +318,6 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
 <?php $adKey = 'top'; require __DIR__ . '/_ad.php'; ?>
 
 <main id="main-content">
+<?php foreach (\App\Core\Flash::pull() as $flash): ?>
+<div class="pt-wrap pt-alert pt-alert--<?= htmlspecialchars((string) $flash['type'], ENT_QUOTES) ?>" role="<?= ($flash['type'] ?? '') === 'error' ? 'alert' : 'status' ?>"><?= htmlspecialchars((string) $flash['message'], ENT_QUOTES) ?></div>
+<?php endforeach; ?>

@@ -7,17 +7,33 @@
     var root = document.documentElement;
 
     // Тема: тот же ключ localStorage, что читает theme-init.js до отрисовки.
+    // Функцию зовёт и панель настроек отображения (a11y.js).
+    var setTheme = function (next) {
+        root.setAttribute('data-theme', next);
+        try {
+            localStorage.setItem('theme', next);
+            localStorage.setItem('theme-base', root.getAttribute('data-theme-base') || 'light');
+        } catch (e) { /* приватный режим: тема действует до перезагрузки */ }
+    };
+    window.asdrSetTheme = setTheme;
     var themeBtn = document.querySelector('[data-pt-theme]');
     if (themeBtn) {
         themeBtn.addEventListener('click', function () {
-            var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            root.setAttribute('data-theme', next);
-            try {
-                localStorage.setItem('theme', next);
-                localStorage.setItem('theme-base', root.getAttribute('data-theme-base') || 'light');
-            } catch (e) { /* приватный режим: тема действует до перезагрузки */ }
+            setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         });
     }
+
+    // Иконка из спрайта страницы — ей рисуют свои кнопки push.js и соседи
+    // (в прежнем шаблоне ту же функцию отдаёт frontend.js).
+    window.asdrPublicIcon = function (name, size, className) {
+        name = String(name || '').trim().toLowerCase().replace(/^tabler-/, '');
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) { return ''; }
+        size = Math.max(8, Math.min(160, Number(size) || 18));
+        return '<svg class="icon icon-tabler ' + (className || 'ui-icon') + '" width="' + size + '" height="' + size
+            + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+            + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+            + '<use href="#tabler-' + name + '"></use></svg>';
+    };
 
     // Поиск окном, Ctrl+K открывает его с клавиатуры.
     var dialog = document.getElementById('site-quick-search-modal');
