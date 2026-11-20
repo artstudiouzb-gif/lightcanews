@@ -59,10 +59,27 @@ final class SecurityHeaders
         // по-прежнему оба заголовка.
         if ($isAdmin || empty($publicOptions['ym'])) {
             header('X-Frame-Options: SAMEORIGIN');
+        } else {
+            header_remove('X-Frame-Options');
         }
         header('Content-Security-Policy: ' . ($isAdmin
             ? self::adminCsp(self::nonce())
             : self::publicCsp(self::nonce(), $publicOptions)));
+    }
+
+    /**
+     * Повторная сборка заголовков после подключения к базе.
+     *
+     * `send()` зовётся в bootstrap до `Database::init()`: так защита стоит
+     * даже на ответе 503. Но публичная CSP зависит от настроек (номер
+     * счётчика Метрики, код счётчиков подвала), а без базы они не читаются —
+     * `publicCspOptions()` отдаёт консервативный набор. Из-за этого хостов
+     * Метрики в CSP не было никогда: tag.js блокировался, а `init` оставался
+     * в очереди. Заголовки ещё не ушли, поэтому их можно переслать.
+     */
+    public static function refreshAfterDatabase(?string $path = null): void
+    {
+        self::send($path);
     }
 
     /**
@@ -115,14 +132,11 @@ final class SecurityHeaders
     {
         // IFrame API загружается лениво только после клика по YouTube-видео.
         // Он нужен, чтобы заменить экран рекомендаций собственной обложкой.
-        // 'inline-speculation-rules' допускает ровно один вид инлайна —
-        // <script type="speculationrules"> — и ничего исполняемого. Nonce для
-        // них не годится: он меняется каждый запрос, а ETag страницы считается
-        // от готового тела, и «304» перестал бы совпадать когда-либо.
+        // Правила упреждающей загрузки приходят файлом того же origin
+        // (заголовок Speculation-Rules), отдельного источника им не нужно.
         $script = [
             "'self'",
             "'nonce-{$nonce}'",
-            "'inline-speculation-rules'",
             'https://www.youtube.com',
             'https://telegram.org',
         ];
