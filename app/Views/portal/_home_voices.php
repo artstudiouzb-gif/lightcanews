@@ -24,7 +24,11 @@ $voices = (array) ($sec['voices'] ?? []);
                         <span><strong><?= htmlspecialchars((string) $card['author'], ENT_QUOTES) ?></strong><?php if ($card['author_role'] !== ''): ?><span class="pt-meta"><?= htmlspecialchars((string) $card['author_role'], ENT_QUOTES) ?></span><?php endif; ?></span>
                     </span>
                     <?php endif; ?>
-                    <span class="pt-opinion__badge"><?= htmlspecialchars(t('Колонка'), ENT_QUOTES) ?></span>
+                    <?php // Метка — «Метка» новости из админки, без неё — рубрика (название
+                          // и перевод из «Категорий новостей»). Прежде здесь стояло
+                          // слово «Колонка» из словаря, которое не правилось нигде. ?>
+                    <?php $opinionBadge = (string) ($card['badge'] !== '' ? $card['badge'] : $card['rubric']); ?>
+                    <?php if ($opinionBadge !== ''): ?><span class="pt-opinion__badge"><?= htmlspecialchars($opinionBadge, ENT_QUOTES) ?></span><?php endif; ?>
                 </span>
                 <span class="pt-hl">«<?= htmlspecialchars((string) $card['title'], ENT_QUOTES) ?>»</span>
                 <span class="pt-opinion__foot"><span class="pt-meta"><?= htmlspecialchars(sprintf(t('%d мин чтения'), (int) $card['reading']), ENT_QUOTES) ?></span><span class="pt-rubric"><?= htmlspecialchars(t('Читать'), ENT_QUOTES) ?></span></span>

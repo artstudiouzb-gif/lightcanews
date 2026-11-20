@@ -27,6 +27,12 @@ final class CurrencyRates
     /** Валюты плашки в порядке вывода: сум и соседи по региону. */
     public const CURRENCIES = ['UZS', 'KZT', 'KGS', 'TJS', 'TMT'];
 
+    /** Полоса курсов портала, группа «Сум»: валюты торговых партнёров отрасли к суму. */
+    public const SUM_PAIRS = ['USD', 'EUR', 'RUB', 'CNY'];
+
+    /** Группа «Доллар в регионе»: сколько валюты соседей за один доллар. */
+    public const REGION_PAIRS = ['KZT', 'KGS', 'TJS', 'TMT'];
+
     private const SETTING = 'currency_rates';
 
     /** Копия старше этого не показывается. */
@@ -36,7 +42,15 @@ final class CurrencyRates
      * Курсы к доллару из ответа ЦБ. null — ответ не разобран или в нём нет
      * доллара: без него пересчитать соседей не через что.
      *
-     * @return array{date: string, rates: array<string, float>}|null
+     * Кроме курсов к доллару (`rates`, их читает плашка прежней шапки)
+     * отдаёт две группы полосы портала с изменением к прошлому курсу:
+     * `sum` — сумов за единицу валюты, `region` — валюты за доллар. Прошлый
+     * курс ЦБ отдаёт в том же ответе разницей (`Diff`), поэтому кросс-курс
+     * прошлого дня пересчитывается так же, как сегодняшний.
+     *
+     * @return array{date: string, rates: array<string, float>,
+     *     sum: array<string, array{value: float, change: ?float}>,
+     *     region: array<string, array{value: float, change: ?float}>}|null
      */
     public static function parse(string $json): ?array
     {
@@ -45,6 +59,7 @@ final class CurrencyRates
             return null;
         }
         $perUnit = [];
+        $prevUnit = [];
         $date = '';
         foreach ($rows as $row) {
             if (!is_array($row)) {
@@ -57,6 +72,13 @@ final class CurrencyRates
                 continue;
             }
             $perUnit[$code] = $rate / $nominal;
+            $diff = $row['Diff'] ?? null;
+            if (is_numeric(str_replace(',', '.', (string) $diff))) {
+                $prev = $rate - (float) str_replace(',', '.', (string) $diff);
+                if ($prev > 0) {
+                    $prevUnit[$code] = $prev / $nominal;
+                }
+            }
             if ($code === 'USD') {
                 $date = trim((string) ($row['Date'] ?? ''));
             }
@@ -75,7 +97,64 @@ final class CurrencyRates
             }
         }
 
-        return ['date' => $date, 'rates' => $rates];
+        $usdPrev = $prevUnit['USD'] ?? null;
+        $sum = [];
+        foreach (self::SUM_PAIRS as $code) {
+            if (!isset($perUnit[$code])) {
+                continue;
+            }
+            $value = round($perUnit[$code], 2);
+            $sum[$code] = [
+                'value' => $value,
+                'change' => isset($prevUnit[$code]) ? round($value - round($prevUnit[$code], 2), 2) : null,
+            ];
+        }
+        $region = [];
+        foreach (self::REGION_PAIRS as $code) {
+            if (!isset($perUnit[$code])) {
+                continue;
+            }
+            $value = round($usd / $perUnit[$code], 2);
+            $region[$code] = [
+                'value' => $value,
+                'change' => $usdPrev !== null && isset($prevUnit[$code])
+                    ? round($value - round($usdPrev / $prevUnit[$code], 2), 2) : null,
+            ];
+        }
+
+        return ['date' => $date, 'rates' => $rates, 'sum' => $sum, 'region' => $region];
+    }
+
+    /**
+     * Группа полосы из сохранённой копии. Копия, снятая до появления групп,
+     * несёт только `rates`: тогда группы собираются из них, без изменения.
+     *
+     * @param array<string, mixed> $data
+     * @param list<string> $codes
+     * @return array<string, array{value: float, change: ?float}>
+     */
+    private static function group(array $data, string $key, array $codes): array
+    {
+        $out = [];
+        $stored = is_array($data[$key] ?? null) ? $data[$key] : [];
+        $legacy = is_array($data['rates'] ?? null) ? $data['rates'] : [];
+        foreach ($codes as $code) {
+            $item = $stored[$code] ?? null;
+            if (is_array($item) && is_numeric($item['value'] ?? null)) {
+                $out[$code] = [
+                    'value' => (float) $item['value'],
+                    'change' => is_numeric($item['change'] ?? null) ? (float) $item['change'] : null,
+                ];
+                continue;
+            }
+            // Прежний формат: «UZS» — сумов за доллар, остальное — за доллар.
+            $legacyKey = $key === 'sum' ? ($code === 'USD' ? 'UZS' : null) : $code;
+            if ($stored === [] && $legacyKey !== null && is_numeric($legacy[$legacyKey] ?? null)) {
+                $out[$code] = ['value' => (float) $legacy[$legacyKey], 'change' => null];
+            }
+        }
+
+        return $out;
     }
 
     /**
@@ -202,7 +281,9 @@ final class CurrencyRates
     /**
      * Сохранённая копия, если она свежая.
      *
-     * @return array{date: string, rates: array<string, float>, fetched_at: int}|null
+     * @return array{date: string, rates: array<string, float>, fetched_at: int,
+     *     sum: array<string, array{value: float, change: ?float}>,
+     *     region: array<string, array{value: float, change: ?float}>}|null
      */
     public static function current(): ?array
     {
@@ -221,7 +302,13 @@ final class CurrencyRates
             }
         }
 
-        return $rates === [] ? null : ['date' => (string) ($data['date'] ?? ''), 'rates' => $rates, 'fetched_at' => $fetched];
+        return $rates === [] ? null : [
+            'date' => (string) ($data['date'] ?? ''),
+            'rates' => $rates,
+            'fetched_at' => $fetched,
+            'sum' => self::group($data, 'sum', self::SUM_PAIRS),
+            'region' => self::group($data, 'region', self::REGION_PAIRS),
+        ];
     }
 
     /** Плашка для шапки; пусто, если свежей копии нет. */
