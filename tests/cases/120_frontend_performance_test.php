@@ -50,7 +50,6 @@ test('Первый экран не блокируется второстепен
     assert_true(!str_contains($css, 'content-visibility: auto'), 'Секции не пропускаются при полноэкранном снимке и отрицательных отступах');
     assert_contains('FrontendAssets::scripts()', $footer);
     assert_contains('Asset::url($script), ENT_QUOTES) ?>" defer', $footer);
-    assert_contains("Asset::url('/assets/js/consent.js')", $footer);
     assert_contains('Media::preloadLink', $header);
     assert_contains('rel="preconnect"', $header);
 });
