@@ -82,9 +82,15 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 /* --- Кнопки ---------------------------------------------------------------- */
 .pt-btn { height: 34px; padding-inline: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); color: var(--ink); font-size: .78rem; font-weight: 700; cursor: pointer; transition: border-color .15s, color .15s; }
 .pt-btn:hover { border-color: var(--link); color: var(--link); }
-.pt-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; flex-shrink: 0; }
+.pt-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+/* Кнопки шапки — один вид: высота, рамка, скругление, иконка 16px одной
+   толщины. Кнопка настроек отображения несёт класс a11y-toggle (его ищет
+   a11y.js), а a11y.css грузится позже и рисует её по-своему — возвращаем. */
+.pt-btn.a11y-toggle { padding: 0; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); color: var(--ink); }
+.pt-btn.a11y-toggle:hover, .pt-btn.a11y-toggle.is-active { border-color: var(--link); color: var(--link); background: var(--surface); }
+.pt-btn .pt-btn__chev { width: 10px; height: 10px; color: var(--ink-3); }
 .pt-btn--icon { width: 34px; padding: 0; }
-.pt-btn--search { background: var(--paper); color: var(--ink-2); }
+.pt-btn--search { color: var(--ink-2); }
 .pt-btn--brand { height: 40px; padding-inline: 16px; background: var(--brand); border-color: var(--brand); color: #fff; font-size: .9rem; }
 .pt-btn--brand:hover { color: #fff; opacity: .92; }
 .pt-btn--wide { width: 100%; height: 40px; }
@@ -175,7 +181,6 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-lang { position: relative; }
 .pt-lang summary { list-style: none; }
 .pt-lang summary::-webkit-details-marker { display: none; }
-.pt-lang summary::after { content: "▾"; font-size: .68rem; color: var(--ink-3); }
 .pt-lang__menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 60; min-width: 120px; margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); box-shadow: 0 12px 30px rgba(12, 19, 18, .16); }
 .pt-lang__menu a { display: block; padding: 7px 10px; font-size: .85rem; font-weight: 700; }
 .pt-lang__menu a:hover, .pt-lang__menu a[aria-current] { background: var(--brand-soft); color: var(--link); }
