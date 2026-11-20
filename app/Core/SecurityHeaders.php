@@ -33,7 +33,6 @@ final class SecurityHeaders
         $path ??= parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         header('X-Content-Type-Options: nosniff');
-        header('X-Frame-Options: SAMEORIGIN');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Cross-Origin-Opener-Policy: same-origin');
         header('X-Permitted-Cross-Domain-Policies: none');
@@ -52,9 +51,18 @@ final class SecurityHeaders
         // бы существование скрываемой административной поверхности.
         $hasAdminContext = Session::hasCookie() || AdminEntryGate::hasPresentedCookie();
         $isAdmin = ($isAdminPath && $hasAdminContext) || str_starts_with($path, '/install');
+        $publicOptions = $isAdmin ? [] : self::publicCspOptions();
+        // Вебвизор Метрики показывает страницу в своём окне, а X-Frame-Options
+        // не умеет разрешать чужой адрес — только SAMEORIGIN или DENY. Поэтому
+        // на публичной странице со счётчиком встраивание решает одна CSP
+        // (frame-ancestors с адресами Метрики), а в остальных случаях —
+        // по-прежнему оба заголовка.
+        if ($isAdmin || empty($publicOptions['ym'])) {
+            header('X-Frame-Options: SAMEORIGIN');
+        }
         header('Content-Security-Policy: ' . ($isAdmin
             ? self::adminCsp(self::nonce())
-            : self::publicCsp(self::nonce(), self::publicCspOptions())));
+            : self::publicCsp(self::nonce(), $publicOptions)));
     }
 
     /**
@@ -128,9 +136,15 @@ final class SecurityHeaders
             $connect[] = 'https://*.analytics.google.com';
             $connect[] = 'https://www.googletagmanager.com';
         }
+        // Метрика: тег и запасной адрес .com, скрипты Вебвизора с yastatic,
+        // отправка данных — запросами и WebSocket (Вебвизор 2).
+        $frameAncestors = ["'self'"];
         if (!empty($opts['ym'])) {
-            $script[] = 'https://mc.yandex.ru';
-            $connect[] = 'https://mc.yandex.ru';
+            array_push($script, 'https://mc.yandex.ru', 'https://mc.yandex.com', 'https://yastatic.net');
+            array_push($connect, 'https://mc.yandex.ru', 'https://mc.yandex.com', 'wss://mc.yandex.ru', 'wss://mc.yandex.com');
+            // Просмотр записей Вебвизора и карты кликов открывает страницу
+            // в окне Метрики.
+            array_push($frameAncestors, 'https://metrika.yandex.ru', 'https://metrika.yandex.com', 'https://*.webvisor.com');
         }
         $allowedCounterScripts = [
             'https://mc.yandex.ru',
@@ -156,6 +170,7 @@ final class SecurityHeaders
         }
         $style = array_values(array_unique($style));
         $script = array_values(array_unique($script));
+        $connect = array_values(array_unique($connect));
 
         return "default-src 'self'; "
             // Блоки могут ссылаться на внешние картинки (URL проверяется UrlGuard);
@@ -174,7 +189,7 @@ final class SecurityHeaders
             . "object-src 'none'; "
             . "base-uri 'self'; "
             . "form-action 'self'; "
-            . "frame-ancestors 'self'";
+            . 'frame-ancestors ' . implode(' ', $frameAncestors);
     }
 
     /**

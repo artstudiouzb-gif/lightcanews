@@ -105,10 +105,21 @@ test('Принудительный HTTPS включается объявленн
     $_SERVER['REQUEST_URI'] = "/news\r\nSet-Cookie: a=b";
     assert_same('https://artstudio.uz/', RequestUrl::httpsRedirectTarget(), 'управляющие символы срезаются');
 
-    // Уже по HTTPS — уводить некуда, иначе получится петля.
+    // Уже по HTTPS и на основном хосте — уводить некуда, иначе получится петля.
     $_SERVER['REQUEST_URI'] = '/news';
     $_SERVER['HTTPS'] = 'on';
-    assert_same(null, RequestUrl::httpsRedirectTarget(), 'на HTTPS редиректа быть не должно');
+    $_SERVER['HTTP_HOST'] = 'artstudio.uz';
+    assert_same(null, RequestUrl::httpsRedirectTarget(), 'на HTTPS основного хоста редиректа быть не должно');
+    $_SERVER['HTTP_HOST'] = 'ArtStudio.uz:443';
+    assert_same(null, RequestUrl::httpsRedirectTarget(), 'регистр и порт хоста не делают его другим');
+
+    // www. и прежний адрес сайта — тот же сайт, но адрес один: уводим на хост
+    // из настройки, сохраняя путь.
+    $_SERVER['HTTP_HOST'] = 'www.artstudio.uz';
+    assert_same('https://artstudio.uz/news', RequestUrl::httpsRedirectTarget(), 'www. → основной хост');
+    $_SERVER['HTTP_HOST'] = 'new.artstudio.uz';
+    unset($_SERVER['HTTPS']);
+    assert_same('https://artstudio.uz/news', RequestUrl::httpsRedirectTarget(), 'http и прежний адрес — одним редиректом');
 
     $_SERVER = $server;
     Config::merge(['app' => $appConfig]);
