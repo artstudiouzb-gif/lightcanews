@@ -197,6 +197,8 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-countries__date { padding-left: 14px; border-left: 1px solid var(--rule); font-size: .8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
 .pt-countries__weather { display: inline-flex; align-items: center; gap: 5px; padding-left: 14px; font-size: .8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
 .pt-countries__weather--solo { border-left: 1px solid var(--rule); }
+/* Дата и погода — два разных сведения: без черты они читались одной строкой. */
+.pt-countries__date + .pt-countries__weather { margin-left: 10px; border-left: 1px solid var(--rule); }
 .pt-countries__weather b { color: var(--ink); font-weight: 800; }
 .pt-countries__wicon { color: var(--link); }
 @media (max-width: 1120px) { .pt-countries__meta { display: none; } }
