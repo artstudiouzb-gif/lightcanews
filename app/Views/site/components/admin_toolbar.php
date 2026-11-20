@@ -19,7 +19,7 @@ $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES);
     <nav class="app-admin-bar__left" aria-label="Управление содержимым">
         <a href="/admin" class="app-admin-bar__brand">
             <?= \App\Core\Icon::render('bolt', 13, 'ui-icon', 2.2) ?>
-            ASDR CMS
+            LightCA CMS
         </a>
 
         <a

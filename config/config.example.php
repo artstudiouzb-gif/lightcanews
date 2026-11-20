@@ -86,7 +86,7 @@ return [
         'username' => getenv('SMTP_USERNAME') ?: '',
         'password' => getenv('SMTP_PASSWORD') ?: '',
         'from_email' => getenv('SMTP_FROM_EMAIL') ?: '',
-        'from_name' => getenv('SMTP_FROM_NAME') ?: 'ASDR CMS',
+        'from_name' => getenv('SMTP_FROM_NAME') ?: 'LightCA.News',
         // Селектор DKIM у почтового провайдера (например, 'default' или 'mail').
         // Подпись ставит провайдер; здесь селектор нужен, чтобы
         // scripts/release_check.php проверил наличие записи в DNS.

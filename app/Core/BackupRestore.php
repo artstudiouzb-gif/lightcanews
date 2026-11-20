@@ -235,11 +235,11 @@ final class BackupRestore
             $databaseIndex = $zip->locateName('database.sql', \ZipArchive::FL_NOCASE);
             $manifestIndex = $zip->locateName('manifest.txt', \ZipArchive::FL_NOCASE);
             if ($databaseIndex === false || $manifestIndex === false) {
-                throw new \RuntimeException('Это не резервная копия ASDR CMS: отсутствует database.sql или manifest.txt.');
+                throw new \RuntimeException('Это не резервная копия LightCA CMS: отсутствует database.sql или manifest.txt.');
             }
             $manifest = (string) $zip->getFromIndex((int) $manifestIndex, 4096);
             if (!str_starts_with($manifest, 'ASDR CMS backup')) {
-                throw new \RuntimeException('Манифест ZIP не соответствует формату резервной копии ASDR CMS.');
+                throw new \RuntimeException('Манифест ZIP не соответствует формату резервной копии LightCA CMS.');
             }
 
             // Поверхностная защита до более строгой проверки внутри Backup::restore.

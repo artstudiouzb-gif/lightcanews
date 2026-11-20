@@ -16,7 +16,7 @@ $stepNumber = (int) $step;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Установка ASDR CMS — <?= htmlspecialchars($steps[$step]['title'] ?? $heading, ENT_QUOTES) ?></title>
+<title>Установка LightCA CMS — <?= htmlspecialchars($steps[$step]['title'] ?? $heading, ENT_QUOTES) ?></title>
 <link rel="stylesheet" href="/assets/css/admin.css?v=<?= file_exists(dirname(__DIR__, 2) . '/public/assets/css/admin.css') ? filemtime(dirname(__DIR__, 2) . '/public/assets/css/admin.css') : '2.0.1' ?>">
 </head>
 <body class="auth-page">
@@ -24,7 +24,7 @@ $stepNumber = (int) $step;
     <div class="install-brand">
         <div class="install-brand__logo">
             <?= \App\Core\Icon::render('layers-subtract', 22, 'install-brand__icon', 2.5) ?>
-            <span class="install-brand__name">ASDR CMS</span>
+            <span class="install-brand__name">LightCA CMS</span>
             <span class="install-brand__badge">v2.0</span>
         </div>
     </div>

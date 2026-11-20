@@ -7,7 +7,7 @@ require __DIR__ . '/_header.php';
 ?>
 <div class="install-header">
     <h1 class="install-header__title">Проверка системного окружения</h1>
-    <p class="install-header__desc">Убедитесь, что ваш сервер полностью соответствует всем техническим требованиями для стабильной работы ASDR CMS.</p>
+    <p class="install-header__desc">Убедитесь, что ваш сервер полностью соответствует всем техническим требованиями для стабильной работы LightCA CMS.</p>
 </div>
 
 <div class="check-grid-2col">

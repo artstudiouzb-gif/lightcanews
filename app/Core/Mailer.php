@@ -35,7 +35,7 @@ final class Mailer
                     'username' => (string) ($sysConfig['username'] ?: \App\Models\Setting::get('smtp_username', '')),
                     'password' => (string) ($sysConfig['password'] ?: \App\Models\Setting::get('smtp_password', '')),
                     'from_email' => (string) ($sysConfig['from_email'] ?: \App\Models\Setting::get('smtp_from_email', '')),
-                    'from_name' => (string) ($sysConfig['from_name'] ?: \App\Models\Setting::get('smtp_from_name', 'ASDR CMS')),
+                    'from_name' => (string) ($sysConfig['from_name'] ?: \App\Models\Setting::get('smtp_from_name', 'LightCA.News')),
                     'timeout' => (int) ($sysConfig['timeout'] ?: 15),
                 ];
             } else {
@@ -88,7 +88,7 @@ final class Mailer
         $fromEmail = !empty($this->config['from_email'])
             ? $this->config['from_email']
             : (!empty($this->config['username']) ? $this->config['username'] : 'no-reply@' . ($_SERVER['SERVER_NAME'] ?? 'localhost'));
-        $fromName = !empty($this->config['from_name']) ? $this->config['from_name'] : 'ASDR CMS';
+        $fromName = !empty($this->config['from_name']) ? $this->config['from_name'] : 'LightCA.News';
 
         // Если настроен SMTP — отправляем через прямые сокеты
         if ($host !== '') {
@@ -155,7 +155,7 @@ final class Mailer
                 'Content-Transfer-Encoding: base64',
                 'From: ' . $fromHeader,
                 'Reply-To: ' . $fromHeader,
-                'X-Mailer: ASDR CMS Mailer',
+                'X-Mailer: LightCA CMS Mailer',
             ];
 
             $encodedBody = chunk_split(base64_encode($body));

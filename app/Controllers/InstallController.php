@@ -266,7 +266,7 @@ final class InstallController
             }
 
             // Отправка уведомления об успешной установке на email администратора.
-            $siteName = Setting::get('site_name', 'ASDR CMS');
+            $siteName = Setting::get('site_name', 'LightCA.News');
             $subject = sprintf('Установка %s успешно завершена', $siteName);
             $body = sprintf(
                 "Здравствуйте, %s!\n\n"
@@ -345,7 +345,7 @@ final class InstallController
         $appUrl = $this->guessAppUrl();
         $encryptionKey = bin2hex(random_bytes(32));
         $tpl = "<?php\n\ndeclare(strict_types=1);\n\n"
-            . "// Сгенерировано веб-инсталлятором ASDR CMS.\n"
+            . "// Сгенерировано веб-инсталлятором LightCA CMS.\n"
             . "return [\n"
             . "    'app' => [\n"
             . "        'env' => getenv('APP_ENV') ?: 'production',\n"
@@ -387,7 +387,7 @@ final class InstallController
             . "        'username' => getenv('SMTP_USERNAME') ?: '',\n"
             . "        'password' => getenv('SMTP_PASSWORD') ?: '',\n"
             . "        'from_email' => getenv('SMTP_FROM_EMAIL') ?: '',\n"
-            . "        'from_name' => getenv('SMTP_FROM_NAME') ?: 'ASDR CMS',\n"
+            . "        'from_name' => getenv('SMTP_FROM_NAME') ?: 'LightCA.News',\n"
             . "        'timeout' => 15,\n"
             . "    ],\n"
             . "];\n";
