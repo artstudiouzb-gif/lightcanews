@@ -121,10 +121,56 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-mast__bar { grid-column: 2; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: var(--hdr-row1); min-width: 0; }
 .pt-nav { display: flex; align-items: center; overflow-x: auto; scrollbar-width: none; white-space: nowrap; min-width: 0; }
 .pt-nav::-webkit-scrollbar { display: none; }
-.pt-nav a { position: relative; padding: 14px; font-size: .9375rem; font-weight: 700; color: var(--ink); border-bottom: 3px solid transparent; transition: color .15s, background .15s; }
-.pt-nav a + a::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 1px; height: 15px; background: var(--rule); }
-.pt-nav a:hover { color: var(--link); background: var(--paper); border-bottom-color: var(--rule); }
-.pt-nav a[aria-current] { color: var(--link); border-bottom-color: var(--signal); }
+.pt-nav > a, .pt-nav__item > a { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 14px; font-size: .9375rem; font-weight: 700; color: var(--ink); border-bottom: 3px solid transparent; transition: color .15s, background .15s; }
+.pt-nav > * + a::before, .pt-nav > * + .pt-nav__item > a::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 1px; height: 15px; background: var(--rule); }
+.pt-nav > a:hover, .pt-nav__item > a:hover, .pt-nav__item.is-open > a { color: var(--link); background: var(--paper); border-bottom-color: var(--rule); }
+.pt-nav > a[aria-current], .pt-nav__item > a[aria-current] { color: var(--link); border-bottom-color: var(--signal); }
+
+/* Пункт с подпунктами: ссылка ведёт на свою страницу, стрелка раскрывает
+   список. Панель не вложена в прокрутку полосы по раскладке: её место
+   считает portal.js от строки шапки (.pt-mast__row), иначе overflow полосы
+   обрезал бы её. Без скрипта панели нет, ссылка работает как раньше. */
+.pt-mast__row { position: relative; }
+.pt-nav__item { display: flex; align-items: stretch; }
+.pt-nav__item > a { padding-right: 4px; }
+.pt-nav__toggle { display: grid; place-items: center; width: 24px; padding: 0; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--ink-2); cursor: pointer; }
+.pt-nav__toggle svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; transition: transform .15s; }
+.pt-nav__toggle:hover, .pt-nav__item.is-open > .pt-nav__toggle { color: var(--link); background: var(--paper); border-bottom-color: var(--rule); }
+.pt-nav__item.is-open > .pt-nav__toggle svg { transform: rotate(180deg); }
+.pt-nav__toggle:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
+.pt-nav__icon { display: inline-flex; color: var(--link); }
+.pt-nav__icon svg, .pt-nav__img { width: 18px; height: 18px; object-fit: contain; }
+.pt-nav__img--light { display: none; }
+:root[data-theme="dark"] .pt-nav__img--light { display: inline; }
+:root[data-theme="dark"] .pt-nav__img--std { display: none; }
+
+/* Метка пункта: цвет из админки, тона темнее прежней темы — подпись белая
+   и держит 4.5:1 на каждом. «По центру» в админке — над пунктом. */
+.pt-badge { display: inline-block; padding: 1px 6px 2px; border-radius: var(--r); background: var(--b); color: #fff; font-size: .66rem; font-weight: 800; letter-spacing: .04em; line-height: 1.3; text-transform: uppercase; white-space: nowrap; }
+.pt-badge--center { position: absolute; top: 3px; left: 50%; transform: translateX(-50%); padding: 0 4px; font-size: .58rem; }
+.pt-badge--red { --b: #b42318; }
+.pt-badge--green { --b: #0f7a4a; }
+.pt-badge--blue { --b: #1d4ed8; }
+.pt-badge--orange { --b: #b45309; }
+.pt-badge--purple { --b: #6d28d9; }
+
+/* Выпадающий список: одна колонка, черта между пунктами; разделитель из
+   админки — пустая полоса с чертой поплотнее. */
+.pt-sub { position: absolute; z-index: 60; min-width: 240px; max-width: min(360px, 100%); padding: 4px 0; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--brand); box-shadow: 0 14px 34px rgba(12, 19, 18, .14); }
+.pt-sub > a { position: relative; display: flex; align-items: center; gap: 8px; padding: 9px 16px; font-size: .875rem; font-weight: 600; color: var(--ink-2); }
+.pt-sub > a + a { border-top: 1px solid var(--rule); }
+.pt-sub > a:hover, .pt-sub > a[aria-current] { background: var(--paper); color: var(--link); }
+.pt-sub__sep { display: block; height: 0; margin: 4px 0; border-top: 2px solid var(--rule); }
+.pt-sub > a:focus-visible { outline: 2px solid var(--link); outline-offset: -2px; }
+/* Мега-меню: панель во всю ширину шапки, подпункты — колонками. */
+.pt-sub--mega { max-width: none; display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 0 28px; padding: 14px 24px 18px; border-left: 0; border-right: 0; }
+.pt-sub--cols-2 { --cols: 2; }
+.pt-sub--cols-3 { --cols: 3; }
+.pt-sub--cols-4 { --cols: 4; }
+.pt-sub--mega > a { padding-inline: 0; }
+.pt-sub--mega > a + a { border-top: 0; }
+.pt-sub--mega > .pt-sub__sep { display: none; }
+@media (prefers-reduced-motion: reduce) { .pt-nav__toggle svg { transition: none; } }
 .pt-tools { display: flex; align-items: center; gap: 8px; padding-left: 14px; border-left: 1px solid var(--rule); flex-shrink: 0; }
 .pt-lang { position: relative; }
 .pt-lang summary { list-style: none; }
@@ -325,8 +371,12 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
     .pt-logo__desc { font-size: .59rem; }
     .pt-mast__bar { flex-wrap: wrap; justify-content: flex-end; gap: 4px 8px; padding-block: 6px; }
     .pt-nav { order: 2; width: 100%; }
-    .pt-nav a { padding: 6px 8px; font-size: .82rem; }
-    .pt-nav a:first-child { padding-left: 0; }
+    .pt-nav > a, .pt-nav__item > a { padding: 6px 8px; font-size: .82rem; }
+    .pt-nav > a:first-child, .pt-nav > .pt-nav__item:first-child > a { padding-left: 0; }
+    /* Телефон: подпункты — панелью во всю ширину под полосой меню. */
+    .pt-sub, .pt-sub--mega { max-width: none; grid-template-columns: minmax(0, 1fr); padding: 4px 0; border-inline: 0; }
+    .pt-sub--mega > a { padding-inline: 16px; }
+    .pt-sub--mega > a + a { border-top: 1px solid var(--rule); }
     .pt-tools { border-left: 0; padding-left: 0; }
     .pt-countries { grid-row: 2; grid-column: 1 / -1; }
     .pt-countries__label { display: none; }
@@ -711,3 +761,98 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-fx__unit { font-size: .73rem; font-weight: 700; color: var(--ink-3); }
 .pt-fx__chg { display: block; font-size: .73rem; font-weight: 700; color: var(--ink-3); }
 .pt-fx__src { flex-basis: 100%; margin: 0; font-size: .73rem; color: var(--ink-3); }
+
+/* Панель администратора на сайте (AppToolbar) и полоса согласия на cookie.
+   Бандл прежней темы портал не подключает, поэтому их правила — здесь. */
+.app-admin-bar { position: fixed; inset: 0 0 auto; height: 38px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #0f172a; color: #f8fafc; font: 13px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+body.pt.has-admin-bar { margin-top: 38px; }
+body.pt.has-admin-bar .pt-mast { top: 38px; }
+.app-admin-bar__left, .app-admin-bar__right { display: flex; align-items: center; gap: 12px; }
+.app-admin-bar__brand { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #38bdf8; text-decoration: none; }
+.app-admin-bar__btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 0; border-radius: var(--r); background: rgba(255, 255, 255, .08); color: #e2e8f0; font: inherit; font-size: 12px; text-decoration: none; cursor: pointer; }
+.app-admin-bar__btn:hover, .app-admin-bar__btn--edit { background: #0284c7; color: #fff; }
+.app-admin-bar__btn--edit { font-weight: 600; }
+.app-admin-bar__btn--edit:hover { background: #0369a1; }
+.app-admin-bar__drop { position: relative; }
+.app-admin-bar__drop-menu { display: none; position: absolute; top: 100%; left: 0; min-width: 160px; padding: 6px 0; background: #1e293b; border: 1px solid #334155; border-radius: var(--r); box-shadow: 0 10px 25px rgba(0, 0, 0, .4); }
+.app-admin-bar__drop:hover .app-admin-bar__drop-menu, .app-admin-bar__drop:focus-within .app-admin-bar__drop-menu { display: block; }
+.app-admin-bar__drop-item { display: block; padding: 6px 14px; color: #cbd5e1; font-size: 12px; text-decoration: none; }
+.app-admin-bar__drop-item:hover { background: #0284c7; color: #fff; }
+.pt-foot__counters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cookie-banner { position: fixed; inset: auto 0 0; z-index: 900; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px; background: var(--surface); color: var(--ink); border-top: 1px solid var(--rule); box-shadow: 0 -6px 20px rgba(0, 0, 0, .08); font-size: .875rem; }
+.cookie-banner__text { flex: 1; min-width: 220px; }
+.cookie-banner__text a { color: var(--link); }
+.cookie-banner__accept, .cookie-banner__decline { padding: 9px 18px; border: 1px solid var(--rule); border-radius: var(--r); font: inherit; font-weight: 600; cursor: pointer; }
+.cookie-banner__accept { background: var(--brand); color: #fff; border-color: transparent; }
+.cookie-banner__decline { background: transparent; color: var(--ink); }
+@media print { .app-admin-bar, .cookie-banner { display: none; } }
+
+/* Мост токенов прежней темы: файлы, общие с ней (стили блоков, панель
+   настроек отображения a11y.css), читают её имена, здесь они получают
+   значения портала. */
+:root {
+    --text-main: var(--ink);
+    --text-muted: var(--ink-2);
+    --border-color: var(--rule);
+    --bg-surface: var(--surface);
+    --gov-subtext: var(--ink-2);
+    --gov-teal: var(--brand);
+    --gov-teal-text: var(--link);
+    --gov-teal-on-light: var(--link);
+    --accent-fill-strong: var(--brand);
+    --on-accent: #fff;
+    --gov-navy: var(--brand-deep);
+    --gov-surface: var(--surface);
+    --gov-bg: var(--ground);
+    --gov-bg-alt: var(--paper);
+    --gov-border: var(--rule);
+    --gov-ink: var(--ink);
+    --gov-muted: var(--ink-3);
+    --gov-title: var(--ink);
+    --section-fg: var(--ink);
+    --section-title-fg: var(--ink);
+    --section-muted-fg: var(--ink-3);
+    --section-link-fg: var(--link);
+    --font-family: var(--sans);
+    --font-heading: var(--sans);
+    --heading-font-weight: 800;
+    --radius: 2px;
+    --radius-sm: 2px;
+    --radius-xs: 2px;
+    --radius-lg: 2px;
+    --radius-pill: 2px;
+    --btn-radius: 2px;
+    --card-shadow: none;
+    --shadow-hover: none;
+    --shadow-control: none;
+    --card-gap: 24px;
+    --editorial-reading: 760px;
+    --section-space-s: 16px;
+    --section-space-l: 32px;
+    --step--4: .75rem; --step--3: .8125rem; --step--2: .875rem; --step--1: .95rem;
+    --step-0: 1rem; --step-1: 1.125rem; --step-2: 1.25rem; --step-3: 1.375rem;
+    --step-4: 1.5rem; --step-5: 1.8rem; --step-6: 2.1rem; --step-7: 2.4rem;
+    --step-8: 2.8rem; --step-9: 3.2rem; --step-10: 3.6rem; --step-11: 4rem; --step-12: 4.6rem;
+}
+
+/* Сообщение после отправки формы (Flash) и плашка предпросмотра черновика. */
+.pt-alert { margin-block: 16px 0; padding: 12px 16px; border: 1px solid var(--rule); border-left: 4px solid var(--link); border-radius: var(--r); background: var(--surface); color: var(--ink); font-weight: 600; }
+.pt-alert--error { border-left-color: #b42318; }
+.pt-alert--success { border-left-color: var(--signal); }
+.pt-preview { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; background: #fef3c7; color: #713f12; font-size: .875rem; font-weight: 600; }
+
+/* Push-уведомления: кнопка в подвале, колокольчик и карточка предложения. */
+.push-optin { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px; border: 1px solid var(--rule); border-radius: var(--r); background: transparent; color: inherit; font: inherit; font-size: .8125rem; font-weight: 600; cursor: pointer; }
+.push-optin.is-on { border-color: var(--link); color: var(--link); }
+.push-optin[disabled] { opacity: .6; cursor: default; }
+.push-floating-bell { position: fixed; bottom: 24px; left: 24px; z-index: 800; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--brand); color: #fff; box-shadow: 0 8px 24px rgba(12, 19, 18, .25); cursor: pointer; }
+.push-floating-bell.is-on { background: var(--brand-deep); }
+.push-prompt-card { position: fixed; bottom: 84px; left: 24px; z-index: 801; max-width: 360px; padding: 18px 20px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); color: var(--ink); box-shadow: 0 24px 60px rgba(12, 19, 18, .2); }
+.push-prompt-card__header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.push-prompt-card__title { font-weight: 800; }
+.push-prompt-card__text { margin: 0 0 14px; color: var(--ink-2); font-size: .875rem; line-height: 1.5; }
+.push-prompt-card__actions { display: flex; gap: 8px; }
+.push-prompt-card .btn { padding: 8px 14px; border: 1px solid var(--rule); border-radius: var(--r); background: transparent; color: var(--ink); font: inherit; font-size: .8125rem; font-weight: 700; cursor: pointer; }
+.push-prompt-card .btn--primary { border-color: transparent; background: var(--brand); color: #fff; }
+.a11y-toggle.is-active { color: var(--link); }
+@media print { .pt-preview, .push-floating-bell, .push-prompt-card { display: none; } }

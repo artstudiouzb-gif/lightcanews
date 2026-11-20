@@ -82,17 +82,6 @@ $hdrCtaOn = !empty($hdrCta['enabled']) && $hdrCtaText !== '' && $hdrCtaUrl !== '
 // Пункты меню: рубрики, основное меню или оба (основное — только верхний уровень).
 $hdrNavMode = (string) ($hdrPortal['nav'] ?? 'rubrics');
 $hdrNav = [];
-if ($hdrNavMode !== 'rubrics') {
-    try {
-        foreach (\App\Models\MenuItem::activeForLang($currentLang) as $hdrItem) {
-            if (empty($hdrItem['is_divider']) && empty($hdrItem['parent_id'])) {
-                $hdrNav[] = [(string) $hdrItem['title'], \App\Models\MenuItem::resolveUrl($hdrItem, $currentLang)];
-            }
-        }
-    } catch (\Throwable $e) {
-        \App\Core\Logger::swallowed('Шапка портала: меню не загрузилось', $e);
-    }
-}
 $wordmark = trim(Setting::get('pwa_short_name', ''));
 $wordmark = $wordmark !== '' ? $wordmark : (string) preg_replace('/\.news$/i', '', $siteName);
 
@@ -107,6 +96,8 @@ $requestPath = rtrim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'
 $isCurrent = static function (string $url) use ($requestPath): bool {
     return $requestPath !== '' && $requestPath === rtrim((string) parse_url($url, PHP_URL_PATH), '/');
 };
+// Основное меню с подпунктами, иконками и метками (App\Core\Portal\PortalMenu).
+$hdrMenu = $hdrNavMode !== 'rubrics' ? \App\Core\Portal\PortalMenu::items($currentLang, $isCurrent) : [];
 
 $uzScript = \App\Core\A11ySettings::fromCookie($_COOKIE[\App\Core\A11ySettings::COOKIE] ?? null)['script'];
 $langLinks = [];
@@ -146,12 +137,21 @@ foreach ($langLinks as $langLink) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars($currentLang, ENT_QUOTES) ?>" data-theme="<?= htmlspecialchars($defaultTheme, ENT_QUOTES) ?>">
+<?php
+// Настройки отображения из cookie: атрибуты печатает сервер, чтобы страница
+// сразу пришла крупной или контрастной, без мигания.
+$a11ySettings = \App\Core\A11ySettings::fromCookie($_COOKIE[\App\Core\A11ySettings::COOKIE] ?? null);
+?>
+<html lang="<?= htmlspecialchars($currentLang, ENT_QUOTES) ?>" data-theme="<?= htmlspecialchars($defaultTheme, ENT_QUOTES) ?>" <?= \App\Core\A11ySettings::htmlAttributes($a11ySettings) ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="<?= htmlspecialchars(Asset::url('/assets/js/theme-init.js'), ENT_QUOTES) ?>"></script>
 <?= \App\Core\SeoHelper::faviconsHtml($appUrl) ?>
+<?= \App\Core\Favicon::settingTag(Setting::get('favicon_url', '')) ?>
+<?php $ptThemeColor = Setting::get('theme_color', ''); ?>
+<?php if ($ptThemeColor !== ''): ?><meta name="theme-color" content="<?= htmlspecialchars($ptThemeColor, ENT_QUOTES) ?>">
+<?php endif; ?>
 <title><?= htmlspecialchars($fullTitle, ENT_QUOTES) ?></title>
 <?php if (!empty($robotsNoindex)): ?>
 <meta name="robots" content="noindex, nofollow">
@@ -206,8 +206,24 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
 <link rel="stylesheet" href="<?= htmlspecialchars($portalBlockCssUrl, ENT_QUOTES) ?>">
 <?php endif; ?>
 <?php endif; ?>
+<link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/assets/css/a11y.css'), ENT_QUOTES) ?>">
+<?php if (!empty($page['custom_css']) && !empty($page['id'])): ?>
+<?php
+// «Свой CSS» страницы (супер-админ): файлом, чужой домен — в CSP.
+$pageCssUrls = \App\Core\CustomAssetHelper::resolveCssUrls((string) $page['custom_css'], (int) $page['id']);
+\App\Core\SecurityHeaders::allowPageAssets(\App\Core\CustomAssetHelper::originsOf($pageCssUrls), []);
+?>
+<?php foreach ($pageCssUrls as $pageCssUrl): ?>
+<link rel="stylesheet" href="<?= htmlspecialchars($pageCssUrl, ENT_QUOTES) ?>" data-page-custom-css>
+<?php endforeach; ?>
+<?php endif; ?>
 </head>
-<body class="pt">
+<?php $ptAdminBar = \App\Core\AppToolbar::isVisible(); ?>
+<body class="pt<?= $ptAdminBar ? ' has-admin-bar' : '' ?><?= !empty($previewNotice) ? ' is-preview' : '' ?>">
+<?= $ptAdminBar ? \App\Core\AppToolbar::renderHtml(get_defined_vars()) : '' ?>
+<?php if (!empty($previewNotice)): ?>
+<div class="pt-preview" role="status"><?= \App\Core\Icon::render('eye', 18) ?> <?= htmlspecialchars(t('Режим предпросмотра — эта версия не опубликована и закрыта от индексации.'), ENT_QUOTES) ?></div>
+<?php endif; ?>
 <a class="pt-skip skip-link" href="#main-content"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>
 
 <header class="pt-mast">
@@ -223,6 +239,27 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
         </a>
         <div class="pt-mast__bar">
             <nav class="pt-nav" aria-label="<?= htmlspecialchars($hdrNavMode === 'rubrics' ? t('Рубрики') : t('Меню'), ENT_QUOTES) ?>">
+                <?php foreach ($hdrMenu as $menuIndex => $menuItem): ?>
+                    <?php $menuAttrs = ' href="' . htmlspecialchars($menuItem['url'], ENT_QUOTES) . '"' . ($menuItem['current'] ? ' aria-current="page"' : '') . ($menuItem['iconOnly'] ? ' title="' . htmlspecialchars($menuItem['title'], ENT_QUOTES) . '"' : ''); ?>
+                    <?php if ($menuItem['children'] === []): ?>
+                    <a<?= $menuAttrs ?>><?= \App\Core\Portal\PortalMenu::label($menuItem) ?></a>
+                    <?php else: ?>
+                    <?php $subId = 'pt-sub-' . $menuIndex; ?>
+                    <div class="pt-nav__item" data-pt-sub>
+                        <a<?= $menuAttrs ?>><?= \App\Core\Portal\PortalMenu::label($menuItem) ?></a>
+                        <button type="button" class="pt-nav__toggle" aria-expanded="false" aria-controls="<?= $subId ?>" aria-label="<?= htmlspecialchars(t('Открыть подменю') . ': ' . $menuItem['title'], ENT_QUOTES) ?>"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4"/></svg></button>
+                        <div class="pt-sub<?= $menuItem['cols'] > 0 ? ' pt-sub--mega pt-sub--cols-' . $menuItem['cols'] : '' ?>" id="<?= $subId ?>" hidden>
+                            <?php foreach ($menuItem['children'] as $subItem): ?>
+                                <?php if (!empty($subItem['divider'])): ?>
+                                <span class="pt-sub__sep" role="separator"></span>
+                                <?php else: ?>
+                                <a href="<?= htmlspecialchars($subItem['url'], ENT_QUOTES) ?>"<?= $subItem['current'] ? ' aria-current="page"' : '' ?><?= $subItem['iconOnly'] ? ' title="' . htmlspecialchars($subItem['title'], ENT_QUOTES) . '"' : '' ?>><?= \App\Core\Portal\PortalMenu::label($subItem) ?></a>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
                 <?php foreach ($hdrNav as [$navTitle, $navUrl]): ?>
                     <a href="<?= htmlspecialchars($navUrl, ENT_QUOTES) ?>"<?= $isCurrent($navUrl) ? ' aria-current="page"' : '' ?>><?= htmlspecialchars($navTitle, ENT_QUOTES) ?></a>
                 <?php endforeach; ?>
@@ -252,6 +289,9 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                     <span><?= htmlspecialchars(t('Поиск'), ENT_QUOTES) ?></span>
                 </a>
+                <?php endif; ?>
+                <?php if ($hdrShow('show_a11y')): ?>
+                <button type="button" class="pt-btn pt-btn--icon a11y-toggle<?= \App\Core\A11ySettings::isActive($a11ySettings) ? ' is-active' : '' ?>" data-a11y-open aria-controls="a11y-panel" aria-expanded="false" aria-label="<?= htmlspecialchars(t('Настройки отображения'), ENT_QUOTES) ?>" title="<?= htmlspecialchars(t('Настройки отображения: размер текста, контраст, интервалы'), ENT_QUOTES) ?>"><?= \App\Core\Icon::render('eye', 18) ?></button>
                 <?php endif; ?>
                 <?php if ($hdrShow('show_theme')): ?>
                 <button type="button" class="pt-btn pt-btn--icon" data-pt-theme aria-label="<?= htmlspecialchars(t('Тёмная тема'), ENT_QUOTES) ?>">
@@ -290,3 +330,6 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
 <?php $adKey = 'top'; require __DIR__ . '/_ad.php'; ?>
 
 <main id="main-content">
+<?php foreach (\App\Core\Flash::pull() as $flash): ?>
+<div class="pt-wrap pt-alert pt-alert--<?= htmlspecialchars((string) $flash['type'], ENT_QUOTES) ?>" role="<?= ($flash['type'] ?? '') === 'error' ? 'alert' : 'status' ?>"><?= htmlspecialchars((string) $flash['message'], ENT_QUOTES) ?></div>
+<?php endforeach; ?>

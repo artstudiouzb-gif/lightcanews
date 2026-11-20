@@ -79,6 +79,7 @@ final class HeaderConfig
         'show_lang' => 'Переключатель языков',
         'show_search' => 'Поиск',
         'show_theme' => 'Тёмная тема',
+        'show_a11y' => 'Кнопка «Настройки отображения» (для слабовидящих)',
     ];
 
     /** Стили верхней/утилитарной полосы шапки. */
@@ -111,7 +112,7 @@ final class HeaderConfig
             'date_format' => 'short', 'weather_format' => 'full',
             // Что показывать в шапке портала — раскладку задаёт шаблон.
             'show_countries' => true, 'show_date' => true, 'show_weather' => true, 'show_lang' => true,
-            'show_search' => true, 'show_theme' => true,
+            'show_search' => true, 'show_theme' => true, 'show_a11y' => true,
         ],
         'logo_position' => 'left',            // left | center
         'logo_width' => 240,                  // px, 40..600
