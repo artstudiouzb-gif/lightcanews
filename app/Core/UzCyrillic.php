@@ -124,10 +124,23 @@ final class UzCyrillic
         return UzbekText::plainChunks($latin, static fn (string $chunk): string => self::convert($chunk));
     }
 
-    /** Переводит только текстовые узлы готовой разметки. */
+    /**
+     * Переводит только текстовые узлы готовой разметки.
+     *
+     * Абзац, в котором уже есть кириллица, набран кириллицей, и латиница в
+     * нём — иностранные названия («Made in Uzbekistan», «Osborn Textile»):
+     * переписывать их нельзя, получится «Маде ин Узбекистан». Решает блок
+     * целиком, а не узел: ссылка внутри абзаца — отдельный узел без единой
+     * кириллической буквы.
+     */
     public static function html(string $html): string
     {
-        return UzbekText::textNodes($html, static fn (string $text): string => self::text($text));
+        return UzbekText::textNodes(
+            $html,
+            static fn (string $text, string $block): string => preg_match('/\p{Cyrillic}/u', $block) === 1
+                ? $text
+                : self::text($text)
+        );
     }
 
     private static function convert(string $text): string

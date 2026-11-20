@@ -17,6 +17,18 @@ final class UzbekText
     /** Теги, внутри которых текст не трогаем. */
     private const SKIP_TAGS = ['script', 'style', 'code', 'pre', 'textarea', 'kbd', 'samp'];
 
+    /**
+     * Теги, отделяющие один абзац текста от другого. По ним `textNodes()`
+     * собирает текст блока целиком: ссылка или выделение внутри абзаца —
+     * отдельный текстовый узел, но письменность у него общая с абзацем.
+     */
+    private const BLOCK_TAGS = [
+        'address', 'article', 'aside', 'blockquote', 'body', 'dd', 'details', 'div', 'dl', 'dt',
+        'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'header', 'hr', 'li', 'main', 'nav', 'ol', 'p', 'section', 'summary', 'table', 'tbody',
+        'td', 'tfoot', 'th', 'thead', 'tr', 'ul', 'title', 'option', 'button', 'label',
+    ];
+
     /** Апострофы, которыми в текстах записывают oʻ, gʻ и tutuq belgisi. */
     public const APOSTROPHES = ['ʻ', 'ʼ', 'ʹ', '′', '‘', '’', '`', "'", '´'];
 
@@ -31,7 +43,10 @@ final class UzbekText
      * содержимое script/style/code и элементы с `data-no-translit` (вместе
      * со всем содержимым) остаются как есть.
      *
-     * @param callable(string): string $convert
+     * Вторым аргументом преобразование получает весь текст блока (абзаца,
+     * пункта списка, ячейки), в котором стоит узел.
+     *
+     * @param callable(string, string): string $convert
      */
     public static function textNodes(string $html, callable $convert): string
     {
@@ -40,17 +55,36 @@ final class UzbekText
             return $html;
         }
 
+        // Первый проход: номер блока у каждого куска и текст блока целиком.
+        $blockOf = [];
+        $blockText = [''];
+        $block = 0;
+        foreach ($parts as $i => $part) {
+            if ($part === '') {
+                continue;
+            }
+            if ($part[0] === '<') {
+                if (preg_match('/^<\s*\/?\s*([a-zA-Z0-9-]+)/', $part, $m)
+                    && in_array(strtolower($m[1]), self::BLOCK_TAGS, true)) {
+                    $blockText[++$block] = '';
+                }
+                continue;
+            }
+            $blockOf[$i] = $block;
+            $blockText[$block] .= $part;
+        }
+
         $skipTag = null;   // имя тега, внутри которого пропускаем текст
         $skipDepth = 0;
         $out = '';
 
-        foreach ($parts as $part) {
+        foreach ($parts as $i => $part) {
             if ($part === '') {
                 continue;
             }
 
             if ($part[0] !== '<') {
-                $out .= $skipTag === null ? $convert($part) : $part;
+                $out .= $skipTag === null ? $convert($part, $blockText[$blockOf[$i]]) : $part;
                 continue;
             }
 
