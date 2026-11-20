@@ -106,6 +106,14 @@ if (is_file($configFile)) {
         // без вывода системного трейса.
         try {
             Database::init($config['db']);
+            // Публичная CSP зависит от настроек (счётчики) — до базы её
+            // собрали без них. Пересобираем, пока заголовки не ушли.
+            try {
+                SecurityHeaders::refreshAfterDatabase();
+            } catch (\Throwable $headersError) {
+                // Остаются заголовки, собранные до базы, — сайт работает.
+                \App\Core\Logger::swallowed('CSP после подключения к базе не пересобрана', $headersError);
+            }
         } catch (\Throwable $e) {
             \App\Core\Logger::critical('Падение БД (503): ' . $e->getMessage(), [
                 'url' => $_SERVER['REQUEST_URI'] ?? 'cli',
