@@ -257,7 +257,7 @@ final class SettingsController
         $mailer = new \App\Core\Mailer();
         $ok = $mailer->send(
             $toEmail,
-            'Тестовое письмо от ' . Setting::get('site_name', 'ASDR CMS'),
+            'Тестовое письмо от ' . Setting::get('site_name', 'LightCA.News'),
             '<h3>Проверка отправки почты CMS</h3><p>Здравствуйте!</p><p>Это тестовое сообщение от вашей CMS. Если вы его получили, значит настройки SMTP-сервера указаны верно и отправка почтовых уведомлений работает корректно.</p>'
         );
 

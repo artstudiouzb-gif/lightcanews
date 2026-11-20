@@ -715,7 +715,7 @@ $existingPoll = !empty($news['id']) ? \App\Models\NewsPoll::findByNews((int) $ne
                         <label for="card_note">Сноска внизу</label>
                         <input type="text" id="card_note" name="card_note" maxlength="120"
                                value="<?= htmlspecialchars((string) ($news['card_note'] ?? ''), ENT_QUOTES) ?>"
-                               placeholder="asdr.uz">
+                               placeholder="lightca.news">
                     </div>
                 </div>
             </div>
