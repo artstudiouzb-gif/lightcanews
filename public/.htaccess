@@ -39,7 +39,8 @@
 
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
+    # X-Frame-Options ставит PHP (SecurityHeaders::send): на странице со
+    # счётчиком Метрики его быть не должно, иначе Вебвизор не откроет запись.
     Header set Referrer-Policy "strict-origin-when-cross-origin"
 
     # Долгий кэш для версионированных ассетов (задача 127). URL меняется через
