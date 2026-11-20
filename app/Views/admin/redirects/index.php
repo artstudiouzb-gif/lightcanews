@@ -18,7 +18,7 @@ require __DIR__ . '/../layout/header.php';
         <?= Csrf::field() ?>
         <div class="form-field">
             <label for="from_path">Старый адрес (откуда)</label>
-            <input type="text" id="from_path" name="from_path" value="<?= htmlspecialchars($prefillFrom ?? '', ENT_QUOTES) ?>" placeholder="/old-page или https://asdr.gov.uz/old-page" required>
+            <input type="text" id="from_path" name="from_path" value="<?= htmlspecialchars($prefillFrom ?? '', ENT_QUOTES) ?>" placeholder="/old-page или https://example.com/old-page" required>
             <span class="form-hint">Можно вставить полный URL старого сайта — возьмётся только путь.</span>
         </div>
         <div class="form-field">
@@ -44,7 +44,7 @@ require __DIR__ . '/../layout/header.php';
         <?= Csrf::field() ?>
         <div class="form-field">
             <label for="list">Список (по одному редиректу в строке)</label>
-            <textarea id="list" name="list" rows="6" placeholder="/old-1 /new-1&#10;/old-2 -> /new-2 302&#10;https://asdr.gov.uz/page /o-nas"></textarea>
+            <textarea id="list" name="list" rows="6" placeholder="/old-1 /new-1&#10;/old-2 -> /new-2 302&#10;https://example.com/page /o-nas"></textarea>
             <span class="form-hint">Формат: «откуда куда [302]», разделитель — пробел или «-&gt;». Строки с «#» — комментарии. Дубли и ошибки пропускаются.</span>
         </div>
         <div class="form-actions">

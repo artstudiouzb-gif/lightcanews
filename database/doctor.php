@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Read-only диагностика установленной базы ASDR CMS.
+ * Read-only диагностика установленной базы LightCA CMS.
  *
  *   php database/doctor.php
  *

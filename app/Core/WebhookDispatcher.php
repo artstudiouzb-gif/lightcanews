@@ -151,7 +151,7 @@ final class WebhookDispatcher
             'timestamp' => gmdate('c'),
             'data' => [
                 'configured_event' => (string) ($webhook['event_type'] ?? ''),
-                'message' => 'Проверка подключения ASDR CMS',
+                'message' => 'Проверка подключения LightCA CMS',
             ],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
