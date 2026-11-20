@@ -59,3 +59,18 @@ test('Кириллица: латиница внутри кириллическо
     assert_contains('Osborn Textile', $out);
     assert_contains('<p>Янгиликлар ва Тошкент</p>', $out, 'латинский абзац по-прежнему переводится');
 });
+
+/**
+ * Подписи интерфейса стоят рядом с кириллическим названием рубрики или
+ * заголовком, но написаны словарём по-латински: их переводить нужно.
+ */
+test('Кириллица: подписи словаря и дата рядом с кириллицей переводятся, английское название — нет', function () {
+    $out = UzCyrillic::html('<div><span>Технологии</span> <time>20-noyabr, 2026-yil</time>'
+        . ' <a>Batafsil</a> <a>Light Central Asia</a> <a>Telegram</a></div>');
+
+    assert_contains('2026-йил', $out);
+    assert_contains('ноябр', $out);
+    assert_contains('>Батафсил<', $out);
+    assert_contains('>Light Central Asia<', $out);
+    assert_contains('>Telegram<', $out, 'слово английского интерфейса остаётся латиницей');
+});
