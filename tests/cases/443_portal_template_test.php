@@ -523,7 +523,8 @@ test('Портал: котировки сырья — ручной ввод, и�
     assert_contains('Хлопок ICE', $html);
     assert_contains("71,75", $html);
     assert_contains('pt-fx__chg--up', $html);
-    assert_contains('+2,5', $html);
+    // Направление — стрелкой и словом для диктора, число — без знака.
+    assert_contains('<span class="pt-visually-hidden">рост</span> 2,5', $html);
     assert_contains('Источник: ICE', $html);
     assert_same('', trim(render_view('app/Views/portal/_home_rates.php', ['sec' => ['rates' => null, 'quotes' => []], 'secTitle' => ''])), 'нечего показать — секции нет');
 });

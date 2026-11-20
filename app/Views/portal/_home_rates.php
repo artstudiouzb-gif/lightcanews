@@ -79,6 +79,7 @@ if ($quotes !== []) {
             </div>
             <?php endforeach; ?>
         </div>
+        <?php if ($rates !== null || $quotesSource !== ''): ?>
         <p class="pt-fx__foot">
             <?php if ($rates !== null): ?>
             <span><?= $fxE(t('Курсы')) ?>: <a href="https://cbu.uz/" rel="noopener" target="_blank"><?= $fxE(t('ЦБ Узбекистана')) ?></a>, <?= $fxE(t('изменение к прошлому дню')) ?>. <?= $fxE(t('Обновлено в')) ?> <?= $fxE(DateFormatter::format((int) $rates['fetched_at'], 'H:i')) ?>.</span>
@@ -87,6 +88,7 @@ if ($quotes !== []) {
             <span><?= $fxE(t('Сырьё') . ' — ' . t('Источник') . ': ' . $quotesSource) ?></span>
             <?php endif; ?>
         </p>
+        <?php endif; ?>
     </div>
 </section>
 <?php endif; ?>
