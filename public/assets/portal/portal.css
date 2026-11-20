@@ -711,3 +711,28 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-fx__unit { font-size: .73rem; font-weight: 700; color: var(--ink-3); }
 .pt-fx__chg { display: block; font-size: .73rem; font-weight: 700; color: var(--ink-3); }
 .pt-fx__src { flex-basis: 100%; margin: 0; font-size: .73rem; color: var(--ink-3); }
+
+/* Панель администратора на сайте (AppToolbar) и полоса согласия на cookie.
+   Бандл прежней темы портал не подключает, поэтому их правила — здесь. */
+.app-admin-bar { position: fixed; inset: 0 0 auto; height: 38px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #0f172a; color: #f8fafc; font: 13px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+body.pt.has-admin-bar { margin-top: 38px; }
+body.pt.has-admin-bar .pt-mast { top: 38px; }
+.app-admin-bar__left, .app-admin-bar__right { display: flex; align-items: center; gap: 12px; }
+.app-admin-bar__brand { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #38bdf8; text-decoration: none; }
+.app-admin-bar__btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 0; border-radius: var(--r); background: rgba(255, 255, 255, .08); color: #e2e8f0; font: inherit; font-size: 12px; text-decoration: none; cursor: pointer; }
+.app-admin-bar__btn:hover, .app-admin-bar__btn--edit { background: #0284c7; color: #fff; }
+.app-admin-bar__btn--edit { font-weight: 600; }
+.app-admin-bar__btn--edit:hover { background: #0369a1; }
+.app-admin-bar__drop { position: relative; }
+.app-admin-bar__drop-menu { display: none; position: absolute; top: 100%; left: 0; min-width: 160px; padding: 6px 0; background: #1e293b; border: 1px solid #334155; border-radius: var(--r); box-shadow: 0 10px 25px rgba(0, 0, 0, .4); }
+.app-admin-bar__drop:hover .app-admin-bar__drop-menu, .app-admin-bar__drop:focus-within .app-admin-bar__drop-menu { display: block; }
+.app-admin-bar__drop-item { display: block; padding: 6px 14px; color: #cbd5e1; font-size: 12px; text-decoration: none; }
+.app-admin-bar__drop-item:hover { background: #0284c7; color: #fff; }
+.pt-foot__counters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cookie-banner { position: fixed; inset: auto 0 0; z-index: 900; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px; background: var(--surface); color: var(--ink); border-top: 1px solid var(--rule); box-shadow: 0 -6px 20px rgba(0, 0, 0, .08); font-size: .875rem; }
+.cookie-banner__text { flex: 1; min-width: 220px; }
+.cookie-banner__text a { color: var(--link); }
+.cookie-banner__accept, .cookie-banner__decline { padding: 9px 18px; border: 1px solid var(--rule); border-radius: var(--r); font: inherit; font-weight: 600; cursor: pointer; }
+.cookie-banner__accept { background: var(--brand); color: #fff; border-color: transparent; }
+.cookie-banner__decline { background: transparent; color: var(--ink); }
+@media print { .app-admin-bar, .cookie-banner { display: none; } }

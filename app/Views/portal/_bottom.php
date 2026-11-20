@@ -161,10 +161,13 @@ foreach ((array) ($footCfg['bottom_links'] ?? []) as $footLink) {
             <span><?= $footE($footBottom) ?></span>
             <?php if ($footLinks !== ''): ?><nav class="pt-foot__links" aria-label="<?= $footE(t('Дополнительные ссылки')) ?>"><?= $footLinks ?></nav><?php endif; ?>
             <span><?= $footE(t('При использовании материалов активная ссылка на источник обязательна')) ?></span>
+            <?php $footCounters = \App\Core\SecurityHeaders::injectScriptNonce((string) \App\Models\Setting::get('footer_counters', '')); ?>
+            <?php if (trim($footCounters) !== ''): ?><div class="pt-foot__counters"><?= $footCounters ?></div><?php endif; ?>
         </div>
     </div>
 </footer>
 <script src="<?= htmlspecialchars(Asset::url('/assets/portal/portal.js'), ENT_QUOTES) ?>" defer></script>
 <?= \App\Core\AssetCollector::renderScripts() /* скрипты блоков на странице — по одному разу */ ?>
+<?php require __DIR__ . '/../site/_analytics.php'; ?>
 </body>
 </html>

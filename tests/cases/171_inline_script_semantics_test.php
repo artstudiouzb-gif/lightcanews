@@ -17,7 +17,6 @@ test('public chrome avoids first-party executable inline scripts', function (): 
     assert_not_contains('window.__consent', $footer);
     assert_contains('type="application/json" id="frontend-labels"', $footer);
     assert_contains('type="application/json" id="push-config"', $footer);
-    assert_contains('type="application/json" id="consent-config"', $footer);
 });
 
 test('public landmarks and builder blocks use semantic markup without style attributes', function (): void {

@@ -207,7 +207,9 @@ $logoPlate = \App\Core\DesignSettings::logoPlate();
 <?php endif; ?>
 <?php endif; ?>
 </head>
-<body class="pt">
+<?php $ptAdminBar = \App\Core\AppToolbar::isVisible(); ?>
+<body class="pt<?= $ptAdminBar ? ' has-admin-bar' : '' ?>">
+<?= $ptAdminBar ? \App\Core\AppToolbar::renderHtml(get_defined_vars()) : '' ?>
 <a class="pt-skip skip-link" href="#main-content"><?= htmlspecialchars(t('Перейти к содержанию'), ENT_QUOTES) ?></a>
 
 <header class="pt-mast">
