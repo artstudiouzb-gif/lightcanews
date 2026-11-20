@@ -273,7 +273,7 @@ $pageCssUrls = \App\Core\CustomAssetHelper::resolveCssUrls((string) $page['custo
                 <?php endif; ?>
                 <?php if ($hdrShow('show_lang') && count($langLinks) > 1): ?>
                 <details class="pt-lang">
-                    <summary class="pt-btn" aria-label="<?= htmlspecialchars(t('Язык'), ENT_QUOTES) ?>"><?= htmlspecialchars($currentLangLabel, ENT_QUOTES) ?></summary>
+                    <summary class="pt-btn" aria-label="<?= htmlspecialchars(t('Язык'), ENT_QUOTES) ?>"><?= htmlspecialchars($currentLangLabel, ENT_QUOTES) ?><svg class="pt-btn__chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 5 7l3.5-3.5"/></svg></summary>
                     <ul class="pt-lang__menu">
                         <?php foreach ($langLinks as $langLink): ?>
                             <li><a href="<?= htmlspecialchars($langLink['url'], ENT_QUOTES) ?>" hreflang="<?= htmlspecialchars($langLink['code'], ENT_QUOTES) ?>"<?= $langLink['current'] ? ' aria-current="true"' : '' ?>><?= htmlspecialchars($langLink['label'], ENT_QUOTES) ?></a></li>
@@ -291,7 +291,7 @@ $pageCssUrls = \App\Core\CustomAssetHelper::resolveCssUrls((string) $page['custo
                 </a>
                 <?php endif; ?>
                 <?php if ($hdrShow('show_a11y')): ?>
-                <button type="button" class="pt-btn pt-btn--icon a11y-toggle<?= \App\Core\A11ySettings::isActive($a11ySettings) ? ' is-active' : '' ?>" data-a11y-open aria-controls="a11y-panel" aria-expanded="false" aria-label="<?= htmlspecialchars(t('Настройки отображения'), ENT_QUOTES) ?>" title="<?= htmlspecialchars(t('Настройки отображения: размер текста, контраст, интервалы'), ENT_QUOTES) ?>"><?= \App\Core\Icon::render('eye', 18) ?></button>
+                <button type="button" class="pt-btn pt-btn--icon a11y-toggle<?= \App\Core\A11ySettings::isActive($a11ySettings) ? ' is-active' : '' ?>" data-a11y-open aria-controls="a11y-panel" aria-expanded="false" aria-label="<?= htmlspecialchars(t('Настройки отображения'), ENT_QUOTES) ?>" title="<?= htmlspecialchars(t('Настройки отображения: размер текста, контраст, интервалы'), ENT_QUOTES) ?>"><?= \App\Core\Icon::render('eye', 16) ?></button>
                 <?php endif; ?>
                 <?php if ($hdrShow('show_theme')): ?>
                 <button type="button" class="pt-btn pt-btn--icon" data-pt-theme aria-label="<?= htmlspecialchars(t('Тёмная тема'), ENT_QUOTES) ?>">
