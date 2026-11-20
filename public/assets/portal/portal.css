@@ -269,13 +269,35 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
 .pt-feed__rubric { display: block; font-size: .75rem; color: var(--ink-3); margin-bottom: 2px; }
 
 /* --- Курсы ------------------------------------------------------------------- */
-.pt-fx { background: var(--band); border-block: 1px solid var(--rule); padding-block: 14px; }
-.pt-fx__row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
-.pt-fx__label { margin: 0; font-size: .74rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--link); }
-.pt-fx__list { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
-.pt-fx__item { display: grid; gap: 2px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); font-variant-numeric: tabular-nums; }
-.pt-fx__item dt { font-size: .73rem; font-weight: 700; color: var(--ink-3); }
-.pt-fx__item dd { margin: 0; font-size: 1.08rem; font-weight: 800; }
+/* Полоса курсов во всю ширину контента: группы одной сеткой, ширину
+   группы задаёт число её ячеек (--n), поэтому все ячейки одной ширины. */
+.pt-fx { background: var(--band); border-block: 1px solid var(--rule); padding-block: 14px 12px; }
+.pt-fx__wrap { display: grid; gap: 8px; }
+.pt-fx__grid { display: flex; gap: 14px 18px; }
+.pt-fx__group { flex: var(--n) 1 0; display: grid; grid-template-rows: auto 1fr; gap: 6px; min-width: 0; }
+.pt-fx__group--n1 { --n: 1; } .pt-fx__group--n2 { --n: 2; } .pt-fx__group--n3 { --n: 3; } .pt-fx__group--n4 { --n: 4; }
+.pt-fx__group--n5 { --n: 5; } .pt-fx__group--n6 { --n: 6; } .pt-fx__group--n7 { --n: 7; } .pt-fx__group--n8 { --n: 8; }
+.pt-fx__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.pt-fx__head span { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-3); white-space: nowrap; }
+.pt-fx__cells { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); margin: 0; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); }
+.pt-fx__cell { min-width: 0; padding: 8px 12px 9px; container-type: inline-size; }
+.pt-fx__cell + .pt-fx__cell { border-left: 1px solid var(--rule); }
+.pt-fx__cell dt { font-size: .72rem; font-weight: 700; line-height: 1.3; color: var(--ink-3); }
+.pt-fx__cell dd { margin: 0; display: grid; gap: 1px; }
+.pt-fx__val { font-size: clamp(.9rem, 18cqi, 1.12rem); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pt-fx__foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin: 0; font-size: .72rem; color: var(--ink-3); }
+.pt-fx__foot a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 1360px) {
+    /* Ряд из трёх групп (11 ячеек) уже не помещается: группы — друг под другом. */
+    .pt-fx__grid { flex-direction: column; }
+}
+@media (max-width: 560px) {
+    .pt-fx__cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pt-fx__cell + .pt-fx__cell { border-left: 0; }
+    .pt-fx__cell:nth-child(even) { border-left: 1px solid var(--rule); }
+    .pt-fx__cell:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .pt-fx__cell:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
 
 /* --- Выбор редакции ------------------------------------------------------------- */
 .pt-picks { background: var(--dark-band); color: #fff; padding-block: 42px; }
@@ -762,10 +784,18 @@ body.pt { margin: 0; background: var(--ground); color: var(--ink); font-family: 
     .pt-reels__row { grid-auto-columns: 44vw; }
 }
 
-/* Котировки сырья в полосе курсов */
-.pt-fx__unit { font-size: .73rem; font-weight: 700; color: var(--ink-3); }
-.pt-fx__chg { display: block; font-size: .73rem; font-weight: 700; color: var(--ink-3); }
-.pt-fx__src { flex-basis: 100%; margin: 0; font-size: .73rem; color: var(--ink-3); }
+/* Единица котировки и изменение за день в полосе курсов. Цвет изменения
+   держит 4.5:1 на белой ячейке; знак продублирован словом для диктора. */
+.pt-fx__unit { font-size: .72rem; font-weight: 600; color: var(--ink-3); }
+.pt-fx__chg { font-size: .74rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-3); }
+.pt-fx__chg--up { color: #0f7a4a; }
+.pt-fx__chg--down { color: #b42318; }
+:root[data-theme="dark"] .pt-fx__chg--up { color: #6fd6a2; }
+:root[data-theme="dark"] .pt-fx__chg--down { color: #ff8f8f; }
+@media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] .pt-fx__chg--up { color: #6fd6a2; }
+    :root[data-theme="auto"] .pt-fx__chg--down { color: #ff8f8f; }
+}
 
 /* Панель администратора на сайте (AppToolbar) и полоса согласия на cookie.
    Бандл прежней темы портал не подключает, поэтому их правила — здесь. */

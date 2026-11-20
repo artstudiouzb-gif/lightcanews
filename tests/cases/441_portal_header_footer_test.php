@@ -27,6 +27,25 @@ test('Курсы валют: курс соседей к доллару пере�
     assert_true(CurrencyRates::parse('не json') === null);
 });
 
+test('Курсы валют: полоса портала — сум к валютам партнёров, доллар в регионе и изменение за день', function (): void {
+    // Diff — разница с прошлым курсом в сумах за Nominal единиц.
+    $json = json_encode([
+        ['Ccy' => 'USD', 'Rate' => '12000.00', 'Nominal' => '1', 'Diff' => '20.00', 'Date' => '20.11.2026'],
+        ['Ccy' => 'EUR', 'Rate' => '13000.00', 'Nominal' => '1', 'Diff' => '-30.50'],
+        ['Ccy' => 'KZT', 'Rate' => '24.00', 'Nominal' => '1', 'Diff' => '0'],
+        ['Ccy' => 'CNY', 'Rate' => '1650.00', 'Nominal' => '1'],
+    ], JSON_THROW_ON_ERROR);
+    $parsed = CurrencyRates::parse($json);
+    assert_true($parsed !== null);
+    assert_same(['USD', 'EUR', 'CNY'], array_keys($parsed['sum']), 'группа «Сум» — в порядке SUM_PAIRS, без валют, которых нет в ответе');
+    assert_same(20.0, $parsed['sum']['USD']['change'], 'рост доллара к суму');
+    assert_same(-30.5, $parsed['sum']['EUR']['change'], 'снижение евро');
+    assert_same(null, $parsed['sum']['CNY']['change'], 'без Diff изменение неизвестно, а не ноль');
+    assert_same(500.0, $parsed['region']['KZT']['value']);
+    // Вчера: 11980 / 24 = 499.17 — тенге за доллар выросло на 0.83.
+    assert_same(0.83, $parsed['region']['KZT']['change'], 'кросс-курс прошлого дня считается через вчерашний доллар');
+});
+
 test('Курсы валют: шапка показывает только свежую копию (БД)', function (): void {
     ensure_test_db();
     reset_design_state();
