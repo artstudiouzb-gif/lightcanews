@@ -40,6 +40,28 @@ test('publicCsp: базовая политика разрешает YouTube API 
     assert_contains("form-action 'self'", $csp);
 });
 
+test('publicCsp: Метрика с Вебвизором — хосты счётчика, WebSocket и встраивание в окно Метрики', function () {
+    $plain = SecurityHeaders::publicCsp('n0nce', []);
+    assert_contains("frame-ancestors 'self'", $plain);
+    assert_true(!str_contains($plain, 'yandex'), 'без счётчика хостов Метрики нет');
+
+    $csp = SecurityHeaders::publicCsp('n0nce', ['ym' => true]);
+    foreach (['https://mc.yandex.ru', 'https://mc.yandex.com', 'https://yastatic.net'] as $host) {
+        assert_true((bool) preg_match('#script-src [^;]*' . preg_quote($host, '#') . '#', $csp), 'script-src: ' . $host);
+    }
+    foreach (['https://mc.yandex.ru', 'https://mc.yandex.com', 'wss://mc.yandex.ru', 'wss://mc.yandex.com'] as $host) {
+        assert_true((bool) preg_match('#connect-src [^;]*' . preg_quote($host, '#') . '#', $csp), 'connect-src: ' . $host);
+    }
+    assert_contains("frame-ancestors 'self' https://metrika.yandex.ru https://metrika.yandex.com https://*.webvisor.com", $csp);
+});
+
+test('Метрика: счётчик инициализируется с параметрами кабинета (Вебвизор, карта кликов, ecommerce)', function () {
+    $js = \App\Core\Analytics::buildScript('', '114397823');
+    assert_contains("ym(114397823,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:'dataLayer',accurateTrackBounce:true,trackLinks:true});", $js);
+    assert_same(1, substr_count($js, "'init'"), 'одна инициализация');
+    assert_contains("ym(114397823,'reachGoal','subscribe')", $js, 'цель «subscribe» на отправку формы подписки');
+});
+
 test('TinyMCE: расширенная панель содержит цитату и индексы', function () {
     $editor = (string) file_get_contents(APP_ROOT . '/public/assets/js/vendor/editor.js');
     assert_contains('subscript superscript | blockquote', $editor);

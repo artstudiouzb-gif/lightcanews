@@ -62,9 +62,12 @@ final class RequestUrl
     {
         // Про CLI здесь не спрашиваем: обёртка в bootstrap уже вышла на нём
         // раньше, а без этой проверки метод остаётся чистым и проверяемым.
-        if (self::isHttps()) {
-            return null;
-        }
+        //
+        // Кроме схемы метод сводит к одному адресу и хост: www., старый
+        // адрес (new.) и любое другое имя, под которым сервер отдаёт тот же
+        // сайт, уводятся на хост из app.url. Иначе одна страница живёт по
+        // нескольким адресам — canonical это лечит для поиска, но не для
+        // посетителя, cookie и счётчиков.
 
         // Схему берём из сырой настройки, а не из AppUrl::base(): тот
         // повышает http до https по текущему запросу, а нам нужно именно
@@ -75,6 +78,12 @@ final class RequestUrl
             || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
             || ($parts['host'] ?? '') === ''
         ) {
+            return null;
+        }
+
+        $requestHost = strtolower((string) preg_replace('/:\d+$/', '', trim((string) ($_SERVER['HTTP_HOST'] ?? ''))));
+        $sameHost = $requestHost === '' || $requestHost === strtolower((string) $parts['host']);
+        if (self::isHttps() && $sameHost) {
             return null;
         }
 

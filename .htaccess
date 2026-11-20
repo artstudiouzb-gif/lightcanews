@@ -48,7 +48,8 @@ Options -Indexes -MultiViews
 
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
+    # X-Frame-Options ставит PHP (SecurityHeaders::send): на странице со
+    # счётчиком Метрики его быть не должно, иначе Вебвизор не откроет запись.
     Header set Referrer-Policy "strict-origin-when-cross-origin"
 
     <FilesMatch "\.(css|js|woff2?|ttf|eot|svg|jpe?g|png|gif|webp|ico)$">
