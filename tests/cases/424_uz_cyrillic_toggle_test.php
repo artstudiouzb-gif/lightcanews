@@ -42,3 +42,20 @@ test('Кириллица: без настройки включена (вид с�
     Setting::forgetCache();
     assert_true(UzCyrillic::enabled());
 });
+
+/**
+ * Текст, набранный кириллицей, переписывать нечего: латиница в нём —
+ * иностранные названия. Прежде «Made in Uzbekistan» в кириллической
+ * новости выходило «Маде ин Узбекистан», а ссылка «Light Central Asia» —
+ * «Лигҳт Сентрал Асиа». Решает абзац целиком: ссылка — отдельный узел.
+ */
+test('Кириллица: латиница внутри кириллического абзаца остаётся латиницей', function () {
+    $html = '<p><strong>«Made in Uzbekistan» логоси</strong> <a href="#">Light Central Asia</a>'
+        . ' жамоаси Osborn Textile</p><p>Yangiliklar va Toshkent</p>';
+    $out = UzCyrillic::html($html);
+
+    assert_contains('«Made in Uzbekistan» логоси', $out);
+    assert_contains('>Light Central Asia</a>', $out);
+    assert_contains('Osborn Textile', $out);
+    assert_contains('<p>Янгиликлар ва Тошкент</p>', $out, 'латинский абзац по-прежнему переводится');
+});
