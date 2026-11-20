@@ -82,17 +82,6 @@ $hdrCtaOn = !empty($hdrCta['enabled']) && $hdrCtaText !== '' && $hdrCtaUrl !== '
 // Пункты меню: рубрики, основное меню или оба (основное — только верхний уровень).
 $hdrNavMode = (string) ($hdrPortal['nav'] ?? 'rubrics');
 $hdrNav = [];
-if ($hdrNavMode !== 'rubrics') {
-    try {
-        foreach (\App\Models\MenuItem::activeForLang($currentLang) as $hdrItem) {
-            if (empty($hdrItem['is_divider']) && empty($hdrItem['parent_id'])) {
-                $hdrNav[] = [(string) $hdrItem['title'], \App\Models\MenuItem::resolveUrl($hdrItem, $currentLang)];
-            }
-        }
-    } catch (\Throwable $e) {
-        \App\Core\Logger::swallowed('Шапка портала: меню не загрузилось', $e);
-    }
-}
 $wordmark = trim(Setting::get('pwa_short_name', ''));
 $wordmark = $wordmark !== '' ? $wordmark : (string) preg_replace('/\.news$/i', '', $siteName);
 
@@ -107,6 +96,8 @@ $requestPath = rtrim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'
 $isCurrent = static function (string $url) use ($requestPath): bool {
     return $requestPath !== '' && $requestPath === rtrim((string) parse_url($url, PHP_URL_PATH), '/');
 };
+// Основное меню с подпунктами, иконками и метками (App\Core\Portal\PortalMenu).
+$hdrMenu = $hdrNavMode !== 'rubrics' ? \App\Core\Portal\PortalMenu::items($currentLang, $isCurrent) : [];
 
 $uzScript = \App\Core\A11ySettings::fromCookie($_COOKIE[\App\Core\A11ySettings::COOKIE] ?? null)['script'];
 $langLinks = [];
@@ -248,6 +239,27 @@ $pageCssUrls = \App\Core\CustomAssetHelper::resolveCssUrls((string) $page['custo
         </a>
         <div class="pt-mast__bar">
             <nav class="pt-nav" aria-label="<?= htmlspecialchars($hdrNavMode === 'rubrics' ? t('Рубрики') : t('Меню'), ENT_QUOTES) ?>">
+                <?php foreach ($hdrMenu as $menuIndex => $menuItem): ?>
+                    <?php $menuAttrs = ' href="' . htmlspecialchars($menuItem['url'], ENT_QUOTES) . '"' . ($menuItem['current'] ? ' aria-current="page"' : '') . ($menuItem['iconOnly'] ? ' title="' . htmlspecialchars($menuItem['title'], ENT_QUOTES) . '"' : ''); ?>
+                    <?php if ($menuItem['children'] === []): ?>
+                    <a<?= $menuAttrs ?>><?= \App\Core\Portal\PortalMenu::label($menuItem) ?></a>
+                    <?php else: ?>
+                    <?php $subId = 'pt-sub-' . $menuIndex; ?>
+                    <div class="pt-nav__item" data-pt-sub>
+                        <a<?= $menuAttrs ?>><?= \App\Core\Portal\PortalMenu::label($menuItem) ?></a>
+                        <button type="button" class="pt-nav__toggle" aria-expanded="false" aria-controls="<?= $subId ?>" aria-label="<?= htmlspecialchars(t('Открыть подменю') . ': ' . $menuItem['title'], ENT_QUOTES) ?>"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4"/></svg></button>
+                        <div class="pt-sub<?= $menuItem['cols'] > 0 ? ' pt-sub--mega pt-sub--cols-' . $menuItem['cols'] : '' ?>" id="<?= $subId ?>" hidden>
+                            <?php foreach ($menuItem['children'] as $subItem): ?>
+                                <?php if (!empty($subItem['divider'])): ?>
+                                <span class="pt-sub__sep" role="separator"></span>
+                                <?php else: ?>
+                                <a href="<?= htmlspecialchars($subItem['url'], ENT_QUOTES) ?>"<?= $subItem['current'] ? ' aria-current="page"' : '' ?><?= $subItem['iconOnly'] ? ' title="' . htmlspecialchars($subItem['title'], ENT_QUOTES) . '"' : '' ?>><?= \App\Core\Portal\PortalMenu::label($subItem) ?></a>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
                 <?php foreach ($hdrNav as [$navTitle, $navUrl]): ?>
                     <a href="<?= htmlspecialchars($navUrl, ENT_QUOTES) ?>"<?= $isCurrent($navUrl) ? ' aria-current="page"' : '' ?>><?= htmlspecialchars($navTitle, ENT_QUOTES) ?></a>
                 <?php endforeach; ?>

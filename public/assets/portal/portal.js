@@ -35,6 +35,81 @@
             + '<use href="#tabler-' + name + '"></use></svg>';
     };
 
+    // Подпункты меню. Панель стоит в строке шапки (.pt-mast__row), а не в
+    // прокручиваемой полосе: место считается здесь — под пунктом, мега-меню и
+    // узкий экран — во всю ширину от полосы меню.
+    var subItems = Array.prototype.slice.call(document.querySelectorAll('[data-pt-sub]'));
+    var closeSub = function (item, focusToggle) {
+        var btn = item.querySelector('.pt-nav__toggle');
+        var panel = btn && document.getElementById(btn.getAttribute('aria-controls'));
+        item.classList.remove('is-open');
+        if (btn) { btn.setAttribute('aria-expanded', 'false'); }
+        if (panel) { panel.hidden = true; }
+        if (focusToggle && btn) { btn.focus(); }
+    };
+    var placeSub = function (item, panel) {
+        var row = item.closest('.pt-mast__row');
+        var nav = item.closest('.pt-nav');
+        if (!row || !nav) { return; }
+        var rowBox = row.getBoundingClientRect();
+        var itemBox = item.getBoundingClientRect();
+        var navBox = nav.getBoundingClientRect();
+        var wide = panel.classList.contains('pt-sub--mega') || window.matchMedia('(max-width: 850px)').matches;
+        panel.style.top = (itemBox.bottom - rowBox.top) + 'px';
+        if (wide) {
+            panel.style.left = (window.matchMedia('(max-width: 850px)').matches ? 0 : navBox.left - rowBox.left) + 'px';
+            panel.style.right = '0px';
+        } else {
+            panel.style.right = 'auto';
+            var left = itemBox.left - rowBox.left;
+            panel.style.left = Math.max(0, Math.min(left, rowBox.width - panel.offsetWidth)) + 'px';
+        }
+    };
+    var openSub = function (item) {
+        var btn = item.querySelector('.pt-nav__toggle');
+        var panel = btn && document.getElementById(btn.getAttribute('aria-controls'));
+        if (!panel) { return; }
+        subItems.forEach(function (other) { if (other !== item) { closeSub(other, false); } });
+        item.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+        panel.hidden = false;
+        placeSub(item, panel);
+    };
+    var hoverable = window.matchMedia('(hover: hover) and (pointer: fine)');
+    subItems.forEach(function (item) {
+        var btn = item.querySelector('.pt-nav__toggle');
+        if (!btn) { return; }
+        btn.addEventListener('click', function () {
+            if (item.classList.contains('is-open')) { closeSub(item, false); } else { openSub(item); }
+        });
+        var timer = 0;
+        item.addEventListener('mouseenter', function () {
+            if (!hoverable.matches) { return; }
+            clearTimeout(timer);
+            openSub(item);
+        });
+        item.addEventListener('mouseleave', function () {
+            if (!hoverable.matches) { return; }
+            timer = setTimeout(function () { closeSub(item, false); }, 200);
+        });
+        item.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && item.classList.contains('is-open')) {
+                closeSub(item, true);
+            }
+        });
+        item.addEventListener('focusout', function (event) {
+            if (!item.contains(event.relatedTarget)) { closeSub(item, false); }
+        });
+    });
+    if (subItems.length) {
+        document.addEventListener('click', function (event) {
+            subItems.forEach(function (item) { if (!item.contains(event.target)) { closeSub(item, false); } });
+        });
+        var navEl = document.querySelector('.pt-nav');
+        if (navEl) { navEl.addEventListener('scroll', function () { subItems.forEach(function (item) { closeSub(item, false); }); }, { passive: true }); }
+        window.addEventListener('resize', function () { subItems.forEach(function (item) { closeSub(item, false); }); });
+    }
+
     // Поиск окном, Ctrl+K открывает его с клавиатуры.
     var dialog = document.getElementById('site-quick-search-modal');
     var trigger = document.querySelector('[data-pt-search]');
